@@ -32,6 +32,14 @@ public sealed class HistoryBuffer<T> : IReadOnlyList<T>
             ? items[(next - Count + index + items.Length) % items.Length]
             : throw new ArgumentOutOfRangeException(nameof(index), index, "index must be within [0, Count).");
 
+    /// <summary>Discards all retained items; capacity is unchanged.</summary>
+    public void Clear()
+    {
+        Array.Clear(items);
+        next = 0;
+        Count = 0;
+    }
+
     public void Add(T item)
     {
         items[next] = item;
