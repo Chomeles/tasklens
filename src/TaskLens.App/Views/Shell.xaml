@@ -3,15 +3,31 @@
   xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
   Title="TaskLens">
-  <NavigationView
-    x:Name="Nav"
-    IsBackButtonVisible="Collapsed"
-    SelectionChanged="OnSelectionChanged">
-    <NavigationView.MenuItems>
-      <NavigationViewItem Content="Processes" Tag="Processes" />
-      <NavigationViewItem Content="Sensors" Tag="Sensors" />
-      <NavigationViewItem Content="Details" Tag="Details" />
-    </NavigationView.MenuItems>
-    <Frame x:Name="ContentFrame" />
-  </NavigationView>
+  <Grid>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="*" />
+    </Grid.RowDefinitions>
+
+    <!-- First-run install hint: shown once at startup when the PawnIO driver is missing. -->
+    <InfoBar
+      Grid.Row="0"
+      IsClosable="True"
+      IsOpen="{x:Bind BannerViewModel.ShowBanner, Mode=OneWay}"
+      Message="{x:Bind BannerViewModel.BannerText, Mode=OneWay}"
+      Severity="Informational" />
+
+    <NavigationView
+      Grid.Row="1"
+      x:Name="Nav"
+      IsBackButtonVisible="Collapsed"
+      SelectionChanged="OnSelectionChanged">
+      <NavigationView.MenuItems>
+        <NavigationViewItem Content="Processes" Tag="Processes" />
+        <NavigationViewItem Content="Sensors" Tag="Sensors" />
+        <NavigationViewItem Content="Details" Tag="Details" />
+      </NavigationView.MenuItems>
+      <Frame x:Name="ContentFrame" />
+    </NavigationView>
+  </Grid>
 </Window>
