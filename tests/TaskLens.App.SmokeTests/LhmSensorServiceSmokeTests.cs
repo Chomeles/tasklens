@@ -6,9 +6,10 @@ namespace TaskLens.App.SmokeTests;
 
 /// <summary>
 /// Windows-only smoke test for the real LibreHardwareMonitor path. GitHub windows-latest runners
-/// are VMs with no SuperIO/MSR/SMBus hardware and no PawnIO driver (research.md §10), so this
-/// asserts the VM "no sensors" shape — no temperature/fan/power readings, degradation reported as
-/// data — rather than specific sensors. The tree→model mapping itself is unit-tested in Core.
+/// are VMs, so this asserts shape, not specific sensors: whatever LHM reports must be well-formed,
+/// and an empty tree must be explained via availability. Which sensor kinds a runner exposes is
+/// out of our control (Azure Xeon images report zero-valued Power sensors, research.md §10), so
+/// no kind is asserted absent. The tree→model mapping itself is unit-tested in Core.
 /// </summary>
 public class LhmSensorServiceSmokeTests
 {
@@ -22,11 +23,6 @@ public class LhmSensorServiceSmokeTests
             Assert.True(service.WaitForFirstSample(TimeSpan.FromMinutes(2)), "sampling thread never published");
             snapshot = service.Sample();
         } // Dispose joins the thread and runs Computer.Close(); a wedge fails the test by timeout
-
-        // A VM exposes no thermal, fan or power hardware — with or without a driver.
-        Assert.DoesNotContain(
-            snapshot.Readings,
-            r => r.Kind is SensorKind.Temperature or SensorKind.Fan or SensorKind.Power);
 
         if (snapshot.Readings.Count == 0)
         {

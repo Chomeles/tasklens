@@ -61,6 +61,7 @@ public partial class App : Application
         .AddSingleton<ISystemMetricsService, StubSystemMetricsService>()
 #else
         .AddSingleton<ISensorService, LhmSensorService>()
+        .AddSingleton<ISystemMetricsService, WinSystemMetricsService>()
 #endif
         .AddSingleton<ISettingsStore, JsonSettingsStore>()
         .AddSingleton<SamplingEngine>()
