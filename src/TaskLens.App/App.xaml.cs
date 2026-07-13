@@ -37,11 +37,13 @@ public partial class App : Application
     private static ServiceProvider ConfigureServices() => new ServiceCollection()
         .AddSingleton<IClock, SystemClock>()
         .AddSingleton<IDispatcher>(new DispatcherQueueDispatcher(DispatcherQueue.GetForCurrentThread()))
-        // ponytail: stub data sources — real Windows services land in tasks 10-12
+#if DEBUG
+        // ponytail: debug-only stub data sources — real Windows services fill the Release path in tasks 10-12
         .AddSingleton<IProcessEnumerator, StubProcessEnumerator>()
         .AddSingleton<ISensorService, StubSensorService>()
         .AddSingleton<IGpuProcessService, StubGpuProcessService>()
         .AddSingleton<ISystemMetricsService, StubSystemMetricsService>()
+#endif
         .AddSingleton<SamplingEngine>()
         .AddSingleton<ProcessListViewModel>()
         .AddSingleton<SensorsViewModel>()
