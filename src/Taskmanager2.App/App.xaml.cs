@@ -70,7 +70,9 @@ public partial class App : Application
 #endif
         .AddSingleton<ISettingsStore, JsonSettingsStore>()
         .AddSingleton<SamplingEngine>()
-        .AddSingleton<Tm2ProcessListViewModel>()
+        // Factory, not open registration: constructor injection would pick the (ProcessListViewModel)
+        // ctor, whose registration below resolves Tm2 again — infinite recursion at first resolve.
+        .AddSingleton(_ => new Tm2ProcessListViewModel())
         // ProcessListViewModel == the instance Tm2 wraps, so both resolve to the same rows/sort state.
         .AddSingleton(sp => sp.GetRequiredService<Tm2ProcessListViewModel>().Inner)
         .AddSingleton<SensorsViewModel>()
