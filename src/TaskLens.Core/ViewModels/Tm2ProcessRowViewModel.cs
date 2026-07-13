@@ -20,8 +20,14 @@ public sealed partial class Tm2ProcessRowViewModel : ObservableObject
     public Tm2ProcessRowViewModel(ProcessRowViewModel inner)
     {
         Inner = inner ?? throw new ArgumentNullException(nameof(inner));
-        Inner.PropertyChanged += (_, e) => OnPropertyChanged(e.PropertyName);
+        Inner.PropertyChanged += OnInnerPropertyChanged;
     }
+
+    private void OnInnerPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e) =>
+        OnPropertyChanged(e.PropertyName);
+
+    /// <summary>Detaches from <see cref="Inner"/> so this wrapper can be garbage-collected once dropped.</summary>
+    internal void Detach() => Inner.PropertyChanged -= OnInnerPropertyChanged;
 
     /// <summary>The joined-over row from the existing process list (sort/filter/totals live there).</summary>
     public ProcessRowViewModel Inner { get; }

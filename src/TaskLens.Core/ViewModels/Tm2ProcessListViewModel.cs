@@ -1,17 +1,8 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
 using TaskLens.Core.Models;
 
 namespace TaskLens.Core.ViewModels;
-
-/// <summary>Sortable columns Taskmanager2 adds on top of <see cref="ProcessColumn"/>.</summary>
-public enum Tm2ProcessColumn
-{
-    CpuTemp,
-    PackageWatt,
-    FanRpm,
-}
 
 /// <summary>
 /// Taskmanager2's process list: a thin join layer over the existing <see cref="ProcessListViewModel"/>
@@ -38,18 +29,6 @@ public sealed partial class Tm2ProcessListViewModel : ObservableObject
 
     /// <summary>Joined rows, mirroring <c>Inner.Rows</c>' order (filtered, sorted).</summary>
     public ObservableCollection<Tm2ProcessRowViewModel> Rows { get; } = [];
-
-    /// <summary>
-    /// Sorting by a Taskmanager2-only column: these values are identical across every row (they are
-    /// system-wide, not per-process), so there is nothing to reorder — delegate to the existing
-    /// column sort is meaningless here. Kept as a header-click target for the future page only.
-    /// </summary>
-    // ponytail: no per-process sensor data exists to sort by; a real per-column comparer would need one.
-    [RelayCommand]
-    private void SortBy(Tm2ProcessColumn column)
-    {
-        _ = column;
-    }
 
     /// <summary>Applies one snapshot: delegates to <see cref="Inner"/>, then joins sensors + history.</summary>
     public void ApplySnapshot(SystemSnapshot snapshot)
@@ -79,6 +58,7 @@ public sealed partial class Tm2ProcessListViewModel : ObservableObject
         var visible = new HashSet<ProcessRowViewModel>(Inner.Rows);
         foreach (var key in joined.Keys.Where(k => !visible.Contains(k)).ToList())
         {
+            joined[key].Detach();
             joined.Remove(key);
         }
 
@@ -92,11 +72,11 @@ public sealed partial class Tm2ProcessListViewModel : ObservableObject
         float? fan = null;
         foreach (var sensor in sensors)
         {
-            if (temp is null && sensor.Kind == SensorKind.Temperature && sensor.Hardware == "CPU")
+            if (temp is null && sensor.Kind == SensorKind.Temperature && sensor.HardwareKind == HardwareKind.Cpu)
             {
                 temp = sensor.Value;
             }
-            else if (watt is null && sensor.Kind == SensorKind.Power && sensor.Hardware == "CPU")
+            else if (watt is null && sensor.Kind == SensorKind.Power && sensor.HardwareKind == HardwareKind.Cpu)
             {
                 watt = sensor.Value;
             }

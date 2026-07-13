@@ -1,10 +1,21 @@
 namespace TaskLens.Core.Models;
 
+/// <summary>Coarse category of the hardware a <see cref="SensorReading"/> came from.</summary>
+public enum HardwareKind
+{
+    Other,
+    Cpu,
+    Gpu,
+    Motherboard,
+    Storage,
+}
+
 /// <summary>
 /// One sensor value at one point in time.
 /// <paramref name="Value"/> is <c>null</c> when the sensor exists but reported no reading.
 /// </summary>
-public sealed record SensorReading(string Hardware, string Name, SensorKind Kind, float? Value)
+public sealed record SensorReading(
+    string Hardware, string Name, SensorKind Kind, float? Value, HardwareKind HardwareKind = HardwareKind.Other)
 {
     public string Hardware { get; init; } =
         !string.IsNullOrWhiteSpace(Hardware)

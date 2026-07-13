@@ -12,8 +12,9 @@ public class Tm2ProcessListViewModelTests
     private static ProcessDelta Delta(int pid, string name, double cpu = 0, double gpu = 0) => new(
         new ProcessSample(pid, name, Start, TimeSpan.Zero, 1024, 0, 0), cpu, gpu, 0, 0);
 
-    private static SensorReading Reading(string hardware, string name, SensorKind kind, float? value) =>
-        new(hardware, name, kind, value);
+    private static SensorReading Reading(
+        string hardware, string name, SensorKind kind, float? value, HardwareKind hardwareKind = HardwareKind.Other) =>
+        new(hardware, name, kind, value, hardwareKind);
 
     private static SystemSnapshot Snap(
         ProcessDelta[] deltas, SensorReading[]? sensors = null, SensorAvailability availability = SensorAvailability.Available) => new(
@@ -58,10 +59,11 @@ public class Tm2ProcessListViewModelTests
         vm.ApplySnapshot(Snap(
             [Delta(1, "alpha"), Delta(2, "beta")],
             [
-                Reading("CPU", "Package", SensorKind.Temperature, 55.5f),
-                Reading("CPU", "Package", SensorKind.Power, 45f),
-                Reading("Motherboard", "Fan #1", SensorKind.Fan, 1200f),
-                Reading("GPU", "GPU Core", SensorKind.Temperature, 70f), // not CPU: ignored
+                // real hardware.Name is a CPU model string, never the literal "CPU" - HardwareKind is what matters
+                Reading("AMD Ryzen 7 5800X", "Package", SensorKind.Temperature, 55.5f, HardwareKind.Cpu),
+                Reading("AMD Ryzen 7 5800X", "Package", SensorKind.Power, 45f, HardwareKind.Cpu),
+                Reading("Motherboard", "Fan #1", SensorKind.Fan, 1200f, HardwareKind.Motherboard),
+                Reading("NVIDIA RTX 4080", "GPU Core", SensorKind.Temperature, 70f, HardwareKind.Gpu), // not CPU: ignored
             ]));
 
         foreach (var row in vm.Rows)
