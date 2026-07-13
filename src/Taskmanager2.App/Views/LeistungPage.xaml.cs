@@ -12,6 +12,14 @@ public sealed partial class LeistungPage : Page
         ViewModel = App.Services.GetRequiredService<Tm2PerformanceViewModel>();
         InitializeComponent();
         Rail.SelectedItem = ViewModel.SelectedEntry;
+        // VM-side fallback (group rebuild) must reach the rail too, or it deselects visually.
+        ViewModel.PropertyChanged += (_, e) =>
+        {
+            if (e.PropertyName == nameof(ViewModel.SelectedEntry) && !ReferenceEquals(Rail.SelectedItem, ViewModel.SelectedEntry))
+            {
+                Rail.SelectedItem = ViewModel.SelectedEntry;
+            }
+        };
     }
 
     public Tm2PerformanceViewModel ViewModel { get; }

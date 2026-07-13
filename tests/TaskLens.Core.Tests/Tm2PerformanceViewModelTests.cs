@@ -107,6 +107,19 @@ public class Tm2PerformanceViewModelTests
     }
 
     [Fact]
+    public void ApplySnapshot_GpuEntry_PrefersCoreLoad_OverEarlierNonCoreLoad()
+    {
+        vm.ApplySnapshot(Snap(
+            [Delta(1, gpu: 10)],
+            [
+                Reading("NVIDIA RTX 4080", "GPU Memory Controller", SensorKind.Load, 20f, HardwareKind.Gpu),
+                Reading("NVIDIA RTX 4080", "GPU Core", SensorKind.Load, 63f, HardwareKind.Gpu),
+            ]));
+
+        Assert.Equal([63f], vm.Entries[3].History);
+    }
+
+    [Fact]
     public void ApplySnapshot_GpuEntry_WithoutGpuSensor_SumsPerProcessGpu()
     {
         vm.ApplySnapshot(Snap([Delta(1, gpu: 10), Delta(2, gpu: 15.5)]));

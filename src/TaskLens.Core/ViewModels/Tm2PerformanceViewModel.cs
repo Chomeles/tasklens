@@ -181,14 +181,22 @@ public sealed partial class Tm2PerformanceViewModel : ObservableObject
 
     private static float? FirstGpuLoad(IReadOnlyList<SensorReading> sensors)
     {
+        // LHM lists several GPU load sensors (Core, Memory Controller, Video Engine …);
+        // "GPU Core" is the utilization headline, anything else only a fallback.
+        float? fallback = null;
         foreach (var sensor in sensors)
         {
             if (sensor.Kind == SensorKind.Load && sensor.HardwareKind == HardwareKind.Gpu && sensor.Value is { } value)
             {
-                return value;
+                if (sensor.Name.Contains("Core", StringComparison.OrdinalIgnoreCase))
+                {
+                    return value;
+                }
+
+                fallback ??= value;
             }
         }
 
-        return null;
+        return fallback;
     }
 }
