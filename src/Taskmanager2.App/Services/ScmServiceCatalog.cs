@@ -12,8 +12,10 @@ namespace Taskmanager2.App.Services;
 /// from <see cref="ServiceController.GetServices()"/> (name, display name and status are prefilled
 /// by EnumServicesStatusEx); PID and description each need one extra per-service query —
 /// <c>QueryServiceStatusEx</c> / <c>QueryServiceConfig2</c> — because ServiceController exposes
-/// neither. Per-service failures degrade to a null PID / empty description; a failed enumeration
-/// degrades the whole snapshot to <see cref="ServiceCatalogAvailability.AccessDenied"/>.
+/// neither. Handles are opened with query-only rights (never ServiceController.ServiceHandle,
+/// which demands SERVICE_ALL_ACCESS and is denied on SDDL-hardened services even elevated).
+/// Per-service failures degrade to a null PID / empty description; a failed enumeration degrades
+/// the whole snapshot to <see cref="ServiceCatalogAvailability.AccessDenied"/>.
 /// No mutation API anywhere (plan-tm2.md §2).
 /// </summary>
 internal sealed class ScmServiceCatalog : IServiceCatalog
@@ -30,12 +32,14 @@ internal sealed class ScmServiceCatalog : IServiceCatalog
             return new ServiceCatalogSnapshot([], ServiceCatalogAvailability.AccessDenied);
         }
 
+        using var scm = Advapi32.OpenSCManager(null, null, Advapi32.ScManagerConnect);
+
         var services = new List<ServiceEntry>(controllers.Length);
         foreach (var controller in controllers)
         {
             using (controller)
             {
-                var (pid, description) = QueryDetails(controller);
+                var (pid, description) = QueryDetails(scm, controller.ServiceName);
                 services.Add(new ServiceEntry(
                     controller.ServiceName,
                     controller.DisplayName,
@@ -49,17 +53,20 @@ internal sealed class ScmServiceCatalog : IServiceCatalog
     }
 
     /// <summary>Best effort per service: a denied handle just means no PID and no description.</summary>
-    private static (int? Pid, string Description) QueryDetails(ServiceController controller)
+    private static (int? Pid, string Description) QueryDetails(SafeServiceHandle scm, string serviceName)
     {
-        try
-        {
-            using var handle = controller.ServiceHandle;
-            return (QueryPid(handle), QueryDescription(handle));
-        }
-        catch (Exception e) when (e is Win32Exception or InvalidOperationException)
+        if (scm.IsInvalid)
         {
             return (null, "");
         }
+
+        using var handle = Advapi32.OpenService(scm, serviceName, Advapi32.ServiceQueryRights);
+        if (handle.IsInvalid)
+        {
+            return (null, "");
+        }
+
+        return (QueryPid(handle), QueryDescription(handle));
     }
 
     private static int? QueryPid(SafeHandle handle)

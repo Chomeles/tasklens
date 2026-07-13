@@ -110,6 +110,8 @@ public sealed partial class Tm2ServicesViewModel : ObservableObject
             return;
         }
 
+        // ponytail: synchronous SCM query on the UI thread (~ms range every 5th tick);
+        // move to Task.Run + posted result if it ever shows up as jank.
         var result = catalog.Query();
         Availability = result.Availability;
 
