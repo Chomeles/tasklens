@@ -64,9 +64,11 @@ public sealed partial class SettingsViewModel : ObservableObject
             return;
         }
 
+        // ponytail: WinUI NumberBox reports an emptied box as NaN even with Minimum set.
+        var refreshSeconds = double.IsNaN(RefreshIntervalSeconds) ? 0.1 : RefreshIntervalSeconds;
         var settings = new Settings
         {
-            RefreshInterval = TimeSpan.FromSeconds(Math.Max(0.1, RefreshIntervalSeconds)),
+            RefreshInterval = TimeSpan.FromSeconds(Math.Max(0.1, refreshSeconds)),
             TemperatureUnit = TemperatureUnit,
             CpuNormalization = CpuNormalization,
         };

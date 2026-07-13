@@ -61,6 +61,18 @@ public class JsonSettingsStoreTests : IDisposable
     }
 
     [Fact]
+    public void Load_OutOfRangeRefreshInterval_RecoversToDefault()
+    {
+        Directory.CreateDirectory(directory);
+        File.WriteAllText(
+            Path.Combine(directory, "settings.json"),
+            """{"RefreshInterval":"-00:00:01","TemperatureUnit":0,"CpuNormalization":0}""");
+        var store = new JsonSettingsStore(directory);
+
+        Assert.Equal(Settings.Default, store.Load());
+    }
+
+    [Fact]
     public void Save_CreatesDirectoryIfMissing()
     {
         var store = new JsonSettingsStore(directory);

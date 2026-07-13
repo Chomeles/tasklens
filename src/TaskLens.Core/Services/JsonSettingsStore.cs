@@ -29,7 +29,7 @@ public sealed class JsonSettingsStore : ISettingsStore
             var json = File.ReadAllText(filePath);
             return JsonSerializer.Deserialize<Settings>(json) ?? Settings.Default;
         }
-        catch (Exception ex) when (ex is IOException or JsonException or UnauthorizedAccessException)
+        catch (Exception ex) when (ex is IOException or JsonException or UnauthorizedAccessException or ArgumentOutOfRangeException)
         {
             // ponytail: missing file (first run) and corrupt file (crash mid-write, manual edit)
             // both recover to defaults instead of crashing the app on startup.
