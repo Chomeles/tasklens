@@ -28,6 +28,7 @@ public partial class App : Application
         var engine = Services.GetRequiredService<SamplingEngine>();
         engine.SnapshotReady += Services.GetRequiredService<ProcessListViewModel>().ApplySnapshot;
         engine.SnapshotReady += Services.GetRequiredService<SensorsViewModel>().ApplySnapshot;
+        engine.SnapshotReady += Services.GetRequiredService<DetailsViewModel>().ApplySnapshot;
         _ = engine.RunAsync(CancellationToken.None); // ponytail: no CTS — the loop dies with the process
 
         window = new Shell();
@@ -51,5 +52,6 @@ public partial class App : Application
         .AddSingleton<SamplingEngine>()
         .AddSingleton<ProcessListViewModel>()
         .AddSingleton<SensorsViewModel>()
+        .AddSingleton<DetailsViewModel>()
         .BuildServiceProvider();
 }

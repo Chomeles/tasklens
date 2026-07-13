@@ -48,6 +48,8 @@
 
     <ListView
       Grid.Row="2"
+      IsItemClickEnabled="True"
+      ItemClick="OnProcessItemClick"
       ItemsSource="{x:Bind ViewModel.Rows}"
       SelectionMode="None">
       <ListView.ItemContainerStyle>
