@@ -68,5 +68,6 @@ public partial class App : Application
         .AddSingleton<SensorsViewModel>()
         .AddSingleton<DetailsViewModel>()
         .AddSingleton<SettingsViewModel>()
+        .AddSingleton(_ => new PawnIoBannerViewModel(PawnIoInstallCheck.IsInstalled()))
         .BuildServiceProvider();
 }

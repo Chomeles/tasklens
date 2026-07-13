@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0">
+  <!--
+    Unpackaged WinUI 3 app: elevation is requested the classic way via requestedExecutionLevel,
+    not an MSIX capability (research.md §"requireAdministrator manifest"). TaskLens is fully
+    useful without admin (processes, GPU, RAM, disk) but hardware sensors need it, hence the
+    first-run PawnIO banner (PawnIoDetector) rather than a hard failure when unelevated.
+  -->
+  <trustInfo xmlns="urn:schemas-microsoft-com:asm.v3">
+    <security>
+      <requestedPrivileges>
+        <requestedExecutionLevel level="requireAdministrator" uiAccess="false" />
+      </requestedPrivileges>
+    </security>
+  </trustInfo>
+</assembly>

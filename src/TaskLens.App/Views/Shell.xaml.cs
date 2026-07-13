@@ -1,11 +1,15 @@
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using TaskLens.Core.ViewModels;
 
 namespace TaskLens.App.Views;
 
 /// <summary>NavigationView shell. Code-behind is navigation wiring only (plan.md MVVM rules).</summary>
 public sealed partial class Shell : Window
 {
+    public PawnIoBannerViewModel BannerViewModel { get; } = App.Services.GetRequiredService<PawnIoBannerViewModel>();
+
     public Shell()
     {
         InitializeComponent();
