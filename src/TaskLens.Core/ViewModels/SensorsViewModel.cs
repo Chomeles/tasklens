@@ -64,7 +64,7 @@ public sealed partial class SensorsViewModel : ObservableObject
                 var readings = grouped[g].Readings;
                 for (var s = 0; s < readings.Count; s++)
                 {
-                    rows[s].Value = readings[s].Value;
+                    rows[s].Update(readings[s].Value);
                 }
             }
 
