@@ -14,4 +14,6 @@ jobs:
         with:
           dotnet-version: 8.0.x
       - run: dotnet build TaskLens.sln -c Release
+      # Smoke-run the real NtQuerySystemInformation path against the live OS (task 10).
+      - run: dotnet test tests/TaskLens.App.SmokeTests -c Release --no-build --logger "console;verbosity=minimal"
       - run: dotnet format TaskLens.sln --verify-no-changes

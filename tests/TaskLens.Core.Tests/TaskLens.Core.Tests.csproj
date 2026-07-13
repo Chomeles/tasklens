@@ -24,4 +24,8 @@
     <ProjectReference Include="..\..\src\TaskLens.Core\TaskLens.Core.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Include="Fixtures\**" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
 </Project>
