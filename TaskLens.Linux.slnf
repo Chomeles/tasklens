@@ -1,0 +1,9 @@
+{
+  "solution": {
+    "path": "TaskLens.sln",
+    "projects": [
+      "src\\TaskLens.Core\\TaskLens.Core.csproj",
+      "tests\\TaskLens.Core.Tests\\TaskLens.Core.Tests.csproj"
+    ]
+  }
+}

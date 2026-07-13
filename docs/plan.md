@@ -89,7 +89,7 @@ Each task is small, independently mergeable in order, and lands with green Linux
 buildable/testable on this Linux box; 07–16 touch the App project (Windows CI validates the
 Windows side) but keep any new logic in Core under Linux tests.
 
-- [ ] 01-solution-scaffold — Create Core/App/Tests projects, `TaskLens.sln`, `TaskLens.Linux.slnf`, `.editorconfig`, `NOTICE`, and both GitHub Actions workflows (ubuntu: the 3 gates; windows: full sln build); accept: all 3 Linux gates pass, both workflows are valid YAML.
+- [x] 01-solution-scaffold — Create Core/App/Tests projects, `TaskLens.sln`, `TaskLens.Linux.slnf`, `.editorconfig`, `NOTICE`, and both GitHub Actions workflows (ubuntu: the 3 gates; windows: full sln build); accept: all 3 Linux gates pass, both workflows are valid YAML.
 - [ ] 02-core-models — Add immutable Models (`ProcessSample`, `SensorReading`, `SensorKind`, `SensorAvailability`, `SystemSnapshot`, `Settings`) with unit tests for equality/invariants; accept: gates green, models have zero service dependencies.
 - [ ] 03-sampling-engine — `SamplingEngine` + `IDispatcher`/`IClock` + service interfaces in Core: per-tick snapshot composition, CPU%/IO-rate deltas keyed by `(pid, startTime)` (PID-reuse safe), configurable interval; accept: deterministic tests with fakes/ManualClock cover delta math, PID reuse, first-tick behavior.
 - [ ] 04-process-list-viewmodel — `ProcessListViewModel`: sort (any column, stable), filter by name, aggregate totals row, batch snapshot apply without collection churn; accept: tests cover sort/filter/update-in-place semantics via SyncDispatcher.

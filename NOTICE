@@ -1,0 +1,7 @@
+TaskLens uses the following third-party components:
+
+LibreHardwareMonitorLib
+https://github.com/LibreHardwareMonitor/LibreHardwareMonitor
+Licensed under the Mozilla Public License 2.0 (MPL-2.0).
+A copy of the MPL-2.0 is available at https://mozilla.org/MPL/2.0/.
+Source code for LibreHardwareMonitorLib is available at the repository above.
