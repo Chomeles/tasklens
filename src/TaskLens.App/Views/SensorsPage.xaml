@@ -1,0 +1,6 @@
+<Page
+  x:Class="TaskLens.App.Views.SensorsPage"
+  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <TextBlock Margin="24" Style="{StaticResource SubtitleTextBlockStyle}" Text="Sensors — coming in task 09" />
+</Page>
