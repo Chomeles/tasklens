@@ -5,5 +5,5 @@ namespace TaskLens.Core.Services;
 /// <summary>Produces the raw per-process rows for one sampling tick.</summary>
 public interface IProcessEnumerator
 {
-    IReadOnlyList<ProcessSample> Enumerate();
+    public IReadOnlyList<ProcessSample> Enumerate();
 }

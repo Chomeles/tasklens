@@ -3,7 +3,7 @@ namespace TaskLens.Core.Services;
 /// <summary>Wall clock abstraction so delta math is deterministic in tests (ManualClock).</summary>
 public interface IClock
 {
-    DateTime UtcNow { get; }
+    public DateTime UtcNow { get; }
 }
 
 /// <summary>Production clock.</summary>
