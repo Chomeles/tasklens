@@ -90,7 +90,7 @@ buildable/testable on this Linux box; 07–16 touch the App project (Windows CI 
 Windows side) but keep any new logic in Core under Linux tests.
 
 - [x] 01-solution-scaffold — Create Core/App/Tests projects, `TaskLens.sln`, `TaskLens.Linux.slnf`, `.editorconfig`, `NOTICE`, and both GitHub Actions workflows (ubuntu: the 3 gates; windows: full sln build); accept: all 3 Linux gates pass, both workflows are valid YAML.
-- [ ] 02-core-models — Add immutable Models (`ProcessSample`, `SensorReading`, `SensorKind`, `SensorAvailability`, `SystemSnapshot`, `Settings`) with unit tests for equality/invariants; accept: gates green, models have zero service dependencies.
+- [x] 02-core-models — Add immutable Models (`ProcessSample`, `SensorReading`, `SensorKind`, `SensorAvailability`, `SystemSnapshot`, `Settings`) with unit tests for equality/invariants; accept: gates green, models have zero service dependencies.
 - [ ] 03-sampling-engine — `SamplingEngine` + `IDispatcher`/`IClock` + service interfaces in Core: per-tick snapshot composition, CPU%/IO-rate deltas keyed by `(pid, startTime)` (PID-reuse safe), configurable interval; accept: deterministic tests with fakes/ManualClock cover delta math, PID reuse, first-tick behavior.
 - [ ] 04-process-list-viewmodel — `ProcessListViewModel`: sort (any column, stable), filter by name, aggregate totals row, batch snapshot apply without collection churn; accept: tests cover sort/filter/update-in-place semantics via SyncDispatcher.
 - [ ] 05-sensor-viewmodel — `SensorsViewModel` + graceful-degradation logic: group by hardware, map `SensorAvailability` to banner states (no admin / no PawnIO / no sensors-VM), unit formatting (°C/W/RPM); accept: tests cover all availability states and formatting.
