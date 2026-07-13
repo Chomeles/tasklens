@@ -14,12 +14,13 @@ public class SamplingEngineTests
     private readonly FakeSystemMetricsService metrics = new();
     private readonly List<SystemSnapshot> snapshots = [];
 
-    private SamplingEngine CreateEngine(IDispatcher? dispatcher = null, int processorCount = 4)
+    private SamplingEngine CreateEngine(IDispatcher? dispatcher = null, int processorCount = 4, int historyCapacity = 60)
     {
         var engine = new SamplingEngine(
             processes, sensors, gpu, metrics, clock,
             dispatcher ?? new SyncDispatcher(),
-            processorCount: processorCount);
+            processorCount: processorCount,
+            historyCapacity: historyCapacity);
         engine.SnapshotReady += snapshots.Add;
         return engine;
     }
@@ -227,6 +228,109 @@ public class SamplingEngineTests
     public void ProcessorCount_MustBePositive()
     {
         Assert.Throws<ArgumentOutOfRangeException>(() => CreateEngine(processorCount: 0));
+    }
+
+    [Fact]
+    public void HistoryCapacity_MustBePositive()
+    {
+        Assert.Throws<ArgumentOutOfRangeException>(() => CreateEngine(historyCapacity: 0));
+    }
+
+    [Fact]
+    public void ProcessCpuHistory_AccruesOnePointPerTick_OldestFirst()
+    {
+        var engine = CreateEngine(processorCount: 4);
+        processes.Samples = [Proc(cpuSeconds: 10)];
+        engine.Tick();
+
+        clock.Advance(TimeSpan.FromSeconds(1));
+        processes.Samples = [Proc(cpuSeconds: 12)];
+        engine.Tick();
+
+        Assert.Equal([0d, 50d], engine.GetProcessCpuHistory(100, Start));
+    }
+
+    [Fact]
+    public void ProcessCpuHistory_IsCappedAtHistoryCapacity()
+    {
+        var engine = CreateEngine(processorCount: 4, historyCapacity: 2);
+        for (var tick = 0; tick <= 3; tick++)
+        {
+            processes.Samples = [Proc(cpuSeconds: tick)]; // 1 CPU-s per 1 wall-s on 4 cores = 25%
+            engine.Tick();
+            clock.Advance(TimeSpan.FromSeconds(1));
+        }
+
+        Assert.Equal([25d, 25d], engine.GetProcessCpuHistory(100, Start));
+    }
+
+    [Fact]
+    public void ProcessCpuHistory_IsPrunedWhenTheProcessExits()
+    {
+        var engine = CreateEngine();
+        processes.Samples = [Proc()];
+        engine.Tick();
+        Assert.Single(engine.GetProcessCpuHistory(100, Start));
+
+        clock.Advance(TimeSpan.FromSeconds(1));
+        processes.Samples = [];
+        engine.Tick();
+
+        Assert.Empty(engine.GetProcessCpuHistory(100, Start));
+    }
+
+    [Fact]
+    public void PidReuse_DifferentStartTime_GetsAFreshHistory()
+    {
+        var engine = CreateEngine();
+        processes.Samples = [Proc(pid: 100, startTimeUtc: Start)];
+        engine.Tick();
+        clock.Advance(TimeSpan.FromSeconds(1));
+        engine.Tick();
+
+        var reusedStart = Start.AddMinutes(5);
+        clock.Advance(TimeSpan.FromSeconds(1));
+        processes.Samples = [Proc(pid: 100, startTimeUtc: reusedStart)];
+        engine.Tick();
+
+        Assert.Empty(engine.GetProcessCpuHistory(100, Start));
+        Assert.Single(engine.GetProcessCpuHistory(100, reusedStart));
+    }
+
+    [Fact]
+    public void SensorHistory_AccruesPerTick_IncludingNullReadings()
+    {
+        var engine = CreateEngine();
+        sensors.Snapshot = new SensorSnapshot(
+            [new SensorReading("CPU", "Package", SensorKind.Temperature, 50f)],
+            SensorAvailability.Available);
+        engine.Tick();
+
+        clock.Advance(TimeSpan.FromSeconds(1));
+        sensors.Snapshot = new SensorSnapshot(
+            [new SensorReading("CPU", "Package", SensorKind.Temperature, null)],
+            SensorAvailability.Available);
+        engine.Tick();
+
+        Assert.Equal([50f, null], engine.GetSensorHistory("CPU", "Package"));
+    }
+
+    [Fact]
+    public void SensorHistory_UnknownKeyIsEmpty_AndVanishedSensorsArePruned()
+    {
+        var engine = CreateEngine();
+        Assert.Empty(engine.GetSensorHistory("CPU", "Package"));
+
+        sensors.Snapshot = new SensorSnapshot(
+            [new SensorReading("CPU", "Package", SensorKind.Temperature, 50f)],
+            SensorAvailability.Available);
+        engine.Tick();
+
+        clock.Advance(TimeSpan.FromSeconds(1));
+        sensors.Snapshot = new SensorSnapshot([], SensorAvailability.NoSensors);
+        engine.Tick();
+
+        Assert.Empty(engine.GetSensorHistory("CPU", "Package"));
     }
 
     [Fact]
