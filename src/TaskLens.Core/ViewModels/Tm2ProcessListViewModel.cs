@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using CommunityToolkit.Mvvm.ComponentModel;
 using TaskLens.Core.Models;
 
@@ -14,6 +15,11 @@ public sealed partial class Tm2ProcessListViewModel : ObservableObject
 {
     private readonly Dictionary<ProcessRowViewModel, Tm2ProcessRowViewModel> joined = [];
 
+    private float? cpuTemp;
+    private float? packageWatt;
+    private float? fanRpm;
+    private bool applying;
+
     public Tm2ProcessListViewModel()
         : this(new ProcessListViewModel())
     {
@@ -22,6 +28,7 @@ public sealed partial class Tm2ProcessListViewModel : ObservableObject
     public Tm2ProcessListViewModel(ProcessListViewModel inner)
     {
         Inner = inner ?? throw new ArgumentNullException(nameof(inner));
+        Inner.Rows.CollectionChanged += OnInnerRowsChanged;
     }
 
     /// <summary>The wrapped process list — bind sort/filter/totals directly to this.</summary>
@@ -35,10 +42,43 @@ public sealed partial class Tm2ProcessListViewModel : ObservableObject
     {
         ArgumentNullException.ThrowIfNull(snapshot);
 
-        Inner.ApplySnapshot(snapshot);
+        (cpuTemp, packageWatt, fanRpm) = ExtractSystemSensors(snapshot.Sensors);
 
-        var (cpuTemp, packageWatt, fanRpm) = ExtractSystemSensors(snapshot.Sensors);
+        // Suppress the per-event resyncs Inner's reconcile would trigger; one resync after covers them.
+        applying = true;
+        try
+        {
+            Inner.ApplySnapshot(snapshot);
+        }
+        finally
+        {
+            applying = false;
+        }
 
+        Resync();
+
+        foreach (var row2 in Rows)
+        {
+            row2.AppendHistory();
+        }
+    }
+
+    /// <summary>
+    /// Inner refilters/resorts between ticks too (filter text, header click) — mirror immediately
+    /// instead of waiting for the next snapshot.
+    /// </summary>
+    private void OnInnerRowsChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    {
+        // ponytail: full resync per change event, O(n) per event on a filter sweep; diff per event if it ever shows up in a profile
+        if (!applying)
+        {
+            Resync();
+        }
+    }
+
+    /// <summary>Rebuilds <see cref="Rows"/> from <c>Inner.Rows</c>, stamping cached sensor values; idempotent.</summary>
+    private void Resync()
+    {
         var target = new List<Tm2ProcessRowViewModel>(Inner.Rows.Count);
         foreach (var row in Inner.Rows)
         {

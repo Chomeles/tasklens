@@ -60,12 +60,17 @@ public sealed partial class Tm2ProcessRowViewModel : ObservableObject
     /// <summary>Recent CPU% values for this row, oldest first — feeds the sparkline cell.</summary>
     public IReadOnlyList<float?> CpuHistory => cpuHistory;
 
-    /// <summary>Appends this tick's CPU% to the sparkline and stamps the system-wide sensor readings.</summary>
+    /// <summary>Stamps the system-wide sensor readings (same values across rows).</summary>
     internal void Stamp(float? cpuTempCelsius, float? packageWattage, float? fanRpm)
     {
         CpuTempCelsius = cpuTempCelsius;
         PackageWattage = packageWattage;
         FanRpm = fanRpm;
+    }
+
+    /// <summary>Appends this tick's CPU% to the sparkline — once per snapshot, never on a resync.</summary>
+    internal void AppendHistory()
+    {
         cpuHistory.Add((float)CpuPercent);
         OnPropertyChanged(nameof(CpuHistory));
     }
