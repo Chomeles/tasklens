@@ -40,10 +40,10 @@ public partial class App : Application
         .AddSingleton<IClock, SystemClock>()
         .AddSingleton<IDispatcher>(new DispatcherQueueDispatcher(DispatcherQueue.GetForCurrentThread()))
         .AddSingleton<IProcessEnumerator, NtProcessEnumerator>()
+        .AddSingleton<IGpuProcessService, PdhGpuProcessService>()
 #if DEBUG
-        // ponytail: debug-only stub data sources — remaining real Windows services land in task 12
+        // ponytail: debug-only stub data sources — real Windows services fill the Release path
         .AddSingleton<ISensorService, StubSensorService>()
-        .AddSingleton<IGpuProcessService, StubGpuProcessService>()
         .AddSingleton<ISystemMetricsService, StubSystemMetricsService>()
 #else
         .AddSingleton<ISensorService, LhmSensorService>()
