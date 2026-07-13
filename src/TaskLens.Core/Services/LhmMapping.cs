@@ -7,7 +7,7 @@ namespace TaskLens.Core.Services;
 /// Linux. <c>LhmSensorService</c> (App project) fills these from the live LHM tree;
 /// <paramref name="SensorTypeName"/> is the LHM <c>SensorType</c> enum member name ("Temperature", …).
 /// </summary>
-public readonly record struct LhmSensorRow(string Hardware, string Name, string SensorTypeName, float? Value);
+public readonly record struct LhmSensorRow(string Hardware, string Name, string SensorTypeName, float? Value, string HardwareTypeName = "");
 
 /// <summary>
 /// Pure mapping from the LibreHardwareMonitor sensor tree to Core models. Lives in Core so the
@@ -25,7 +25,17 @@ public static class LhmMapping
         "Fan" => SensorKind.Fan,
         "Power" => SensorKind.Power,
         "Voltage" => SensorKind.Voltage,
-        _ => null, // Control/Data/Throughput/… — ponytail: extend the switch when a page needs one
+        _ => null, // Control/Data/Throughput/... - ponytail: extend the switch when a page needs one
+    };
+
+    /// <summary>Maps an LHM hardware type name to a <see cref="HardwareKind"/>; unrecognised names map to Other.</summary>
+    public static HardwareKind MapHardwareKind(string hardwareTypeName) => hardwareTypeName switch
+    {
+        "Cpu" => HardwareKind.Cpu,
+        "GpuNvidia" or "GpuAmd" or "GpuIntel" => HardwareKind.Gpu,
+        "Motherboard" => HardwareKind.Motherboard,
+        "Storage" => HardwareKind.Storage,
+        _ => HardwareKind.Other,
     };
 
     /// <summary>
@@ -55,7 +65,7 @@ public static class LhmMapping
                 && !string.IsNullOrWhiteSpace(row.Hardware)
                 && !string.IsNullOrWhiteSpace(row.Name))
             {
-                readings.Add(new SensorReading(row.Hardware, row.Name, kind, row.Value));
+                readings.Add(new SensorReading(row.Hardware, row.Name, kind, row.Value, MapHardwareKind(row.HardwareTypeName)));
             }
         }
 

@@ -104,7 +104,7 @@ internal sealed class LhmSensorService : ISensorService, IDisposable
 
         foreach (var sensor in hardware.Sensors)
         {
-            rows.Add(new LhmSensorRow(hardware.Name, sensor.Name, sensor.SensorType.ToString(), sensor.Value));
+            rows.Add(new LhmSensorRow(hardware.Name, sensor.Name, sensor.SensorType.ToString(), sensor.Value, hardware.HardwareType.ToString()));
         }
     }
 

@@ -52,12 +52,12 @@ public class LhmMappingTests
     {
         var snapshot = LhmMapping.BuildSnapshot(
             [
-                new LhmSensorRow("AMD Ryzen 9 5950X", "Core (Tctl/Tdie)", "Temperature", 61.5f),
-                new LhmSensorRow("AMD Ryzen 9 5950X", "Fan Control #1", "Control", 40f), // unshown kind
-                new LhmSensorRow("", "CPU Total", "Load", 12f), // blank hardware
-                new LhmSensorRow("AMD Ryzen 9 5950X", " ", "Load", 12f), // blank name
-                new LhmSensorRow("NVIDIA RTX 4080", "GPU Core", "Temperature", null), // sensor without a value
-                new LhmSensorRow("NVIDIA RTX 4080", "GPU Fan", "Fan", 1180f),
+                new LhmSensorRow("AMD Ryzen 9 5950X", "Core (Tctl/Tdie)", "Temperature", 61.5f, "Cpu"),
+                new LhmSensorRow("AMD Ryzen 9 5950X", "Fan Control #1", "Control", 40f, "Cpu"), // unshown kind
+                new LhmSensorRow("", "CPU Total", "Load", 12f, "Cpu"), // blank hardware
+                new LhmSensorRow("AMD Ryzen 9 5950X", " ", "Load", 12f, "Cpu"), // blank name
+                new LhmSensorRow("NVIDIA RTX 4080", "GPU Core", "Temperature", null, "GpuNvidia"), // sensor without a value
+                new LhmSensorRow("Nuvoton NCT6798D", "Fan #1", "Fan", 820f, "SuperIO"), // no HardwareKind mapping: Other
             ],
             isElevated: true,
             isPawnIoInstalled: true);
@@ -65,11 +65,26 @@ public class LhmMappingTests
         Assert.Equal(SensorAvailability.Available, snapshot.Availability);
         Assert.Equal(
             [
-                new SensorReading("AMD Ryzen 9 5950X", "Core (Tctl/Tdie)", SensorKind.Temperature, 61.5f),
-                new SensorReading("NVIDIA RTX 4080", "GPU Core", SensorKind.Temperature, null),
-                new SensorReading("NVIDIA RTX 4080", "GPU Fan", SensorKind.Fan, 1180f),
+                new SensorReading("AMD Ryzen 9 5950X", "Core (Tctl/Tdie)", SensorKind.Temperature, 61.5f, HardwareKind.Cpu),
+                new SensorReading("NVIDIA RTX 4080", "GPU Core", SensorKind.Temperature, null, HardwareKind.Gpu),
+                new SensorReading("Nuvoton NCT6798D", "Fan #1", SensorKind.Fan, 820f, HardwareKind.Other),
             ],
             snapshot.Readings);
+    }
+
+    [Theory]
+    [InlineData("Cpu", HardwareKind.Cpu)]
+    [InlineData("GpuNvidia", HardwareKind.Gpu)]
+    [InlineData("GpuAmd", HardwareKind.Gpu)]
+    [InlineData("GpuIntel", HardwareKind.Gpu)]
+    [InlineData("Motherboard", HardwareKind.Motherboard)]
+    [InlineData("Storage", HardwareKind.Storage)]
+    [InlineData("SuperIO", HardwareKind.Other)]
+    [InlineData("CPU", HardwareKind.Other)] // LHM enum names are case-sensitive; "CPU" is not one
+    [InlineData("", HardwareKind.Other)]
+    public void MapHardwareKind_MapsLhmHardwareTypeNames(string typeName, HardwareKind expected)
+    {
+        Assert.Equal(expected, LhmMapping.MapHardwareKind(typeName));
     }
 
     [Fact]
