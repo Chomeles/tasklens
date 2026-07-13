@@ -15,6 +15,9 @@ public enum ProcessColumn
     Memory,
     IoRead,
     IoWrite,
+
+    /// <summary>Combined read+write IO rate — the Taskmanager2 "Datenträger" column.</summary>
+    Disk,
 }
 
 /// <summary>
@@ -116,6 +119,9 @@ public sealed partial class ProcessListViewModel : ObservableObject
             ProcessColumn.Memory => (a, b) => a.WorkingSetBytes.CompareTo(b.WorkingSetBytes),
             ProcessColumn.IoRead => (a, b) => a.IoReadBytesPerSecond.CompareTo(b.IoReadBytesPerSecond),
             ProcessColumn.IoWrite => (a, b) => a.IoWriteBytesPerSecond.CompareTo(b.IoWriteBytesPerSecond),
+            ProcessColumn.Disk => (a, b) =>
+                (a.IoReadBytesPerSecond + a.IoWriteBytesPerSecond)
+                    .CompareTo(b.IoReadBytesPerSecond + b.IoWriteBytesPerSecond),
             _ => throw new ArgumentOutOfRangeException(nameof(SortColumn), SortColumn, "Unknown column."),
         };
 

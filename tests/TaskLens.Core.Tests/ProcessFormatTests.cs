@@ -26,6 +26,24 @@ public class ProcessFormatTests
         Assert.Equal("1.5 KB/s", ProcessFormat.Rate(1536));
 
     [Theory]
+    [InlineData(0, 0, "0.0 MB/s")]
+    [InlineData(1024 * 1024, 512 * 1024, "1.5 MB/s")]
+    [InlineData(300L * 1024 * 1024, 12L * 1024 * 1024, "312.0 MB/s")]
+    public void DiskRate_SumsReadWrite_FixedMbUnit(double read, double write, string expected) =>
+        Assert.Equal(expected, ProcessFormat.DiskRate(read, write));
+
+    [Fact]
+    public void SensorCells_FormatWithUnit_DashWithoutReading()
+    {
+        Assert.Equal("54.0 °C", ProcessFormat.Temperature(54));
+        Assert.Equal("45.2 W", ProcessFormat.Power(45.2f));
+        Assert.Equal("1200 RPM", ProcessFormat.Fan(1200));
+        Assert.Equal("—", ProcessFormat.Temperature(null));
+        Assert.Equal("—", ProcessFormat.Power(null));
+        Assert.Equal("—", ProcessFormat.Fan(null));
+    }
+
+    [Theory]
     [InlineData("CPU %", "Cpu", ProcessColumn.Cpu, true, "CPU % ▼")]
     [InlineData("CPU %", "Cpu", ProcessColumn.Cpu, false, "CPU % ▲")]
     [InlineData("Name", "Name", ProcessColumn.Cpu, true, "Name")]

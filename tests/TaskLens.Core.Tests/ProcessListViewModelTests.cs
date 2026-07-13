@@ -108,12 +108,13 @@ public class ProcessListViewModelTests
     [InlineData(ProcessColumn.Pid, false, new[] { 1, 2, 3 })]
     [InlineData(ProcessColumn.Cpu, true, new[] { 3, 1, 2 })]
     [InlineData(ProcessColumn.Memory, true, new[] { 2, 3, 1 })]
+    [InlineData(ProcessColumn.Disk, true, new[] { 2, 1, 3 })] // combined 31, 20, 10 — differs from read- and write-only order
     public void Sort_OrdersByColumnAndDirection(ProcessColumn column, bool descending, int[] expectedPids)
     {
         vm.ApplySnapshot(Snap(
-            Delta(1, "gamma", cpu: 10, memory: 100),
-            Delta(2, "alpha", cpu: 5, memory: 300),
-            Delta(3, "beta", cpu: 20, memory: 200)));
+            Delta(1, "gamma", cpu: 10, memory: 100, ioRead: 20, ioWrite: 0),
+            Delta(2, "alpha", cpu: 5, memory: 300, ioRead: 1, ioWrite: 30),
+            Delta(3, "beta", cpu: 20, memory: 200, ioRead: 5, ioWrite: 5)));
 
         vm.SortColumn = column;
         vm.SortDescending = descending;

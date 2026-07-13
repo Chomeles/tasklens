@@ -11,8 +11,8 @@ namespace Taskmanager2.App;
 /// <summary>
 /// Composition root. Wires the same TaskLens.Core sampling pipeline as TaskLens.App — every
 /// Windows service impl here is link-compiled from TaskLens.App/Services (plan-tm2.md: no
-/// duplicated logic). Page-specific Tm2*ViewModels land in later tasks; the shell and nav work
-/// against the existing Core ViewModels until then.
+/// duplicated logic). Remaining page-specific Tm2*ViewModels land with their tasks; pages without
+/// one work against the existing Core ViewModels until then.
 /// </summary>
 public partial class App : Application
 {
@@ -32,7 +32,8 @@ public partial class App : Application
 
         var engine = Services.GetRequiredService<SamplingEngine>();
         var sensorsViewModel = Services.GetRequiredService<SensorsViewModel>();
-        engine.SnapshotReady += Services.GetRequiredService<ProcessListViewModel>().ApplySnapshot;
+        // Tm2ProcessListViewModel delegates to its Inner ProcessListViewModel — wiring both would apply twice.
+        engine.SnapshotReady += Services.GetRequiredService<Tm2ProcessListViewModel>().ApplySnapshot;
         engine.SnapshotReady += sensorsViewModel.ApplySnapshot;
         engine.SnapshotReady += Services.GetRequiredService<DetailsViewModel>().ApplySnapshot;
 
@@ -69,7 +70,11 @@ public partial class App : Application
 #endif
         .AddSingleton<ISettingsStore, JsonSettingsStore>()
         .AddSingleton<SamplingEngine>()
-        .AddSingleton<ProcessListViewModel>()
+        // Factory, not open registration: constructor injection would pick the (ProcessListViewModel)
+        // ctor, whose registration below resolves Tm2 again — infinite recursion at first resolve.
+        .AddSingleton(_ => new Tm2ProcessListViewModel())
+        // ProcessListViewModel == the instance Tm2 wraps, so both resolve to the same rows/sort state.
+        .AddSingleton(sp => sp.GetRequiredService<Tm2ProcessListViewModel>().Inner)
         .AddSingleton<SensorsViewModel>()
         .AddSingleton<DetailsViewModel>()
         .AddSingleton<SettingsViewModel>()
