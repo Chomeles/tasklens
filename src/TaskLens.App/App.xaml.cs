@@ -31,6 +31,8 @@ public partial class App : Application
         _ = engine.RunAsync(CancellationToken.None); // ponytail: no CTS — the loop dies with the process
 
         window = new Shell();
+        // Disposes IDisposable singletons — LhmSensorService joins its thread and runs Computer.Close() here.
+        window.Closed += (_, _) => (Services as IDisposable)?.Dispose();
         window.Activate();
     }
 
@@ -39,10 +41,12 @@ public partial class App : Application
         .AddSingleton<IDispatcher>(new DispatcherQueueDispatcher(DispatcherQueue.GetForCurrentThread()))
         .AddSingleton<IProcessEnumerator, NtProcessEnumerator>()
 #if DEBUG
-        // ponytail: debug-only stub data sources — real Windows services fill the Release path in tasks 11-12
+        // ponytail: debug-only stub data sources — remaining real Windows services land in task 12
         .AddSingleton<ISensorService, StubSensorService>()
         .AddSingleton<IGpuProcessService, StubGpuProcessService>()
         .AddSingleton<ISystemMetricsService, StubSystemMetricsService>()
+#else
+        .AddSingleton<ISensorService, LhmSensorService>()
 #endif
         .AddSingleton<SamplingEngine>()
         .AddSingleton<ProcessListViewModel>()
