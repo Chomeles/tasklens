@@ -3,8 +3,8 @@ using TaskLens.Core.Services;
 
 namespace TaskLens.App.Services;
 
-// ponytail: deterministic stub data so the shell launches before tasks 11-12 land the real
-// Windows services. Deleted when the last real implementation replaces its registration.
+// ponytail: deterministic stub data so the shell launches before task 11 lands the real
+// Windows service. Deleted when the last real implementation replaces its registration.
 internal sealed class StubSensorService : ISensorService
 {
     private int tick;
@@ -22,12 +22,6 @@ internal sealed class StubSensorService : ISensorService
             ],
             SensorAvailability.Available);
     }
-}
-
-internal sealed class StubGpuProcessService : IGpuProcessService
-{
-    public IReadOnlyDictionary<int, double> SampleGpuPercentByPid() =>
-        new Dictionary<int, double> { [103] = 12.5 };
 }
 
 internal sealed class StubSystemMetricsService : ISystemMetricsService
