@@ -7,14 +7,14 @@ namespace TaskLens.Core.Models;
 /// </summary>
 public sealed record SystemSnapshot(
     DateTime TimestampUtc,
-    IReadOnlyList<ProcessSample> Processes,
+    IReadOnlyList<ProcessDelta> Processes,
     IReadOnlyList<SensorReading> Sensors,
     SensorAvailability SensorAvailability,
     double CpuTotalPercent,
     long MemoryUsedBytes,
     long MemoryTotalBytes)
 {
-    public IReadOnlyList<ProcessSample> Processes { get; init; } =
+    public IReadOnlyList<ProcessDelta> Processes { get; init; } =
         Processes ?? throw new ArgumentNullException(nameof(Processes));
 
     public IReadOnlyList<SensorReading> Sensors { get; init; } =
