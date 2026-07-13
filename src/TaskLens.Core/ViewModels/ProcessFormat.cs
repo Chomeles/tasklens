@@ -41,6 +41,9 @@ public static class ProcessFormat
     /// <summary>"1200 RPM"; "—" without a reading.</summary>
     public static string Fan(float? value) => SensorRowViewModel.Format(SensorKind.Fan, value);
 
+    /// <summary>"87.4 %"; "—" without a reading — the nullable-% caption next to a history graph.</summary>
+    public static string Load(float? value) => SensorRowViewModel.Format(SensorKind.Load, value);
+
     /// <summary>
     /// Column-header text with a direction arrow on the active sort column.
     /// <paramref name="column"/> is a <see cref="ProcessColumn"/> name — a string because

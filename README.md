@@ -33,6 +33,32 @@ maintained for submission to `microsoft/winget-pkgs`.
 Admin elevation + [PawnIO](https://pawnio.eu) unlock CPU temperature/power/fan sensors via
 LibreHardwareMonitor; without them TaskLens still shows the process list, GPU usage, RAM, and disk.
 
+## Taskmanager2 (satire)
+
+The repo also contains **Taskmanager2** (`src/Taskmanager2.App`) — a parody of the Windows 11
+Task Manager built on the same TaskLens.Core pipeline. It clones the layout (left navigation,
+Mica backdrop, German labels: Prozesse, Leistung, App-Verlauf, Autostart-Apps, Benutzer, Details,
+Dienste) and then overloads it with every value the pipeline provides: temperature/watt/fan
+columns in the process list, sparklines in cells, a Leistung page with every sensor group, and a
+Details page stacking all thirteen columns under three live history graphs.
+
+**The satire is density, not fake data** — every displayed value is real and comes from the same
+sampling pipeline as TaskLens. Taskmanager2 is strictly read-only: it never starts or stops
+services, toggles autostart entries, or touches user sessions.
+
+No Microsoft assets are used — no logos, product icons, or artwork; the name and app icon are its
+own. The resemblance is layout homage only (nav labels, column names, Mica). Taskmanager2 ships
+from source only (no releases, no packaging); it builds as part of the normal Windows build:
+
+```
+dotnet build TaskLens.sln -c Release
+```
+
+Screenshot placeholders, replaced once the UI stabilizes:
+
+- `docs/screenshots/tm2-prozesse.png` — Prozesse page with sensor columns and sparkline cells
+- `docs/screenshots/tm2-details.png` — Details page, maximum density
+
 ## Building
 
 ### Windows (full app)

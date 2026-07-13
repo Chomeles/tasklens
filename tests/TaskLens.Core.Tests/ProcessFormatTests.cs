@@ -50,9 +50,11 @@ public class ProcessFormatTests
         Assert.Equal("54.0 °C", ProcessFormat.Temperature(54));
         Assert.Equal("45.2 W", ProcessFormat.Power(45.2f));
         Assert.Equal("1200 RPM", ProcessFormat.Fan(1200));
+        Assert.Equal("87.4 %", ProcessFormat.Load(87.4f));
         Assert.Equal("—", ProcessFormat.Temperature(null));
         Assert.Equal("—", ProcessFormat.Power(null));
         Assert.Equal("—", ProcessFormat.Fan(null));
+        Assert.Equal("—", ProcessFormat.Load(null));
     }
 
     [Theory]
