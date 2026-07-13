@@ -32,9 +32,10 @@ public partial class App : Application
 
         var engine = Services.GetRequiredService<SamplingEngine>();
         var sensorsViewModel = Services.GetRequiredService<SensorsViewModel>();
-        // Tm2ProcessListViewModel delegates to its Inner ProcessListViewModel — wiring both would apply twice.
+        // The Tm2 wrappers delegate to their wrapped VMs (Inner ProcessListViewModel /
+        // SensorsViewModel) — wiring wrapper and wrapped both would apply twice.
         engine.SnapshotReady += Services.GetRequiredService<Tm2ProcessListViewModel>().ApplySnapshot;
-        engine.SnapshotReady += sensorsViewModel.ApplySnapshot;
+        engine.SnapshotReady += Services.GetRequiredService<Tm2PerformanceViewModel>().ApplySnapshot;
         engine.SnapshotReady += Services.GetRequiredService<DetailsViewModel>().ApplySnapshot;
 
         var settingsViewModel = Services.GetRequiredService<SettingsViewModel>();
@@ -75,7 +76,9 @@ public partial class App : Application
         .AddSingleton(_ => new Tm2ProcessListViewModel())
         // ProcessListViewModel == the instance Tm2 wraps, so both resolve to the same rows/sort state.
         .AddSingleton(sp => sp.GetRequiredService<Tm2ProcessListViewModel>().Inner)
-        .AddSingleton<SensorsViewModel>()
+        // Same recipe as Tm2ProcessListViewModel: factory (two ctors), wrapped VM == the Tm2 instance's.
+        .AddSingleton(_ => new Tm2PerformanceViewModel())
+        .AddSingleton(sp => sp.GetRequiredService<Tm2PerformanceViewModel>().Sensors)
         .AddSingleton<DetailsViewModel>()
         .AddSingleton<SettingsViewModel>()
         .AddSingleton(_ => new PawnIoBannerViewModel(PawnIoInstallCheck.IsInstalled()))
