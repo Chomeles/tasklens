@@ -1,0 +1,2 @@
+# .editorconfig mandates end_of_line = lf; keep checkouts LF on Windows CI too.
+* text=auto eol=lf

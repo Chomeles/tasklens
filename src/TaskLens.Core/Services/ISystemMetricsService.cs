@@ -6,5 +6,5 @@ public sealed record SystemMetrics(double CpuTotalPercent, long MemoryUsedBytes,
 /// <summary>Reads system-wide metrics (total CPU, RAM).</summary>
 public interface ISystemMetricsService
 {
-    SystemMetrics Sample();
+    public SystemMetrics Sample();
 }

@@ -12,5 +12,5 @@ public sealed record SensorSnapshot(IReadOnlyList<SensorReading> Readings, Senso
 /// <summary>Reads the hardware sensor tree. Absence is modelled as data, never exceptions.</summary>
 public interface ISensorService
 {
-    SensorSnapshot Sample();
+    public SensorSnapshot Sample();
 }

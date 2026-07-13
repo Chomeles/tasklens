@@ -1,6 +1,108 @@
 <Page
   x:Class="TaskLens.App.Views.ProcessesPage"
   xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-  <TextBlock Margin="24" Style="{StaticResource SubtitleTextBlockStyle}" Text="Processes — coming in task 08" />
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:vm="using:TaskLens.Core.ViewModels">
+
+  <Grid Margin="24,12" RowSpacing="8">
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="*" />
+      <RowDefinition Height="Auto" />
+    </Grid.RowDefinitions>
+
+    <TextBox
+      Grid.Row="0"
+      MaxWidth="320"
+      HorizontalAlignment="Left"
+      PlaceholderText="Filter by name"
+      Text="{x:Bind ViewModel.Filter, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+
+    <!-- Header: one shared Click wiring; Tag names the ProcessColumn to sort by. -->
+    <Grid Grid.Row="1" Padding="12,0" ColumnSpacing="8">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="*" />
+        <ColumnDefinition Width="64" />
+        <ColumnDefinition Width="80" />
+        <ColumnDefinition Width="80" />
+        <ColumnDefinition Width="96" />
+        <ColumnDefinition Width="96" />
+        <ColumnDefinition Width="96" />
+      </Grid.ColumnDefinitions>
+      <Button Grid.Column="0" HorizontalAlignment="Stretch" Tag="Name" Click="OnSortHeaderClick"
+              Content="{x:Bind vm:ProcessFormat.Header('Name', 'Name', ViewModel.SortColumn, ViewModel.SortDescending), Mode=OneWay}" />
+      <Button Grid.Column="1" HorizontalAlignment="Stretch" Tag="Pid" Click="OnSortHeaderClick"
+              Content="{x:Bind vm:ProcessFormat.Header('PID', 'Pid', ViewModel.SortColumn, ViewModel.SortDescending), Mode=OneWay}" />
+      <Button Grid.Column="2" HorizontalAlignment="Stretch" Tag="Cpu" Click="OnSortHeaderClick"
+              Content="{x:Bind vm:ProcessFormat.Header('CPU %', 'Cpu', ViewModel.SortColumn, ViewModel.SortDescending), Mode=OneWay}" />
+      <Button Grid.Column="3" HorizontalAlignment="Stretch" Tag="Gpu" Click="OnSortHeaderClick"
+              Content="{x:Bind vm:ProcessFormat.Header('GPU %', 'Gpu', ViewModel.SortColumn, ViewModel.SortDescending), Mode=OneWay}" />
+      <Button Grid.Column="4" HorizontalAlignment="Stretch" Tag="Memory" Click="OnSortHeaderClick"
+              Content="{x:Bind vm:ProcessFormat.Header('Memory', 'Memory', ViewModel.SortColumn, ViewModel.SortDescending), Mode=OneWay}" />
+      <Button Grid.Column="5" HorizontalAlignment="Stretch" Tag="IoRead" Click="OnSortHeaderClick"
+              Content="{x:Bind vm:ProcessFormat.Header('Read', 'IoRead', ViewModel.SortColumn, ViewModel.SortDescending), Mode=OneWay}" />
+      <Button Grid.Column="6" HorizontalAlignment="Stretch" Tag="IoWrite" Click="OnSortHeaderClick"
+              Content="{x:Bind vm:ProcessFormat.Header('Write', 'IoWrite', ViewModel.SortColumn, ViewModel.SortDescending), Mode=OneWay}" />
+    </Grid>
+
+    <ListView
+      Grid.Row="2"
+      ItemsSource="{x:Bind ViewModel.Rows}"
+      SelectionMode="None">
+      <ListView.ItemContainerStyle>
+        <Style TargetType="ListViewItem">
+          <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+          <Setter Property="Padding" Value="12,4" />
+          <Setter Property="MinHeight" Value="0" />
+        </Style>
+      </ListView.ItemContainerStyle>
+      <ListView.ItemTemplate>
+        <DataTemplate x:DataType="vm:ProcessRowViewModel">
+          <Grid ColumnSpacing="8">
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="*" />
+              <ColumnDefinition Width="64" />
+              <ColumnDefinition Width="80" />
+              <ColumnDefinition Width="80" />
+              <ColumnDefinition Width="96" />
+              <ColumnDefinition Width="96" />
+              <ColumnDefinition Width="96" />
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Column="0" Text="{x:Bind Name, Mode=OneWay}" TextTrimming="CharacterEllipsis" />
+            <TextBlock Grid.Column="1" Text="{x:Bind Pid}" TextAlignment="Right" />
+            <TextBlock Grid.Column="2" Text="{x:Bind vm:ProcessFormat.Percent(CpuPercent), Mode=OneWay}" TextAlignment="Right" />
+            <TextBlock Grid.Column="3" Text="{x:Bind vm:ProcessFormat.Percent(GpuPercent), Mode=OneWay}" TextAlignment="Right" />
+            <TextBlock Grid.Column="4" Text="{x:Bind vm:ProcessFormat.Bytes(WorkingSetBytes), Mode=OneWay}" TextAlignment="Right" />
+            <TextBlock Grid.Column="5" Text="{x:Bind vm:ProcessFormat.Rate(IoReadBytesPerSecond), Mode=OneWay}" TextAlignment="Right" />
+            <TextBlock Grid.Column="6" Text="{x:Bind vm:ProcessFormat.Rate(IoWriteBytesPerSecond), Mode=OneWay}" TextAlignment="Right" />
+          </Grid>
+        </DataTemplate>
+      </ListView.ItemTemplate>
+    </ListView>
+
+    <!-- Totals over the visible (filtered) rows. -->
+    <Grid Grid.Row="3" Padding="12,4" ColumnSpacing="8">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="*" />
+        <ColumnDefinition Width="64" />
+        <ColumnDefinition Width="80" />
+        <ColumnDefinition Width="80" />
+        <ColumnDefinition Width="96" />
+        <ColumnDefinition Width="96" />
+        <ColumnDefinition Width="96" />
+      </Grid.ColumnDefinitions>
+      <TextBlock Grid.Column="0" FontWeight="SemiBold" Text="{x:Bind ViewModel.Totals.Name}" />
+      <TextBlock Grid.Column="2" FontWeight="SemiBold" TextAlignment="Right"
+                 Text="{x:Bind vm:ProcessFormat.Percent(ViewModel.Totals.CpuPercent), Mode=OneWay}" />
+      <TextBlock Grid.Column="3" FontWeight="SemiBold" TextAlignment="Right"
+                 Text="{x:Bind vm:ProcessFormat.Percent(ViewModel.Totals.GpuPercent), Mode=OneWay}" />
+      <TextBlock Grid.Column="4" FontWeight="SemiBold" TextAlignment="Right"
+                 Text="{x:Bind vm:ProcessFormat.Bytes(ViewModel.Totals.WorkingSetBytes), Mode=OneWay}" />
+      <TextBlock Grid.Column="5" FontWeight="SemiBold" TextAlignment="Right"
+                 Text="{x:Bind vm:ProcessFormat.Rate(ViewModel.Totals.IoReadBytesPerSecond), Mode=OneWay}" />
+      <TextBlock Grid.Column="6" FontWeight="SemiBold" TextAlignment="Right"
+                 Text="{x:Bind vm:ProcessFormat.Rate(ViewModel.Totals.IoWriteBytesPerSecond), Mode=OneWay}" />
+    </Grid>
+  </Grid>
 </Page>

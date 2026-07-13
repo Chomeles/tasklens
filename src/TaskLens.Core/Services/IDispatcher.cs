@@ -6,5 +6,5 @@ namespace TaskLens.Core.Services;
 /// </summary>
 public interface IDispatcher
 {
-    void Post(Action action);
+    public void Post(Action action);
 }
