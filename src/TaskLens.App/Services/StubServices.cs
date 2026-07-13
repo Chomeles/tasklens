@@ -33,14 +33,21 @@ internal sealed class StubProcessEnumerator : IProcessEnumerator
 
 internal sealed class StubSensorService : ISensorService
 {
-    public SensorSnapshot Sample() => new(
-        [
-            new SensorReading("Stub CPU", "Core (Tctl/Tdie)", SensorKind.Temperature, 48.5f),
-            new SensorReading("Stub CPU", "Package Power", SensorKind.Power, 35.2f),
-            new SensorReading("Stub GPU", "GPU Core", SensorKind.Temperature, 41.0f),
-            new SensorReading("Stub GPU", "Fan", SensorKind.Fan, 1180f),
-        ],
-        SensorAvailability.Available);
+    private int tick;
+
+    public SensorSnapshot Sample()
+    {
+        // Slow sine wobble so the task-09 sparklines visibly move on stub data.
+        var wobble = (float)Math.Sin(++tick / 5.0);
+        return new SensorSnapshot(
+            [
+                new SensorReading("Stub CPU", "Core (Tctl/Tdie)", SensorKind.Temperature, 48.5f + 3f * wobble),
+                new SensorReading("Stub CPU", "Package Power", SensorKind.Power, 35.2f + 8f * wobble),
+                new SensorReading("Stub GPU", "GPU Core", SensorKind.Temperature, 41.0f + 2f * wobble),
+                new SensorReading("Stub GPU", "Fan", SensorKind.Fan, 1180f + 120f * wobble),
+            ],
+            SensorAvailability.Available);
+    }
 }
 
 internal sealed class StubGpuProcessService : IGpuProcessService

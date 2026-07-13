@@ -202,6 +202,47 @@ public class SensorsViewModelTests
         Assert.Equal(SensorKind.Load, newRow.Kind);
     }
 
+    // --- sparkline history ---
+
+    [Fact]
+    public void EveryTick_AppendsToHistory_EvenWhenValueIsUnchanged()
+    {
+        vm.ApplySnapshot(Snap(SensorAvailability.Available, Reading("CPU", "Core", SensorKind.Temperature, 50)));
+        var row = vm.Groups.Single().Sensors.Single();
+
+        vm.ApplySnapshot(Snap(SensorAvailability.Available, Reading("CPU", "Core", SensorKind.Temperature, 50)));
+        vm.ApplySnapshot(Snap(SensorAvailability.Available, Reading("CPU", "Core", SensorKind.Temperature, 55)));
+
+        Assert.Equal(new float?[] { 50f, 50f, 55f }, row.History);
+    }
+
+    [Fact]
+    public void HistoryUpdate_NotifiesHistoryProperty()
+    {
+        vm.ApplySnapshot(Snap(SensorAvailability.Available, Reading("CPU", "Core", SensorKind.Temperature, 50)));
+        var row = vm.Groups.Single().Sensors.Single();
+        var changed = new List<string?>();
+        row.PropertyChanged += (_, e) => changed.Add(e.PropertyName);
+
+        vm.ApplySnapshot(Snap(SensorAvailability.Available, Reading("CPU", "Core", SensorKind.Temperature, 50)));
+
+        Assert.Contains(nameof(SensorRowViewModel.History), changed);
+    }
+
+    [Fact]
+    public void History_IsCappedAtCapacity_OldestDropped()
+    {
+        var row = new SensorRowViewModel("Core", SensorKind.Temperature, 0);
+        for (var i = 1; i <= 100; i++)
+        {
+            row.Update(i);
+        }
+
+        Assert.Equal(60, row.History.Count);
+        Assert.Equal(41f, row.History[0]);
+        Assert.Equal(100f, row.History[^1]);
+    }
+
     // --- engine wiring ---
 
     [Fact]

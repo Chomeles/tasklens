@@ -10,6 +10,12 @@ namespace TaskLens.Core.ViewModels;
 /// </summary>
 public sealed class SensorRowViewModel : ObservableObject
 {
+    // ponytail: 60 points ≈ one minute at the default 1 s tick. Row-local history restarts on a
+    // structural rebuild (first snapshot only in practice); feed from SamplingEngine.GetSensorHistory
+    // if that ever matters.
+    private const int HistoryCapacity = 60;
+
+    private readonly HistoryBuffer<float?> history = new(HistoryCapacity);
     private float? value;
 
     public SensorRowViewModel(string name, SensorKind kind, float? value)
@@ -17,6 +23,7 @@ public sealed class SensorRowViewModel : ObservableObject
         Name = name ?? throw new ArgumentNullException(nameof(name));
         Kind = kind;
         this.value = value;
+        history.Add(value);
     }
 
     public string Name { get; }
@@ -38,6 +45,20 @@ public sealed class SensorRowViewModel : ObservableObject
 
     /// <summary>Display text with unit, e.g. "54.0 °C", "45.2 W", "1200 RPM"; "—" when no reading.</summary>
     public string ValueText => Format(Kind, Value);
+
+    /// <summary>Recent values, oldest first — the sparkline source. Grows one point per tick via <see cref="Update"/>.</summary>
+    public IReadOnlyList<float?> History => history;
+
+    /// <summary>
+    /// Per-tick update: sets <see cref="Value"/> and appends to <see cref="History"/> — even when
+    /// the value is unchanged, so the sparkline still advances along the time axis.
+    /// </summary>
+    public void Update(float? newValue)
+    {
+        Value = newValue;
+        history.Add(newValue);
+        OnPropertyChanged(nameof(History));
+    }
 
     /// <summary>Formats a sensor value with the unit for its kind. Invariant culture, deterministic.</summary>
     public static string Format(SensorKind kind, float? value) =>

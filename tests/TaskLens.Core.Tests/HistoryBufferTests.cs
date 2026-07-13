@@ -137,3 +137,58 @@ public class SparklineDownsampleTests
         Assert.Throws<ArgumentOutOfRangeException>(() => Sparkline.Downsample([1d], maxPoints));
     }
 }
+
+public class SparklineMapPointsTests
+{
+    [Fact]
+    public void FewerThanTwoReadings_YieldNoPoints()
+    {
+        Assert.Empty(Sparkline.MapPoints([], 100, 20));
+        Assert.Empty(Sparkline.MapPoints([5f], 100, 20));
+        Assert.Empty(Sparkline.MapPoints([null, null], 100, 20));
+        Assert.Empty(Sparkline.MapPoints([null, 5f, null], 100, 20));
+    }
+
+    [Fact]
+    public void MinMax_MapToBottomAndTopEdges()
+    {
+        Assert.Equal(
+            [new SparkPoint(0, 20), new SparkPoint(100, 0)],
+            Sparkline.MapPoints([0f, 10f], 100, 20));
+    }
+
+    [Fact]
+    public void Values_ScaleLinearlyBetweenMinAndMax()
+    {
+        Assert.Equal(
+            [new SparkPoint(0, 20), new SparkPoint(50, 10), new SparkPoint(100, 0)],
+            Sparkline.MapPoints([0f, 5f, 10f], 100, 20));
+    }
+
+    [Fact]
+    public void FlatSeries_DrawsAtMidHeight()
+    {
+        Assert.Equal(
+            [new SparkPoint(0, 10), new SparkPoint(50, 10), new SparkPoint(100, 10)],
+            Sparkline.MapPoints([7f, 7f, 7f], 100, 20));
+    }
+
+    [Fact]
+    public void Nulls_AreSkipped_ButKeepTheirTimeSlot()
+    {
+        // Index 1 has no reading: the line bridges the gap, x positions stay on the time axis.
+        Assert.Equal(
+            [new SparkPoint(0, 20), new SparkPoint(60, 0), new SparkPoint(90, 0)],
+            Sparkline.MapPoints([0f, null, 10f, 10f], 90, 20));
+    }
+
+    [Theory]
+    [InlineData(0, 20)]
+    [InlineData(-1, 20)]
+    [InlineData(100, 0)]
+    [InlineData(100, -5)]
+    public void NonPositiveSize_Throws(double width, double height)
+    {
+        Assert.Throws<ArgumentOutOfRangeException>(() => Sparkline.MapPoints([1f, 2f], width, height));
+    }
+}
