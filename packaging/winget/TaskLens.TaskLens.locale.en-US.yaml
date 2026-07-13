@@ -1,0 +1,12 @@
+# yaml-language-server: $schema=https://aka.ms/winget-manifest.defaultLocale.1.6.0.schema.json
+PackageIdentifier: TaskLens.TaskLens
+PackageVersion: 0.1.0
+PackageLocale: en-US
+Publisher: TaskLens
+PackageName: TaskLens
+License: MIT
+ShortDescription: >-
+  A Windows task manager that shows temperatures, power draw, fan speeds, and
+  per-process GPU usage without needing three extra tools.
+ManifestType: defaultLocale
+ManifestVersion: 1.6.0

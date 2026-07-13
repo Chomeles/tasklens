@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=https://aka.ms/winget-manifest.installer.1.6.0.schema.json
+PackageIdentifier: TaskLens.TaskLens
+PackageVersion: 0.1.0
+InstallerType: zip
+Commands:
+  - TaskLens
+Installers:
+  - Architecture: x64
+    NestedInstallerType: portable
+    NestedInstallerFiles:
+      - RelativeFilePath: TaskLens.App.exe
+        PortableCommandAlias: TaskLens
+    InstallerUrl: https://github.com/<owner>/tasklens/releases/download/v0.1.0/TaskLens-v0.1.0-win-x64.zip
+    InstallerSha256: REPLACE_WITH_SHA256SUMS.txt_VALUE
+  - Architecture: arm64
+    NestedInstallerType: portable
+    NestedInstallerFiles:
+      - RelativeFilePath: TaskLens.App.exe
+        PortableCommandAlias: TaskLens
+    InstallerUrl: https://github.com/<owner>/tasklens/releases/download/v0.1.0/TaskLens-v0.1.0-win-arm64.zip
+    InstallerSha256: REPLACE_WITH_SHA256SUMS.txt_VALUE
+ManifestType: installer
+ManifestVersion: 1.6.0
