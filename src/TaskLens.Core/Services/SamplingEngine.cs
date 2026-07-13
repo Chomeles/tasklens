@@ -24,6 +24,7 @@ public sealed class SamplingEngine
     private Dictionary<(int Pid, DateTime StartTimeUtc), ProcessSample> previousSamples = [];
     private DateTime? previousTickUtc;
     private TimeSpan interval;
+    private CpuPercentNormalization normalization;
 
     // Histories are mutated on the sampling thread and read from the UI thread; the lock
     // guards both dictionaries and the buffers they hold (readers get copies).
@@ -49,6 +50,7 @@ public sealed class SamplingEngine
         this.clock = clock ?? throw new ArgumentNullException(nameof(clock));
         this.dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
         Interval = interval ?? Settings.Default.RefreshInterval;
+        Normalization = Settings.Default.CpuNormalization;
         this.processorCount = processorCount ?? Environment.ProcessorCount;
         if (this.processorCount < 1)
         {
@@ -70,6 +72,16 @@ public sealed class SamplingEngine
         set => interval = value > TimeSpan.Zero
             ? value
             : throw new ArgumentOutOfRangeException(nameof(value), value, "Interval must be positive.");
+    }
+
+    /// <summary>
+    /// Per-process CPU% normalization. May be changed while running (live-applied via
+    /// <c>ISettingsStore</c>); applies from the next tick.
+    /// </summary>
+    public CpuPercentNormalization Normalization
+    {
+        get => normalization;
+        set => normalization = value;
     }
 
     /// <summary>Runs the sampling loop until cancelled. Call from a background thread/task.</summary>
@@ -110,7 +122,10 @@ public sealed class SamplingEngine
             if (wallSeconds > 0 && previousSamples.TryGetValue(key, out var last))
             {
                 var cpuSeconds = (sample.TotalCpuTime - last.TotalCpuTime).TotalSeconds;
-                cpuPercent = Math.Clamp(cpuSeconds / (wallSeconds * processorCount) * 100, 0, 100);
+                var divisor = normalization == CpuPercentNormalization.AllCores ? processorCount : 1;
+                // ponytail: ProcessDelta.CpuPercent is validated to [0, 100] (task 02); SingleCore
+                // normalization still clamps here rather than loosening that model invariant.
+                cpuPercent = Math.Clamp(cpuSeconds / (wallSeconds * divisor) * 100, 0, 100);
                 ioRead = Math.Max(0, (sample.IoReadBytes - last.IoReadBytes) / wallSeconds);
                 ioWrite = Math.Max(0, (sample.IoWriteBytes - last.IoWriteBytes) / wallSeconds);
             }

@@ -264,4 +264,14 @@ public class SensorsViewModelTests
         Assert.Equal(SensorAvailability.Available, vm.Availability);
         Assert.Equal("42.0 °C", vm.Groups.Single().Sensors.Single().ValueText);
     }
+
+    [Fact]
+    public void Unit_Fahrenheit_ConvertsExistingAndNewTemperatureRows()
+    {
+        vm.ApplySnapshot(Snap(SensorAvailability.Available, Reading("CPU", "Core", SensorKind.Temperature, 0)));
+
+        vm.Unit = TemperatureUnit.Fahrenheit;
+
+        Assert.Equal("32.0 °F", vm.Groups.Single().Sensors.Single().ValueText);
+    }
 }

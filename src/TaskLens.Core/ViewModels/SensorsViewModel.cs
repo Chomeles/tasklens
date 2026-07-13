@@ -33,6 +33,25 @@ public sealed partial class SensorsViewModel : ObservableObject
     [NotifyPropertyChangedFor(nameof(BannerText))]
     private SensorAvailability availability = SensorAvailability.NoSensors;
 
+    private TemperatureUnit unit;
+
+    /// <summary>Display unit for temperature rows; set from <see cref="SettingsViewModel"/>. Applies live.</summary>
+    public TemperatureUnit Unit
+    {
+        get => unit;
+        set
+        {
+            unit = value;
+            foreach (var group in Groups)
+            {
+                foreach (var row in group.Sensors)
+                {
+                    row.Unit = value;
+                }
+            }
+        }
+    }
+
     /// <summary>True whenever sensors are degraded and the banner should be visible.</summary>
     public bool ShowBanner => Availability != SensorAvailability.Available;
 
@@ -79,7 +98,7 @@ public sealed partial class SensorsViewModel : ObservableObject
             var group = new HardwareGroupViewModel(hardware);
             foreach (var reading in readings)
             {
-                group.Sensors.Add(new SensorRowViewModel(reading.Name, reading.Kind, reading.Value));
+                group.Sensors.Add(new SensorRowViewModel(reading.Name, reading.Kind, reading.Value, Unit));
             }
 
             Groups.Add(group);

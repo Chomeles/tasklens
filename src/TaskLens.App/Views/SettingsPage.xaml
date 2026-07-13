@@ -2,5 +2,34 @@
   x:Class="TaskLens.App.Views.SettingsPage"
   xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-  <TextBlock Margin="24" Style="{StaticResource SubtitleTextBlockStyle}" Text="Settings — coming in task 14" />
+
+  <StackPanel Margin="24" MaxWidth="360" Spacing="16">
+    <TextBlock Style="{StaticResource SubtitleTextBlockStyle}" Text="Settings" />
+
+    <StackPanel Spacing="4">
+      <TextBlock Text="Refresh interval (seconds)" />
+      <NumberBox
+        Minimum="0.1"
+        Maximum="60"
+        SpinButtonPlacementMode="Inline"
+        SmallChange="0.5"
+        Value="{x:Bind ViewModel.RefreshIntervalSeconds, Mode=TwoWay}" />
+    </StackPanel>
+
+    <StackPanel Spacing="4">
+      <TextBlock Text="Temperature unit" />
+      <ComboBox SelectedIndex="{x:Bind ViewModel.TemperatureUnitIndex, Mode=TwoWay}">
+        <ComboBoxItem Content="Celsius" />
+        <ComboBoxItem Content="Fahrenheit" />
+      </ComboBox>
+    </StackPanel>
+
+    <StackPanel Spacing="4">
+      <TextBlock Text="CPU% normalization" />
+      <ComboBox SelectedIndex="{x:Bind ViewModel.CpuNormalizationIndex, Mode=TwoWay}">
+        <ComboBoxItem Content="All cores (100% = fully busy machine)" />
+        <ComboBoxItem Content="Single core (100% = one core)" />
+      </ComboBox>
+    </StackPanel>
+  </StackPanel>
 </Page>
