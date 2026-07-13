@@ -60,12 +60,12 @@ public partial class App : Application
         .AddSingleton<IProcessEnumerator, NtProcessEnumerator>()
         .AddSingleton<IGpuProcessService, PdhGpuProcessService>()
 #if DEBUG
-        // ponytail: debug-only stub data sources, same pattern as TaskLens.App — real Windows
-        // services fill the Release path once a later tm2 task needs them here.
+        // ponytail: debug-only stub data sources, same pattern as TaskLens.App.
         .AddSingleton<ISensorService, StubSensorService>()
         .AddSingleton<ISystemMetricsService, StubSystemMetricsService>()
 #else
         .AddSingleton<ISensorService, LhmSensorService>()
+        .AddSingleton<ISystemMetricsService, WinSystemMetricsService>()
 #endif
         .AddSingleton<ISettingsStore, JsonSettingsStore>()
         .AddSingleton<SamplingEngine>()

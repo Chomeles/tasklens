@@ -28,9 +28,11 @@
     <!-- Link-compiled from TaskLens.App (plan-tm2.md: no logic duplicated, SmokeTests precedent). -->
     <Compile Include="..\TaskLens.App\Services\NtProcessEnumerator.cs" LinkBase="Linked" />
     <Compile Include="..\TaskLens.App\Services\LhmSensorService.cs" LinkBase="Linked" />
+    <Compile Include="..\TaskLens.App\Services\WinSystemMetricsService.cs" LinkBase="Linked" />
     <Compile Include="..\TaskLens.App\Services\PdhGpuProcessService.cs" LinkBase="Linked" />
     <Compile Include="..\TaskLens.App\Services\DispatcherQueueDispatcher.cs" LinkBase="Linked" />
     <Compile Include="..\TaskLens.App\Services\Interop\NtDll.cs" LinkBase="Linked" />
+    <Compile Include="..\TaskLens.App\Services\Interop\Kernel32.cs" LinkBase="Linked" />
     <Compile Include="..\TaskLens.App\Services\Interop\Pdh.cs" LinkBase="Linked" />
     <Compile Include="..\TaskLens.App\Views\SparklineRender.cs" LinkBase="Linked" />
     <Compile Include="..\TaskLens.App\Services\StubServices.cs" LinkBase="Linked" />

@@ -1,5 +1,7 @@
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using TaskLens.Core.ViewModels;
 
 namespace Taskmanager2.App.Views;
 
@@ -7,6 +9,8 @@ namespace Taskmanager2.App.Views;
 /// wiring only (plan.md MVVM rules) — pages carry their own ViewModels once tm2-02+ lands.</summary>
 public sealed partial class Shell : Window
 {
+    public PawnIoBannerViewModel BannerViewModel { get; } = App.Services.GetRequiredService<PawnIoBannerViewModel>();
+
     public Shell()
     {
         InitializeComponent();
