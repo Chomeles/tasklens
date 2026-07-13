@@ -22,6 +22,8 @@
     <PackageReference Include="LibreHardwareMonitorLib" Version="0.9.6" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.1" />
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="2.2.0" />
+    <!-- The one allowed new package (plan-tm2.md §1): Microsoft BCL extension for the Dienste page. -->
+    <PackageReference Include="System.ServiceProcess.ServiceController" Version="8.0.1" />
   </ItemGroup>
 
   <ItemGroup>

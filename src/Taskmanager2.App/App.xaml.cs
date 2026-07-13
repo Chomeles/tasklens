@@ -4,6 +4,7 @@ using Microsoft.UI.Xaml;
 using TaskLens.App.Services;
 using TaskLens.Core.Services;
 using TaskLens.Core.ViewModels;
+using Taskmanager2.App.Services;
 using Taskmanager2.App.Views;
 
 namespace Taskmanager2.App;
@@ -37,6 +38,7 @@ public partial class App : Application
         engine.SnapshotReady += Services.GetRequiredService<Tm2ProcessListViewModel>().ApplySnapshot;
         engine.SnapshotReady += Services.GetRequiredService<Tm2PerformanceViewModel>().ApplySnapshot;
         engine.SnapshotReady += Services.GetRequiredService<Tm2AppHistoryViewModel>().ApplySnapshot;
+        engine.SnapshotReady += Services.GetRequiredService<Tm2ServicesViewModel>().ApplySnapshot;
         engine.SnapshotReady += Services.GetRequiredService<DetailsViewModel>().ApplySnapshot;
 
         var settingsViewModel = Services.GetRequiredService<SettingsViewModel>();
@@ -66,9 +68,11 @@ public partial class App : Application
         // ponytail: debug-only stub data sources, same pattern as TaskLens.App.
         .AddSingleton<ISensorService, StubSensorService>()
         .AddSingleton<ISystemMetricsService, StubSystemMetricsService>()
+        .AddSingleton<IServiceCatalog, StubServiceCatalog>()
 #else
         .AddSingleton<ISensorService, LhmSensorService>()
         .AddSingleton<ISystemMetricsService, WinSystemMetricsService>()
+        .AddSingleton<IServiceCatalog, ScmServiceCatalog>()
 #endif
         .AddSingleton<ISettingsStore, JsonSettingsStore>()
         .AddSingleton<SamplingEngine>()
@@ -81,6 +85,7 @@ public partial class App : Application
         .AddSingleton(_ => new Tm2PerformanceViewModel())
         .AddSingleton(sp => sp.GetRequiredService<Tm2PerformanceViewModel>().Sensors)
         .AddSingleton<Tm2AppHistoryViewModel>()
+        .AddSingleton<Tm2ServicesViewModel>()
         .AddSingleton<DetailsViewModel>()
         .AddSingleton<SettingsViewModel>()
         .AddSingleton(_ => new PawnIoBannerViewModel(PawnIoInstallCheck.IsInstalled()))

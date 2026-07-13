@@ -61,3 +61,16 @@ internal sealed class FakeSystemMetricsService : ISystemMetricsService
 
     public SystemMetrics Sample() => Metrics;
 }
+
+internal sealed class FakeServiceCatalog : IServiceCatalog
+{
+    public ServiceCatalogSnapshot Snapshot { get; set; } = new([], ServiceCatalogAvailability.Available);
+
+    public int QueryCount { get; private set; }
+
+    public ServiceCatalogSnapshot Query()
+    {
+        QueryCount++;
+        return Snapshot;
+    }
+}
