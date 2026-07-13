@@ -28,6 +28,16 @@ public partial class App : Application
         var engine = Services.GetRequiredService<SamplingEngine>();
         engine.SnapshotReady += Services.GetRequiredService<ProcessListViewModel>().ApplySnapshot;
         engine.SnapshotReady += Services.GetRequiredService<SensorsViewModel>().ApplySnapshot;
+
+        var settingsViewModel = Services.GetRequiredService<SettingsViewModel>();
+        engine.Interval = TimeSpan.FromSeconds(settingsViewModel.RefreshIntervalSeconds);
+        engine.Normalization = settingsViewModel.CpuNormalization;
+        settingsViewModel.Applied += settings =>
+        {
+            engine.Interval = settings.RefreshInterval;
+            engine.Normalization = settings.CpuNormalization;
+        };
+
         _ = engine.RunAsync(CancellationToken.None); // ponytail: no CTS — the loop dies with the process
 
         window = new Shell();
@@ -44,8 +54,10 @@ public partial class App : Application
         .AddSingleton<IGpuProcessService, StubGpuProcessService>()
         .AddSingleton<ISystemMetricsService, StubSystemMetricsService>()
 #endif
+        .AddSingleton<ISettingsStore, JsonSettingsStore>()
         .AddSingleton<SamplingEngine>()
         .AddSingleton<ProcessListViewModel>()
         .AddSingleton<SensorsViewModel>()
+        .AddSingleton<SettingsViewModel>()
         .BuildServiceProvider();
 }

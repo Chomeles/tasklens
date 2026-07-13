@@ -71,6 +71,23 @@ public class SamplingEngineTests
     }
 
     [Fact]
+    public void SingleCoreNormalization_SkipsCoreDivision()
+    {
+        var engine = CreateEngine(processorCount: 4);
+        engine.Normalization = CpuPercentNormalization.SingleCore;
+        processes.Samples = [Proc(cpuSeconds: 0)];
+        engine.Tick();
+
+        clock.Advance(TimeSpan.FromSeconds(1));
+        processes.Samples = [Proc(cpuSeconds: 0.5)];
+        engine.Tick();
+
+        // 0.5 CPU-seconds over 1 wall-second, single-core normalized (no /processorCount) = 50%.
+        var delta = Assert.Single(snapshots[1].Processes);
+        Assert.Equal(50, delta.CpuPercent, precision: 10);
+    }
+
+    [Fact]
     public void DeltaMath_ScalesWithWallClockInterval()
     {
         var engine = CreateEngine(processorCount: 4);
