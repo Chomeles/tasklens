@@ -74,3 +74,29 @@ internal sealed class FakeServiceCatalog : IServiceCatalog
         return Snapshot;
     }
 }
+
+internal sealed class FakeStartupItemSource : IStartupItemSource
+{
+    public StartupSnapshot Snapshot { get; set; } = new([], CatalogAvailability.Available);
+
+    public int QueryCount { get; private set; }
+
+    public StartupSnapshot Query()
+    {
+        QueryCount++;
+        return Snapshot;
+    }
+}
+
+internal sealed class FakeUserSessionSource : IUserSessionSource
+{
+    public UserSessionSnapshot Snapshot { get; set; } = new([], CatalogAvailability.Available);
+
+    public int QueryCount { get; private set; }
+
+    public UserSessionSnapshot Query()
+    {
+        QueryCount++;
+        return Snapshot;
+    }
+}
