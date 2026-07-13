@@ -26,16 +26,19 @@ public partial class App : Application
         Services = ConfigureServices();
 
         var engine = Services.GetRequiredService<SamplingEngine>();
+        var sensorsViewModel = Services.GetRequiredService<SensorsViewModel>();
         engine.SnapshotReady += Services.GetRequiredService<ProcessListViewModel>().ApplySnapshot;
-        engine.SnapshotReady += Services.GetRequiredService<SensorsViewModel>().ApplySnapshot;
+        engine.SnapshotReady += sensorsViewModel.ApplySnapshot;
 
         var settingsViewModel = Services.GetRequiredService<SettingsViewModel>();
         engine.Interval = TimeSpan.FromSeconds(settingsViewModel.RefreshIntervalSeconds);
         engine.Normalization = settingsViewModel.CpuNormalization;
+        sensorsViewModel.Unit = settingsViewModel.TemperatureUnit;
         settingsViewModel.Applied += settings =>
         {
             engine.Interval = settings.RefreshInterval;
             engine.Normalization = settings.CpuNormalization;
+            sensorsViewModel.Unit = settings.TemperatureUnit;
         };
 
         _ = engine.RunAsync(CancellationToken.None); // ponytail: no CTS — the loop dies with the process
