@@ -1,9 +1,65 @@
 <Page
   x:Class="Taskmanager2.App.Views.AppVerlaufPage"
   xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-  <Grid>
-    <!-- ponytail: empty stub — content lands with its dedicated tm2 task. -->
-    <TextBlock Text="App-Verlauf" Margin="16" Style="{StaticResource SubtitleTextBlockStyle}" />
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:vm="using:TaskLens.Core.ViewModels">
+
+  <Grid Margin="24,12" RowSpacing="8">
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="*" />
+    </Grid.RowDefinitions>
+
+    <!-- Honest satire: no SRUM, so the window is Taskmanager2's own runtime. -->
+    <InfoBar
+      Grid.Row="0"
+      IsClosable="True"
+      IsOpen="True"
+      Message="Echter App-Verlauf benötigt die SRUM-Datenbank — angezeigt werden Werte seit dem Start von Taskmanager2."
+      Severity="Informational" />
+
+    <!-- Fixed sort: CPU-Zeit descending (Win11 default) — no sort UI. -->
+    <Grid Grid.Row="1" Padding="12,0" ColumnSpacing="8">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="*" />
+        <ColumnDefinition Width="110" />
+        <ColumnDefinition Width="110" />
+        <ColumnDefinition Width="110" />
+      </Grid.ColumnDefinitions>
+      <TextBlock Grid.Column="0" VerticalAlignment="Center" Text="Name" />
+      <TextBlock Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center" Text="CPU-Zeit" />
+      <TextBlock Grid.Column="2" HorizontalAlignment="Center" VerticalAlignment="Center" Text="IO gelesen" />
+      <TextBlock Grid.Column="3" HorizontalAlignment="Center" VerticalAlignment="Center" Text="IO geschrieben" />
+    </Grid>
+
+    <ListView
+      Grid.Row="2"
+      ItemsSource="{x:Bind ViewModel.Rows}"
+      SelectionMode="None">
+      <ListView.ItemContainerStyle>
+        <Style TargetType="ListViewItem">
+          <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+          <Setter Property="Padding" Value="12,2" />
+          <Setter Property="MinHeight" Value="0" />
+        </Style>
+      </ListView.ItemContainerStyle>
+      <ListView.ItemTemplate>
+        <DataTemplate x:DataType="vm:Tm2AppHistoryRowViewModel">
+          <Grid ColumnSpacing="8">
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="*" />
+              <ColumnDefinition Width="110" />
+              <ColumnDefinition Width="110" />
+              <ColumnDefinition Width="110" />
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Column="0" VerticalAlignment="Center" Text="{x:Bind Name}" TextTrimming="CharacterEllipsis" />
+            <TextBlock Grid.Column="1" VerticalAlignment="Center" Text="{x:Bind vm:ProcessFormat.CpuTime(CpuTime), Mode=OneWay}" TextAlignment="Right" />
+            <TextBlock Grid.Column="2" VerticalAlignment="Center" Text="{x:Bind vm:ProcessFormat.Bytes(IoReadBytes), Mode=OneWay}" TextAlignment="Right" />
+            <TextBlock Grid.Column="3" VerticalAlignment="Center" Text="{x:Bind vm:ProcessFormat.Bytes(IoWriteBytes), Mode=OneWay}" TextAlignment="Right" />
+          </Grid>
+        </DataTemplate>
+      </ListView.ItemTemplate>
+    </ListView>
   </Grid>
 </Page>

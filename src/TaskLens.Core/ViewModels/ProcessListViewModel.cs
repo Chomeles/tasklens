@@ -101,7 +101,7 @@ public sealed partial class ProcessListViewModel : ObservableObject
     private void RefreshView()
     {
         var target = Sort(allRows.Where(MatchesFilter)).ToList();
-        Reconcile(target);
+        CollectionReconciler.Reconcile(Rows, target);
         UpdateTotals(target);
     }
 
@@ -133,39 +133,6 @@ public sealed partial class ProcessListViewModel : ObservableObject
 
         // OrderBy is a stable sort: equal keys keep snapshot order.
         return rows.OrderBy(r => r, Comparer<ProcessRowViewModel>.Create(effective));
-    }
-
-    /// <summary>Mutates <see cref="Rows"/> into <paramref name="target"/> with minimal remove/insert/move events.</summary>
-    private void Reconcile(List<ProcessRowViewModel> target)
-    {
-        var wanted = new HashSet<ProcessRowViewModel>(target);
-        for (var i = Rows.Count - 1; i >= 0; i--)
-        {
-            if (!wanted.Contains(Rows[i]))
-            {
-                Rows.RemoveAt(i);
-            }
-        }
-
-        // ponytail: IndexOf makes this O(n²) worst case; fine for hundreds of rows,
-        // switch to an index map if profiling ever says otherwise.
-        for (var i = 0; i < target.Count; i++)
-        {
-            if (i < Rows.Count && ReferenceEquals(Rows[i], target[i]))
-            {
-                continue;
-            }
-
-            var j = Rows.IndexOf(target[i]);
-            if (j < 0)
-            {
-                Rows.Insert(i, target[i]);
-            }
-            else
-            {
-                Rows.Move(j, i);
-            }
-        }
     }
 
     private void UpdateTotals(List<ProcessRowViewModel> visible)
