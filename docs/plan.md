@@ -3,7 +3,7 @@
 Executable plan derived from [research.md](research.md). All technology choices are fixed there;
 this document only sequences the work. Stack: .NET 8, Windows App SDK 2.2.0 (WinUI 3, unpackaged,
 `requireAdministrator`), LibreHardwareMonitorLib 0.9.6 (PawnIO), NtQuerySystemInformation,
-PDH `GPU Engine` counters, CommunityToolkit.Mvvm 8.4.2, ScottPlot.WinUI + hand-rolled Polyline sparklines.
+PDH `GPU Engine` counters, CommunityToolkit.Mvvm 8.4.2, hand-rolled Polyline sparklines (no chart lib).
 
 ## 1. Architecture
 
@@ -34,7 +34,7 @@ src/
   TaskLens.App/                   # net8.0-windows10.0.19041.0, WinUI 3, WinAppSDK 2.2.0.
                                   # NOT in TaskLens.Linux.slnf; validated only by Windows CI.
     Views/                        #   Shell (NavigationView), ProcessesPage, SensorsPage,
-                                  #   DetailsPage (ScottPlot), SettingsPage; x:Bind to Core VMs.
+                                  #   DetailsPage (Polyline), SettingsPage; x:Bind to Core VMs.
     Services/                     #   Windows implementations of Core interfaces:
                                   #     NtProcessEnumerator     (NtQuerySystemInformation P/Invoke,
                                   #                              Process.GetProcesses() fallback)
@@ -101,7 +101,7 @@ Windows side) but keep any new logic in Core under Linux tests.
 - [x] 10-windows-process-service — `NtProcessEnumerator` P/Invoke (`SystemProcessInformation`: name, PID, CPU times, working set, IO counters) + `Process.GetProcesses()` fallback behind `IProcessEnumerator`; accept: buffer-parsing logic isolated and unit-tested against captured byte fixtures on Linux, Windows CI smoke-runs the real path.
 - [ ] 11-windows-sensor-service — `LhmSensorService` on LibreHardwareMonitorLib 0.9.6: dedicated sampling thread, `Computer` open/update/close lifecycle, maps LHM tree to `SensorReading`/`SensorAvailability`; accept: mapping logic unit-tested in Core, Windows CI runs it expecting the VM "no sensors" state.
 - [ ] 12-gpu-pdh-service — `PdhGpuProcessService`: one long-lived PDH query on `\GPU Engine(*)\Utilization Percentage`, instance-name `pid_` parsing, per-PID max-across-engines aggregation; accept: instance-name parser + aggregation unit-tested in Core, missing-counter systems degrade to empty map.
-- [ ] 13-details-page-scottplot — `DetailsPage` (per-process + system history) using ScottPlot.WinUI, one `Refresh()` per tick, animations off; `DetailsViewModel` in Core; accept: VM series-building tested on Linux, Windows CI green.
+- [ ] 13-details-page-scottplot — `DetailsPage` (per-process + system history) reusing the existing Core `Sparkline` point-mapping helper with plain XAML `Polyline` (ponytail: no ScottPlot dependency — upgrade to ScottPlot.WinUI only if Polyline charts prove insufficient); `DetailsViewModel` in Core; accept: VM series-building tested on Linux, Windows CI green.
 - [ ] 14-settings-persistence — `SettingsPage` + `JsonSettingsStore` (`%LocalAppData%\TaskLens\settings.json`): refresh interval, temperature unit, CPU% normalization mode; live-applied via `ISettingsStore`; accept: store round-trip + corrupt-file recovery tested in Core with temp-dir path.
 - [ ] 15-elevation-manifest — `app.manifest` with `requireAdministrator`, `WindowsPackageType=None`, `WindowsAppSDKSelfContained=true`, first-run banner detecting missing PawnIO with install hint; accept: detection logic unit-tested, Windows CI builds the manifested exe.
 - [ ] 16-release-packaging — Release workflow: self-contained x64+arm64 zips with SHA-256 checksums on tag push, winget manifest (zip installer type), README with feature list + screenshots placeholders; accept: workflow dry-runs green, `dotnet publish` commands documented and CI-executed.
