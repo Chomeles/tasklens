@@ -1,0 +1,12 @@
+using Microsoft.UI.Xaml.Controls;
+
+namespace Taskmanager2.App.Views;
+
+/// <summary>Empty stub for the Autostart-Apps nav item; content lands with its dedicated tm2 task.</summary>
+public sealed partial class AutostartPage : Page
+{
+    public AutostartPage()
+    {
+        InitializeComponent();
+    }
+}

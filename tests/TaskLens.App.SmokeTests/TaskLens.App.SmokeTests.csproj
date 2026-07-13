@@ -27,7 +27,9 @@
          Windows App SDK into the test host. -->
     <Compile Include="..\..\src\TaskLens.App\Services\LhmSensorService.cs" LinkBase="Linked" />
     <Compile Include="..\..\src\TaskLens.App\Services\NtProcessEnumerator.cs" LinkBase="Linked" />
+    <Compile Include="..\..\src\TaskLens.App\Services\WinSystemMetricsService.cs" LinkBase="Linked" />
     <Compile Include="..\..\src\TaskLens.App\Services\Interop\NtDll.cs" LinkBase="Linked" />
+    <Compile Include="..\..\src\TaskLens.App\Services\Interop\Kernel32.cs" LinkBase="Linked" />
   </ItemGroup>
 
   <ItemGroup>

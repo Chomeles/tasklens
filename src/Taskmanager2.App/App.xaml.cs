@@ -2,13 +2,18 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using TaskLens.App.Services;
-using TaskLens.App.Views;
 using TaskLens.Core.Services;
 using TaskLens.Core.ViewModels;
+using Taskmanager2.App.Views;
 
-namespace TaskLens.App;
+namespace Taskmanager2.App;
 
-/// <summary>Composition root: builds the service provider, wires the engine, opens the shell.</summary>
+/// <summary>
+/// Composition root. Wires the same TaskLens.Core sampling pipeline as TaskLens.App — every
+/// Windows service impl here is link-compiled from TaskLens.App/Services (plan-tm2.md: no
+/// duplicated logic). Page-specific Tm2*ViewModels land in later tasks; the shell and nav work
+/// against the existing Core ViewModels until then.
+/// </summary>
 public partial class App : Application
 {
     private Window? window;
@@ -45,7 +50,6 @@ public partial class App : Application
         _ = engine.RunAsync(CancellationToken.None); // ponytail: no CTS — the loop dies with the process
 
         window = new Shell();
-        // Disposes IDisposable singletons — LhmSensorService joins its thread and runs Computer.Close() here.
         window.Closed += (_, _) => (Services as IDisposable)?.Dispose();
         window.Activate();
     }
@@ -56,7 +60,7 @@ public partial class App : Application
         .AddSingleton<IProcessEnumerator, NtProcessEnumerator>()
         .AddSingleton<IGpuProcessService, PdhGpuProcessService>()
 #if DEBUG
-        // ponytail: debug-only stub data sources — real Windows services fill the Release path
+        // ponytail: debug-only stub data sources, same pattern as TaskLens.App.
         .AddSingleton<ISensorService, StubSensorService>()
         .AddSingleton<ISystemMetricsService, StubSystemMetricsService>()
 #else
