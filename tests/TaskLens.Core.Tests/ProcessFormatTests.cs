@@ -32,6 +32,18 @@ public class ProcessFormatTests
     public void DiskRate_SumsReadWrite_FixedMbUnit(double read, double write, string expected) =>
         Assert.Equal(expected, ProcessFormat.DiskRate(read, write));
 
+    [Theory]
+    [InlineData(0, "0:00:00")]
+    [InlineData(59, "0:00:59")]
+    [InlineData(3787, "1:03:07")]
+    [InlineData(93784, "26:03:04")] // > 24 h: total hours, no day rollover
+    public void CpuTime_FormatsHoursMinutesSeconds(double seconds, string expected) =>
+        Assert.Equal(expected, ProcessFormat.CpuTime(TimeSpan.FromSeconds(seconds)));
+
+    [Fact]
+    public void CpuTime_TruncatesSubSeconds() =>
+        Assert.Equal("0:00:01", ProcessFormat.CpuTime(TimeSpan.FromMilliseconds(1900)));
+
     [Fact]
     public void SensorCells_FormatWithUnit_DashWithoutReading()
     {

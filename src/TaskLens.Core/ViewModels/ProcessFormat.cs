@@ -26,6 +26,10 @@ public static class ProcessFormat
             CultureInfo.InvariantCulture,
             $"{(readBytesPerSecond + writeBytesPerSecond) / (1024.0 * 1024.0):0.0} MB/s");
 
+    /// <summary>"1:03:07" — h:mm:ss with unpadded total hours (26h stays 26, no day rollover), like the Task Manager's CPU-Zeit column.</summary>
+    public static string CpuTime(TimeSpan value) =>
+        string.Create(CultureInfo.InvariantCulture, $"{(long)value.TotalHours}:{value.Minutes:00}:{value.Seconds:00}");
+
     /// <summary>"54.0 °C"; "—" without a reading.</summary>
     // ponytail: fixed °C, ignores TemperatureUnit; thread the setting through the Tm2 rows if the
     // Leistung page (tm2-04) makes the mismatch visible.

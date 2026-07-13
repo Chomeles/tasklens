@@ -36,6 +36,7 @@ public partial class App : Application
         // SensorsViewModel) — wiring wrapper and wrapped both would apply twice.
         engine.SnapshotReady += Services.GetRequiredService<Tm2ProcessListViewModel>().ApplySnapshot;
         engine.SnapshotReady += Services.GetRequiredService<Tm2PerformanceViewModel>().ApplySnapshot;
+        engine.SnapshotReady += Services.GetRequiredService<Tm2AppHistoryViewModel>().ApplySnapshot;
         engine.SnapshotReady += Services.GetRequiredService<DetailsViewModel>().ApplySnapshot;
 
         var settingsViewModel = Services.GetRequiredService<SettingsViewModel>();
@@ -79,6 +80,7 @@ public partial class App : Application
         // Same recipe as Tm2ProcessListViewModel: factory (two ctors), wrapped VM == the Tm2 instance's.
         .AddSingleton(_ => new Tm2PerformanceViewModel())
         .AddSingleton(sp => sp.GetRequiredService<Tm2PerformanceViewModel>().Sensors)
+        .AddSingleton<Tm2AppHistoryViewModel>()
         .AddSingleton<DetailsViewModel>()
         .AddSingleton<SettingsViewModel>()
         .AddSingleton(_ => new PawnIoBannerViewModel(PawnIoInstallCheck.IsInstalled()))

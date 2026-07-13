@@ -102,7 +102,7 @@ public sealed partial class Tm2ProcessListViewModel : ObservableObject
             joined.Remove(key);
         }
 
-        Reconcile(target);
+        CollectionReconciler.Reconcile(Rows, target);
     }
 
     private static (float? Temp, float? Watt, float? Fan) ExtractSystemSensors(IReadOnlyList<SensorReading> sensors)
@@ -127,36 +127,5 @@ public sealed partial class Tm2ProcessListViewModel : ObservableObject
         }
 
         return (temp, watt, fan);
-    }
-
-    /// <summary>Mutates <see cref="Rows"/> into <paramref name="target"/> with minimal remove/insert/move events.</summary>
-    private void Reconcile(List<Tm2ProcessRowViewModel> target)
-    {
-        var wanted = new HashSet<Tm2ProcessRowViewModel>(target);
-        for (var i = Rows.Count - 1; i >= 0; i--)
-        {
-            if (!wanted.Contains(Rows[i]))
-            {
-                Rows.RemoveAt(i);
-            }
-        }
-
-        for (var i = 0; i < target.Count; i++)
-        {
-            if (i < Rows.Count && ReferenceEquals(Rows[i], target[i]))
-            {
-                continue;
-            }
-
-            var j = Rows.IndexOf(target[i]);
-            if (j < 0)
-            {
-                Rows.Insert(i, target[i]);
-            }
-            else
-            {
-                Rows.Move(j, i);
-            }
-        }
     }
 }
