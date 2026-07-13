@@ -163,9 +163,13 @@ public sealed class Tm2AppHistoryViewModel
 
         public void Update(ProcessSample sample)
         {
-            CpuTime = sample.TotalCpuTime - cpuBaseline;
-            IoReadBytes = sample.IoReadBytes - readBaseline;
-            IoWriteBytes = sample.IoWriteBytes - writeBaseline;
+            // Monotonic clamp: counters can regress mid-run when NtProcessEnumerator degrades to
+            // its zero-IO fallback (same guard the engine applies, SamplingEngine rate path) —
+            // a shrunk contribution would fold negatively into the retired accumulator forever.
+            var cpu = sample.TotalCpuTime - cpuBaseline;
+            CpuTime = cpu > CpuTime ? cpu : CpuTime;
+            IoReadBytes = Math.Max(IoReadBytes, sample.IoReadBytes - readBaseline);
+            IoWriteBytes = Math.Max(IoWriteBytes, sample.IoWriteBytes - writeBaseline);
         }
     }
 }

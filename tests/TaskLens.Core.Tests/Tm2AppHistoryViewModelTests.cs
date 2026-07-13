@@ -114,4 +114,23 @@ public class Tm2AppHistoryViewModelTests
 
         Assert.Same(row1, vm.Rows.Single());
     }
+
+    [Fact]
+    public void CounterRegression_EnumeratorFallback_NeverGoesNegative()
+    {
+        // NtProcessEnumerator's fallback reports zero IO for the same identity mid-run;
+        // contributions must clamp monotonically, also through a subsequent retire.
+        vm.ApplySnapshot(Snap(Proc(1, "chrome", cpuSeconds: 600, read: 5000, write: 3000)));
+        vm.ApplySnapshot(Snap(Proc(1, "chrome", cpuSeconds: 605, read: 7000, write: 4000)));
+        vm.ApplySnapshot(Snap(Proc(1, "chrome", cpuSeconds: 605, read: 0, write: 0)));
+
+        var row = vm.Rows.Single();
+        Assert.Equal(TimeSpan.FromSeconds(5), row.CpuTime);
+        Assert.Equal(2000, row.IoReadBytes);
+        Assert.Equal(1000, row.IoWriteBytes);
+
+        vm.ApplySnapshot(Snap()); // identity exits: retired fold keeps the clamped values
+        Assert.Equal(2000, row.IoReadBytes);
+        Assert.Equal(1000, row.IoWriteBytes);
+    }
 }
