@@ -1,0 +1,17 @@
+<Window
+  x:Class="TaskLens.App.Views.Shell"
+  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  Title="TaskLens">
+  <NavigationView
+    x:Name="Nav"
+    IsBackButtonVisible="Collapsed"
+    SelectionChanged="OnSelectionChanged">
+    <NavigationView.MenuItems>
+      <NavigationViewItem Content="Processes" Tag="Processes" />
+      <NavigationViewItem Content="Sensors" Tag="Sensors" />
+      <NavigationViewItem Content="Details" Tag="Details" />
+    </NavigationView.MenuItems>
+    <Frame x:Name="ContentFrame" />
+  </NavigationView>
+</Window>
