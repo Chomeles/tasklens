@@ -12,7 +12,8 @@ public sealed record SystemSnapshot(
     SensorAvailability SensorAvailability,
     double CpuTotalPercent,
     long MemoryUsedBytes,
-    long MemoryTotalBytes)
+    long MemoryTotalBytes,
+    MemoryDetails? Memory = null)
 {
     public IReadOnlyList<ProcessDelta> Processes { get; init; } =
         Processes ?? throw new ArgumentNullException(nameof(Processes));

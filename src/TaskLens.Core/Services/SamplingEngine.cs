@@ -146,7 +146,8 @@ public sealed class SamplingEngine
             SensorAvailability: sensors.Availability,
             CpuTotalPercent: metrics.CpuTotalPercent,
             MemoryUsedBytes: metrics.MemoryUsedBytes,
-            MemoryTotalBytes: metrics.MemoryTotalBytes);
+            MemoryTotalBytes: metrics.MemoryTotalBytes,
+            Memory: metrics.Memory);
 
         dispatcher.Post(() => SnapshotReady?.Invoke(snapshot));
     }
