@@ -9,20 +9,41 @@
     <Grid.RowDefinitions>
       <RowDefinition Height="Auto" />
       <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
       <RowDefinition Height="*" />
     </Grid.RowDefinitions>
 
-    <TextBox
-      Grid.Row="0"
-      MaxWidth="420"
-      HorizontalAlignment="Left"
-      PlaceholderText="Geben Sie zum Suchen einen Namen, einen Herausgeber oder eine PID ein"
-      Text="{x:Bind ViewModel.Inner.Filter, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+    <!-- Top bar like the real TM: search left, „Task beenden" right (enabled with a selection). -->
+    <Grid Grid.Row="0" ColumnSpacing="8">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="*" />
+        <ColumnDefinition Width="Auto" />
+      </Grid.ColumnDefinitions>
+      <TextBox
+        Grid.Column="0"
+        MaxWidth="420"
+        HorizontalAlignment="Left"
+        PlaceholderText="Geben Sie zum Suchen einen Namen, einen Herausgeber oder eine PID ein"
+        Text="{x:Bind ViewModel.Inner.Filter, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+      <Button
+        Grid.Column="1"
+        Command="{x:Bind ViewModel.EndTaskCommand}"
+        Content="Task beenden"
+        Style="{StaticResource AccentButtonStyle}" />
+    </Grid>
+
+    <InfoBar
+      Grid.Row="1"
+      CloseButtonClick="OnErrorClosed"
+      IsOpen="{x:Bind ViewModel.HasActionError, Mode=OneWay}"
+      Message="{x:Bind ViewModel.LastActionError, Mode=OneWay}"
+      Severity="Error"
+      Title="Task konnte nicht beendet werden" />
 
     <!-- Header: sortable columns route to Inner.SortBy (Tag = ProcessColumn name). The sensor
          columns (Temperatur/Leistung/Lüfter) carry the same system-wide value on every row and
          Status/Verlauf have nothing to order by — plain labels, no sort. -->
-    <Grid Grid.Row="1" Padding="12,0" ColumnSpacing="8">
+    <Grid Grid.Row="2" Padding="12,0" ColumnSpacing="8">
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="*" />
         <ColumnDefinition Width="56" />
@@ -56,9 +77,10 @@
     </Grid>
 
     <ListView
-      Grid.Row="2"
+      Grid.Row="3"
       ItemsSource="{x:Bind ViewModel.Rows}"
-      SelectionMode="None">
+      SelectionChanged="OnSelectionChanged"
+      SelectionMode="Single">
       <ListView.ItemContainerStyle>
         <Style TargetType="ListViewItem">
           <Setter Property="HorizontalContentAlignment" Value="Stretch" />
@@ -68,7 +90,13 @@
       </ListView.ItemContainerStyle>
       <ListView.ItemTemplate>
         <DataTemplate x:DataType="vm:Tm2ProcessRowViewModel">
-          <Grid ColumnSpacing="8">
+          <Grid Background="Transparent" ColumnSpacing="8">
+            <Grid.ContextFlyout>
+              <MenuFlyout>
+                <MenuFlyoutItem Click="OnEndTaskClick" Text="Task beenden" />
+                <MenuFlyoutItem Click="OnEndTreeClick" Text="Prozessstruktur beenden" />
+              </MenuFlyout>
+            </Grid.ContextFlyout>
             <Grid.ColumnDefinitions>
               <ColumnDefinition Width="*" />
               <ColumnDefinition Width="56" />

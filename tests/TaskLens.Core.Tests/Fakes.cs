@@ -100,3 +100,16 @@ internal sealed class FakeUserSessionSource : IUserSessionSource
         return Snapshot;
     }
 }
+
+internal sealed class FakeProcessActionService : IProcessActionService
+{
+    public ProcessActionResult Result { get; set; } = ProcessActionResult.Ok;
+
+    public List<(int Pid, bool EntireTree)> Calls { get; } = [];
+
+    public ProcessActionResult Terminate(int pid, bool entireTree)
+    {
+        Calls.Add((pid, entireTree));
+        return Result;
+    }
+}
