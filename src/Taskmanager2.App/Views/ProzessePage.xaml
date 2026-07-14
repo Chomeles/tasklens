@@ -25,11 +25,13 @@
         HorizontalAlignment="Left"
         PlaceholderText="Geben Sie zum Suchen einen Namen, einen Herausgeber oder eine PID ein"
         Text="{x:Bind ViewModel.Inner.Filter, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-      <Button
-        Grid.Column="1"
-        Command="{x:Bind ViewModel.EndTaskCommand}"
-        Content="Task beenden"
-        Style="{StaticResource AccentButtonStyle}" />
+      <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
+        <Button Click="OnRunNewTaskClick" Content="Neuen Task ausführen" />
+        <Button
+          Command="{x:Bind ViewModel.EndTaskCommand}"
+          Content="Task beenden"
+          Style="{StaticResource AccentButtonStyle}" />
+      </StackPanel>
     </Grid>
 
     <InfoBar
@@ -38,7 +40,7 @@
       IsOpen="{x:Bind ViewModel.HasActionError, Mode=OneWay}"
       Message="{x:Bind ViewModel.LastActionError, Mode=OneWay}"
       Severity="Error"
-      Title="Task konnte nicht beendet werden" />
+      Title="Aktion konnte nicht ausgeführt werden" />
 
     <!-- Header: sortable columns route to Inner.SortBy (Tag = ProcessColumn name). The sensor
          columns (Temperatur/Leistung/Lüfter) carry the same system-wide value on every row and
@@ -95,6 +97,18 @@
               <MenuFlyout>
                 <MenuFlyoutItem Click="OnEndTaskClick" Text="Task beenden" />
                 <MenuFlyoutItem Click="OnEndTreeClick" Text="Prozessstruktur beenden" />
+                <MenuFlyoutSeparator />
+                <MenuFlyoutSubItem Text="Priorität festlegen">
+                  <MenuFlyoutItem Click="OnSetPriorityClick" Tag="Realtime" Text="Echtzeit" />
+                  <MenuFlyoutItem Click="OnSetPriorityClick" Tag="High" Text="Hoch" />
+                  <MenuFlyoutItem Click="OnSetPriorityClick" Tag="AboveNormal" Text="Höher als normal" />
+                  <MenuFlyoutItem Click="OnSetPriorityClick" Tag="Normal" Text="Normal" />
+                  <MenuFlyoutItem Click="OnSetPriorityClick" Tag="BelowNormal" Text="Niedriger als normal" />
+                  <MenuFlyoutItem Click="OnSetPriorityClick" Tag="Idle" Text="Niedrig" />
+                </MenuFlyoutSubItem>
+                <MenuFlyoutItem Click="OnEfficiencyModeClick" Text="Effizienzmodus" />
+                <MenuFlyoutSeparator />
+                <MenuFlyoutItem Click="OnOpenFileLocationClick" Text="Dateipfad öffnen" />
               </MenuFlyout>
             </Grid.ContextFlyout>
             <Grid.ColumnDefinitions>

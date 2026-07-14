@@ -107,9 +107,41 @@ internal sealed class FakeProcessActionService : IProcessActionService
 
     public List<(int Pid, bool EntireTree)> Calls { get; } = [];
 
+    public List<string> RunCommands { get; } = [];
+
+    public List<(int Pid, ProcessPriority Priority)> PriorityCalls { get; } = [];
+
+    public List<(int Pid, bool Enabled)> EfficiencyCalls { get; } = [];
+
+    public List<int> OpenLocationPids { get; } = [];
+
     public ActionResult Terminate(int pid, bool entireTree)
     {
         Calls.Add((pid, entireTree));
+        return Result;
+    }
+
+    public ActionResult Run(string command)
+    {
+        RunCommands.Add(command);
+        return Result;
+    }
+
+    public ActionResult SetPriority(int pid, ProcessPriority priority)
+    {
+        PriorityCalls.Add((pid, priority));
+        return Result;
+    }
+
+    public ActionResult SetEfficiencyMode(int pid, bool enabled)
+    {
+        EfficiencyCalls.Add((pid, enabled));
+        return Result;
+    }
+
+    public ActionResult OpenFileLocation(int pid)
+    {
+        OpenLocationPids.Add(pid);
         return Result;
     }
 }

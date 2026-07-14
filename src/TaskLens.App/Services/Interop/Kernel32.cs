@@ -60,4 +60,28 @@ internal static partial class Kernel32
     [LibraryImport("kernel32.dll", EntryPoint = "K32GetPerformanceInfo", SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
     internal static partial bool GetPerformanceInfo(ref PerformanceInformation info, uint size);
+
+    /// <summary>https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/ns-processthreadsapi-process_power_throttling_state</summary>
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct ProcessPowerThrottlingState
+    {
+        internal const uint CurrentVersion = 1;
+        internal const uint ExecutionSpeed = 0x1;
+
+        internal uint Version;
+        internal uint ControlMask;
+        internal uint StateMask;
+    }
+
+    /// <summary>PROCESS_INFORMATION_CLASS.ProcessPowerThrottling for <see cref="SetProcessInformation"/>.</summary>
+    internal const int ProcessPowerThrottling = 4;
+
+    /// <summary>https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-setprocessinformation</summary>
+    [LibraryImport("kernel32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    internal static partial bool SetProcessInformation(
+        Microsoft.Win32.SafeHandles.SafeProcessHandle process,
+        int informationClass,
+        ref ProcessPowerThrottlingState information,
+        uint size);
 }

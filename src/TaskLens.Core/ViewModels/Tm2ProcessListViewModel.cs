@@ -36,10 +36,13 @@ public sealed partial class Tm2ProcessListViewModel : ObservableObject
         Inner.Rows.CollectionChanged += OnInnerRowsChanged;
     }
 
-    /// <summary>The row the end-task commands act on; cleared when the row leaves the list.</summary>
+    /// <summary>The row the process-action commands act on; cleared when the row leaves the list.</summary>
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(EndTaskCommand))]
     [NotifyCanExecuteChangedFor(nameof(EndTreeCommand))]
+    [NotifyCanExecuteChangedFor(nameof(SetPriorityCommand))]
+    [NotifyCanExecuteChangedFor(nameof(EnableEfficiencyModeCommand))]
+    [NotifyCanExecuteChangedFor(nameof(OpenFileLocationCommand))]
     private Tm2ProcessRowViewModel? selectedRow;
 
     /// <summary>Error text of the last failed action; null when the last action succeeded.</summary>
@@ -53,20 +56,44 @@ public sealed partial class Tm2ProcessListViewModel : ObservableObject
 
     /// <summary>Task beenden — terminates only the selected process.</summary>
     [RelayCommand(CanExecute = nameof(CanRunAction))]
-    private void EndTask() => RunAction(entireTree: false);
+    private void EndTask() => Act(a => a.Terminate(SelectedRow!.Pid, entireTree: false));
 
     /// <summary>Prozessstruktur beenden — terminates the selected process and its descendants.</summary>
     [RelayCommand(CanExecute = nameof(CanRunAction))]
-    private void EndTree() => RunAction(entireTree: true);
+    private void EndTree() => Act(a => a.Terminate(SelectedRow!.Pid, entireTree: true));
 
-    private void RunAction(bool entireTree)
+    /// <summary>Priorität festlegen on the selected process.</summary>
+    [RelayCommand(CanExecute = nameof(CanRunAction))]
+    private void SetPriority(ProcessPriority priority) => Act(a => a.SetPriority(SelectedRow!.Pid, priority));
+
+    /// <summary>Effizienzmodus on the selected process (always enables; the real TM toggles, see row state gap note).</summary>
+    [RelayCommand(CanExecute = nameof(CanRunAction))]
+    private void EnableEfficiencyMode() => Act(a => a.SetEfficiencyMode(SelectedRow!.Pid, enabled: true));
+
+    /// <summary>Dateipfad öffnen for the selected process.</summary>
+    [RelayCommand(CanExecute = nameof(CanRunAction))]
+    private void OpenFileLocation() => Act(a => a.OpenFileLocation(SelectedRow!.Pid));
+
+    /// <summary>„Neuen Task ausführen" — called by the run dialog; no selection required.</summary>
+    public void RunNewTask(string command)
+    {
+        if (actions is null || string.IsNullOrWhiteSpace(command))
+        {
+            return;
+        }
+
+        var result = actions.Run(command.Trim());
+        LastActionError = result.Success ? null : result.Error;
+    }
+
+    private void Act(Func<IProcessActionService, ActionResult> action)
     {
         if (actions is null || SelectedRow is null)
         {
             return;
         }
 
-        var result = actions.Terminate(SelectedRow.Pid, entireTree);
+        var result = action(actions);
         LastActionError = result.Success ? null : result.Error;
     }
 

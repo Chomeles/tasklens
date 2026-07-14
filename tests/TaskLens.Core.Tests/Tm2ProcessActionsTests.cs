@@ -103,6 +103,70 @@ public class Tm2ProcessActionsTests
     }
 
     [Fact]
+    public void SetPriority_PassesPidAndPriority()
+    {
+        vm.ApplySnapshot(Snap(Delta(7, "alpha")));
+        vm.SelectedRow = vm.Rows.Single();
+
+        vm.SetPriorityCommand.Execute(ProcessPriority.BelowNormal);
+
+        Assert.Equal([(7, ProcessPriority.BelowNormal)], actions.PriorityCalls);
+    }
+
+    [Fact]
+    public void EfficiencyMode_EnablesOnSelectedPid()
+    {
+        vm.ApplySnapshot(Snap(Delta(7, "alpha")));
+        vm.SelectedRow = vm.Rows.Single();
+
+        vm.EnableEfficiencyModeCommand.Execute(null);
+
+        Assert.Equal([(7, true)], actions.EfficiencyCalls);
+    }
+
+    [Fact]
+    public void OpenFileLocation_PassesSelectedPid()
+    {
+        vm.ApplySnapshot(Snap(Delta(7, "alpha")));
+        vm.SelectedRow = vm.Rows.Single();
+
+        vm.OpenFileLocationCommand.Execute(null);
+
+        Assert.Equal([7], actions.OpenLocationPids);
+    }
+
+    [Fact]
+    public void RunNewTask_TrimsCommand_AndSurfacesFailure()
+    {
+        vm.RunNewTask("  notepad.exe  ");
+        Assert.Equal(["notepad.exe"], actions.RunCommands);
+        Assert.Null(vm.LastActionError);
+
+        actions.Result = ActionResult.Fail("Das System kann die angegebene Datei nicht finden");
+        vm.RunNewTask("gibtsnicht.exe");
+        Assert.Equal("Das System kann die angegebene Datei nicht finden", vm.LastActionError);
+    }
+
+    [Fact]
+    public void RunNewTask_BlankCommand_DoesNothing()
+    {
+        vm.RunNewTask("   ");
+
+        Assert.Empty(actions.RunCommands);
+        Assert.Null(vm.LastActionError);
+    }
+
+    [Fact]
+    public void ActionCommands_WithoutSelection_CannotExecute()
+    {
+        vm.ApplySnapshot(Snap(Delta(1, "alpha")));
+
+        Assert.False(vm.SetPriorityCommand.CanExecute(ProcessPriority.Normal));
+        Assert.False(vm.EnableEfficiencyModeCommand.CanExecute(null));
+        Assert.False(vm.OpenFileLocationCommand.CanExecute(null));
+    }
+
+    [Fact]
     public void SelectedRow_FilteredOut_SelectionClears()
     {
         vm.ApplySnapshot(Snap(Delta(1, "alpha"), Delta(2, "beta")));
