@@ -1,5 +1,6 @@
 using System.Runtime.InteropServices;
 using TaskLens.App.Services.Interop;
+using TaskLens.Core.Models;
 using TaskLens.Core.Services;
 
 namespace TaskLens.App.Services;
@@ -43,6 +44,27 @@ internal sealed class WinSystemMetricsService : ISystemMetricsService
             (lastIdle, lastKernel, lastUser, primed) = (idle, kernel, user, true);
         }
 
-        return new SystemMetrics(cpu, used, total);
+        return new SystemMetrics(cpu, used, total, SampleMemoryDetails());
+    }
+
+    /// <summary>Commit/cache/pool values + object counts via GetPerformanceInfo; null on API failure.</summary>
+    private static MemoryDetails? SampleMemoryDetails()
+    {
+        var info = new Kernel32.PerformanceInformation { Cb = (uint)Marshal.SizeOf<Kernel32.PerformanceInformation>() };
+        if (!Kernel32.GetPerformanceInfo(ref info, info.Cb))
+        {
+            return null;
+        }
+
+        var pageSize = (long)info.PageSize;
+        return new MemoryDetails(
+            CommittedBytes: (long)info.CommitTotal * pageSize,
+            CommitLimitBytes: (long)info.CommitLimit * pageSize,
+            CachedBytes: (long)info.SystemCache * pageSize,
+            PagedPoolBytes: (long)info.KernelPaged * pageSize,
+            NonPagedPoolBytes: (long)info.KernelNonpaged * pageSize,
+            ProcessCount: (int)info.ProcessCount,
+            ThreadCount: (int)info.ThreadCount,
+            HandleCount: (int)info.HandleCount);
     }
 }

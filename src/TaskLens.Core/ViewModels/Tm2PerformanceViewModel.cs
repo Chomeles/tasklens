@@ -48,6 +48,62 @@ public sealed partial class Tm2PerformanceEntryViewModel : ObservableObject
 }
 
 /// <summary>
+/// The Arbeitsspeicher detail panel under the big graph (plan-tm3 tm3-03): the real Task
+/// Manager's value block plus the composition-bar fraction. Texts fall back to em-dashes when
+/// the snapshot carries no <see cref="MemoryDetails"/> (platform API failed).
+/// </summary>
+public sealed partial class Tm2MemoryDetailsViewModel : ObservableObject
+{
+    private const string None = "—";
+
+    [ObservableProperty]
+    private string inUseText = None;
+
+    [ObservableProperty]
+    private string availableText = None;
+
+    [ObservableProperty]
+    private string committedText = None;
+
+    [ObservableProperty]
+    private string cachedText = None;
+
+    [ObservableProperty]
+    private string pagedPoolText = None;
+
+    [ObservableProperty]
+    private string nonPagedPoolText = None;
+
+    /// <summary>Used share of physical RAM in [0, 1] — drives the Speicherzusammensetzung bar.</summary>
+    [ObservableProperty]
+    private double usedFraction;
+
+    internal void Update(SystemSnapshot snapshot)
+    {
+        InUseText = ProcessFormat.Bytes(snapshot.MemoryUsedBytes);
+        AvailableText = ProcessFormat.Bytes(Math.Max(0, snapshot.MemoryTotalBytes - snapshot.MemoryUsedBytes));
+        UsedFraction = snapshot.MemoryTotalBytes > 0
+            ? (double)snapshot.MemoryUsedBytes / snapshot.MemoryTotalBytes
+            : 0;
+
+        if (snapshot.Memory is { } details)
+        {
+            CommittedText = $"{ProcessFormat.Bytes(details.CommittedBytes)} / {ProcessFormat.Bytes(details.CommitLimitBytes)}";
+            CachedText = ProcessFormat.Bytes(details.CachedBytes);
+            PagedPoolText = ProcessFormat.Bytes(details.PagedPoolBytes);
+            NonPagedPoolText = ProcessFormat.Bytes(details.NonPagedPoolBytes);
+        }
+        else
+        {
+            CommittedText = None;
+            CachedText = None;
+            PagedPoolText = None;
+            NonPagedPoolText = None;
+        }
+    }
+}
+
+/// <summary>
 /// Leistung page: a Windows-11-Task-Manager-style rail of mini-graph entries — CPU,
 /// Arbeitsspeicher, Datenträger, GPU <b>plus one entry per sensor hardware group</b> (the density
 /// satire) — with <see cref="SelectedEntry"/> driving the main panel. Pure composition over
@@ -86,6 +142,15 @@ public sealed partial class Tm2PerformanceViewModel : ObservableObject
     /// <summary>Rail entries: the four system ones first, then one per sensor hardware group.</summary>
     public ObservableCollection<Tm2PerformanceEntryViewModel> Entries { get; }
 
+    /// <summary>The Arbeitsspeicher detail panel values, updated every tick.</summary>
+    public Tm2MemoryDetailsViewModel MemoryDetails { get; } = new();
+
+    /// <summary>True while the Arbeitsspeicher rail entry is selected — shows the detail panel.</summary>
+    public bool IsMemorySelected => ReferenceEquals(SelectedEntry, memory);
+
+    partial void OnSelectedEntryChanged(Tm2PerformanceEntryViewModel value) =>
+        OnPropertyChanged(nameof(IsMemorySelected));
+
     /// <summary>Applies one snapshot: delegates to <see cref="Sensors"/>, then composes the rail.</summary>
     public void ApplySnapshot(SystemSnapshot snapshot)
     {
@@ -102,6 +167,7 @@ public sealed partial class Tm2PerformanceViewModel : ObservableObject
         memory.Append(
             memoryPercent,
             $"{ProcessFormat.Bytes(snapshot.MemoryUsedBytes)} / {ProcessFormat.Bytes(snapshot.MemoryTotalBytes)}");
+        MemoryDetails.Update(snapshot);
 
         double readRate = 0;
         double writeRate = 0;

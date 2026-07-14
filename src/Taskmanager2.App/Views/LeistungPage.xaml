@@ -81,6 +81,58 @@
             Stroke="{ThemeResource AccentFillColorDefaultBrush}"
             StrokeThickness="1.5" />
         </Border>
+        <!-- Arbeitsspeicher detail panel (tm3-03): composition bar + the real TM value block. -->
+        <StackPanel Spacing="12" Visibility="{x:Bind ViewModel.IsMemorySelected, Mode=OneWay}">
+          <TextBlock Style="{StaticResource CaptionTextBlockStyle}" Text="Speicherzusammensetzung" />
+          <Border
+            Width="560"
+            Height="24"
+            HorizontalAlignment="Left"
+            BorderBrush="{ThemeResource AccentFillColorDefaultBrush}"
+            BorderThickness="1">
+            <Rectangle
+              Width="{x:Bind views:SparklineRender.Fraction(ViewModel.MemoryDetails.UsedFraction, 558), Mode=OneWay}"
+              HorizontalAlignment="Left"
+              Fill="{ThemeResource AccentFillColorDefaultBrush}"
+              Opacity="0.6" />
+          </Border>
+          <Grid ColumnSpacing="32" RowSpacing="12">
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="Auto" />
+              <ColumnDefinition Width="Auto" />
+              <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+              <RowDefinition Height="Auto" />
+              <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <StackPanel Grid.Row="0" Grid.Column="0">
+              <TextBlock Style="{StaticResource CaptionTextBlockStyle}" Text="In Verwendung" />
+              <TextBlock Style="{StaticResource SubtitleTextBlockStyle}" Text="{x:Bind ViewModel.MemoryDetails.InUseText, Mode=OneWay}" />
+            </StackPanel>
+            <StackPanel Grid.Row="0" Grid.Column="1">
+              <TextBlock Style="{StaticResource CaptionTextBlockStyle}" Text="Verfügbar" />
+              <TextBlock Style="{StaticResource SubtitleTextBlockStyle}" Text="{x:Bind ViewModel.MemoryDetails.AvailableText, Mode=OneWay}" />
+            </StackPanel>
+            <StackPanel Grid.Row="1" Grid.Column="0">
+              <TextBlock Style="{StaticResource CaptionTextBlockStyle}" Text="Zugesichert" />
+              <TextBlock Text="{x:Bind ViewModel.MemoryDetails.CommittedText, Mode=OneWay}" />
+            </StackPanel>
+            <StackPanel Grid.Row="1" Grid.Column="1">
+              <TextBlock Style="{StaticResource CaptionTextBlockStyle}" Text="Im Cache" />
+              <TextBlock Text="{x:Bind ViewModel.MemoryDetails.CachedText, Mode=OneWay}" />
+            </StackPanel>
+            <StackPanel Grid.Row="1" Grid.Column="2">
+              <TextBlock Style="{StaticResource CaptionTextBlockStyle}" Text="Ausgelagerter Pool / Nicht ausgelagerter Pool" />
+              <StackPanel Orientation="Horizontal" Spacing="8">
+                <TextBlock Text="{x:Bind ViewModel.MemoryDetails.PagedPoolText, Mode=OneWay}" />
+                <TextBlock Text="/" />
+                <TextBlock Text="{x:Bind ViewModel.MemoryDetails.NonPagedPoolText, Mode=OneWay}" />
+              </StackPanel>
+            </StackPanel>
+          </Grid>
+        </StackPanel>
+
         <!-- Null ItemsSource for the four system entries — the list is simply empty. -->
         <ItemsControl ItemsSource="{x:Bind ViewModel.SelectedEntry.Sensors, Mode=OneWay}">
           <ItemsControl.ItemTemplate>

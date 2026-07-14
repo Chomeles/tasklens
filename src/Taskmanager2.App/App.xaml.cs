@@ -71,20 +71,28 @@ public partial class App : Application
         .AddSingleton<ISensorService, StubSensorService>()
         .AddSingleton<ISystemMetricsService, StubSystemMetricsService>()
         .AddSingleton<IServiceCatalog, StubServiceCatalog>()
-        .AddSingleton<IStartupItemSource, StubStartupSource>()
+        // One instance serves list + toggle — the toggle must mutate what the list re-queries.
+        .AddSingleton<StubStartupSource>()
+        .AddSingleton<IStartupItemSource>(sp => sp.GetRequiredService<StubStartupSource>())
+        .AddSingleton<IStartupManager>(sp => sp.GetRequiredService<StubStartupSource>())
         .AddSingleton<IUserSessionSource, StubUserSessionSource>()
 #else
         .AddSingleton<ISensorService, LhmSensorService>()
         .AddSingleton<ISystemMetricsService, WinSystemMetricsService>()
         .AddSingleton<IServiceCatalog, ScmServiceCatalog>()
-        .AddSingleton<IStartupItemSource, RegistryStartupSource>()
+        // One instance serves list + toggle: the ToggleId contract stays within one class.
+        .AddSingleton<RegistryStartupSource>()
+        .AddSingleton<IStartupItemSource>(sp => sp.GetRequiredService<RegistryStartupSource>())
+        .AddSingleton<IStartupManager>(sp => sp.GetRequiredService<RegistryStartupSource>())
         .AddSingleton<IUserSessionSource, WtsUserSessionSource>()
 #endif
+        // Real in DEBUG too — the process list is real there as well (NtProcessEnumerator above).
+        .AddSingleton<IProcessActionService, WinProcessActionService>()
         .AddSingleton<ISettingsStore, JsonSettingsStore>()
         .AddSingleton<SamplingEngine>()
         // Factory, not open registration: constructor injection would pick the (ProcessListViewModel)
         // ctor, whose registration below resolves Tm2 again — infinite recursion at first resolve.
-        .AddSingleton(_ => new Tm2ProcessListViewModel())
+        .AddSingleton(sp => new Tm2ProcessListViewModel(new ProcessListViewModel(), sp.GetRequiredService<IProcessActionService>()))
         // ProcessListViewModel == the instance Tm2 wraps, so both resolve to the same rows/sort state.
         .AddSingleton(sp => sp.GetRequiredService<Tm2ProcessListViewModel>().Inner)
         // Same recipe as Tm2ProcessListViewModel: factory (two ctors), wrapped VM == the Tm2 instance's.

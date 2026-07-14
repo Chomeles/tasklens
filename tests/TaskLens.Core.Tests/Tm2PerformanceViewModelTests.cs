@@ -21,14 +21,16 @@ public class Tm2PerformanceViewModelTests
         SensorReading[]? sensors = null,
         double cpuTotal = 0,
         long memoryUsed = 0,
-        long memoryTotal = 0) => new(
+        long memoryTotal = 0,
+        MemoryDetails? memory = null) => new(
         TimestampUtc: Start,
         Processes: deltas ?? [],
         Sensors: sensors ?? [],
         SensorAvailability: sensors is { Length: > 0 } ? SensorAvailability.Available : SensorAvailability.NoSensors,
         CpuTotalPercent: cpuTotal,
         MemoryUsedBytes: memoryUsed,
-        MemoryTotalBytes: memoryTotal);
+        MemoryTotalBytes: memoryTotal,
+        Memory: memory);
 
     [Fact]
     public void Ctor_FourSystemEntries_CpuSelected()
@@ -186,5 +188,59 @@ public class Tm2PerformanceViewModelTests
 
         Assert.Equal(4, vm.Entries.Count);
         Assert.Equal(SensorAvailability.NoSensors, vm.Sensors.Availability);
+    }
+
+    [Fact]
+    public void ApplySnapshot_WithMemoryDetails_FillsPanel()
+    {
+        const long gb = 1024L * 1024 * 1024;
+        vm.ApplySnapshot(Snap(
+            memoryUsed: 20 * gb,
+            memoryTotal: 32 * gb,
+            memory: new MemoryDetails(
+                CommittedBytes: 31 * gb,
+                CommitLimitBytes: 36 * gb,
+                CachedBytes: 11 * gb,
+                PagedPoolBytes: 2 * gb,
+                NonPagedPoolBytes: 1 * gb,
+                ProcessCount: 214,
+                ThreadCount: 2801,
+                HandleCount: 94213)));
+
+        var panel = vm.MemoryDetails;
+        Assert.Equal(ProcessFormat.Bytes(20 * gb), panel.InUseText);
+        Assert.Equal(ProcessFormat.Bytes(12 * gb), panel.AvailableText);
+        Assert.Equal($"{ProcessFormat.Bytes(31 * gb)} / {ProcessFormat.Bytes(36 * gb)}", panel.CommittedText);
+        Assert.Equal(ProcessFormat.Bytes(11 * gb), panel.CachedText);
+        Assert.Equal(ProcessFormat.Bytes(2 * gb), panel.PagedPoolText);
+        Assert.Equal(ProcessFormat.Bytes(1 * gb), panel.NonPagedPoolText);
+        Assert.Equal(20.0 / 32.0, panel.UsedFraction, precision: 10);
+    }
+
+    [Fact]
+    public void ApplySnapshot_WithoutMemoryDetails_PanelFallsBackToDashes()
+    {
+        const long gb = 1024L * 1024 * 1024;
+        vm.ApplySnapshot(Snap(memoryUsed: 20 * gb, memoryTotal: 32 * gb));
+
+        var panel = vm.MemoryDetails;
+        Assert.Equal(ProcessFormat.Bytes(20 * gb), panel.InUseText); // header values need no details
+        Assert.Equal("—", panel.CommittedText);
+        Assert.Equal("—", panel.CachedText);
+        Assert.Equal("—", panel.PagedPoolText);
+        Assert.Equal("—", panel.NonPagedPoolText);
+    }
+
+    [Fact]
+    public void IsMemorySelected_TracksSelection_AndNotifies()
+    {
+        var notified = false;
+        vm.PropertyChanged += (_, e) => notified |= e.PropertyName == nameof(Tm2PerformanceViewModel.IsMemorySelected);
+
+        Assert.False(vm.IsMemorySelected); // CPU is the initial selection
+        vm.SelectedEntry = vm.Entries[1]; // Arbeitsspeicher
+
+        Assert.True(vm.IsMemorySelected);
+        Assert.True(notified);
     }
 }

@@ -100,3 +100,29 @@ internal sealed class FakeUserSessionSource : IUserSessionSource
         return Snapshot;
     }
 }
+
+internal sealed class FakeProcessActionService : IProcessActionService
+{
+    public ActionResult Result { get; set; } = ActionResult.Ok;
+
+    public List<(int Pid, bool EntireTree)> Calls { get; } = [];
+
+    public ActionResult Terminate(int pid, bool entireTree)
+    {
+        Calls.Add((pid, entireTree));
+        return Result;
+    }
+}
+
+internal sealed class FakeStartupManager : IStartupManager
+{
+    public ActionResult Result { get; set; } = ActionResult.Ok;
+
+    public List<(StartupItem Item, bool Enabled)> Calls { get; } = [];
+
+    public ActionResult SetEnabled(StartupItem item, bool enabled)
+    {
+        Calls.Add((item, enabled));
+        return Result;
+    }
+}

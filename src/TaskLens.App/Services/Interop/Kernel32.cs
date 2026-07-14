@@ -32,4 +32,32 @@ internal static partial class Kernel32
     [LibraryImport("kernel32.dll", SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
     internal static partial bool GetSystemTimes(out ulong idleTime, out ulong kernelTime, out ulong userTime);
+
+    /// <summary>
+    /// https://learn.microsoft.com/en-us/windows/win32/api/psapi/ns-psapi-performance_information
+    /// Size fields are in pages; multiply by <see cref="PageSize"/> for bytes.
+    /// </summary>
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct PerformanceInformation
+    {
+        internal uint Cb;
+        internal nuint CommitTotal;
+        internal nuint CommitLimit;
+        internal nuint CommitPeak;
+        internal nuint PhysicalTotal;
+        internal nuint PhysicalAvailable;
+        internal nuint SystemCache;
+        internal nuint KernelTotal;
+        internal nuint KernelPaged;
+        internal nuint KernelNonpaged;
+        internal nuint PageSize;
+        internal uint HandleCount;
+        internal uint ProcessCount;
+        internal uint ThreadCount;
+    }
+
+    /// <summary>https://learn.microsoft.com/en-us/windows/win32/api/psapi/nf-psapi-getperformanceinfo (kernel32 export)</summary>
+    [LibraryImport("kernel32.dll", EntryPoint = "K32GetPerformanceInfo", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    internal static partial bool GetPerformanceInfo(ref PerformanceInformation info, uint size);
 }

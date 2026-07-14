@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using TaskLens.Core.Models;
 using TaskLens.Core.Services;
 
@@ -21,6 +22,9 @@ public sealed partial class Tm2StartupRowViewModel : ObservableObject
 
     public string Source { get; }
 
+    /// <summary>The last observed item — the toggle command hands it back to the manager.</summary>
+    internal StartupItem? Item { get; private set; }
+
     [ObservableProperty]
     private string command = "";
 
@@ -33,6 +37,7 @@ public sealed partial class Tm2StartupRowViewModel : ObservableObject
 
     internal void Update(StartupItem item)
     {
+        Item = item;
         Command = item.Command;
         Enabled = item.Enabled;
     }
@@ -41,7 +46,8 @@ public sealed partial class Tm2StartupRowViewModel : ObservableObject
 /// <summary>
 /// Autostart-Apps page: the configured autostart entries, alphabetical by name. Degradation
 /// (access denied) surfaces as an InfoBar state, same pattern as <see cref="Tm2ServicesViewModel"/>.
-/// Read-only throughout — no enable/disable anywhere (plan-tm2.md §2). <see cref="ApplySnapshot"/>
+/// Since tm3-06 the selected entry can be toggled through <see cref="IStartupManager"/> — the
+/// Win11 „Aktivieren"/„Deaktivieren" button and context menu. <see cref="ApplySnapshot"/>
 /// is wired to the engine tick but re-queries the source only every
 /// <see cref="Tm2ServicesViewModel.QueryEveryNthTick"/>th call — autostart entries change even
 /// more rarely than services.
@@ -49,12 +55,53 @@ public sealed partial class Tm2StartupRowViewModel : ObservableObject
 public sealed partial class Tm2StartupViewModel : ObservableObject
 {
     private readonly IStartupItemSource source;
+    private readonly IStartupManager? manager;
     private readonly Dictionary<string, Tm2StartupRowViewModel> rowsByKey = new(StringComparer.OrdinalIgnoreCase);
     private int tick;
 
-    public Tm2StartupViewModel(IStartupItemSource source)
+    public Tm2StartupViewModel(IStartupItemSource source, IStartupManager? manager = null)
     {
         this.source = source ?? throw new ArgumentNullException(nameof(source));
+        this.manager = manager;
+    }
+
+    /// <summary>The row the toggle command acts on; cleared when the row leaves the list.</summary>
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(ToggleSelectedCommand))]
+    [NotifyPropertyChangedFor(nameof(ToggleButtonText))]
+    private Tm2StartupRowViewModel? selectedRow;
+
+    /// <summary>Error text of the last failed toggle; null when the last toggle succeeded.</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasActionError))]
+    private string? lastActionError;
+
+    public bool HasActionError => LastActionError is not null;
+
+    /// <summary>Win11 wording: the button offers the state change, not the current state.</summary>
+    public string ToggleButtonText => SelectedRow is { Enabled: true } ? "Deaktivieren" : "Aktivieren";
+
+    private bool CanToggle() => manager is not null && SelectedRow?.Item is not null;
+
+    /// <summary>Flips the selected entry; the optimistic row update is confirmed by a forced re-query.</summary>
+    [RelayCommand(CanExecute = nameof(CanToggle))]
+    private void ToggleSelected()
+    {
+        if (manager is null || SelectedRow?.Item is not { } item)
+        {
+            return;
+        }
+
+        var target = !SelectedRow.Enabled;
+        var result = manager.SetEnabled(item, target);
+        if (result.Success)
+        {
+            SelectedRow.Enabled = target;
+            tick = 0; // next ApplySnapshot re-queries instead of waiting out the cadence
+        }
+
+        LastActionError = result.Success ? null : result.Error;
+        OnPropertyChanged(nameof(ToggleButtonText));
     }
 
     /// <summary>Visible rows, alphabetical by name (then source, for name collisions).</summary>
@@ -119,5 +166,13 @@ public sealed partial class Tm2StartupViewModel : ObservableObject
             return byName != 0 ? byName : StringComparer.OrdinalIgnoreCase.Compare(a.Source, b.Source);
         });
         CollectionReconciler.Reconcile(Rows, target);
+
+        if (SelectedRow is not null && !Rows.Contains(SelectedRow))
+        {
+            SelectedRow = null;
+        }
+
+        // A re-query may have flipped the selected row's state underneath the button label.
+        OnPropertyChanged(nameof(ToggleButtonText));
     }
 }

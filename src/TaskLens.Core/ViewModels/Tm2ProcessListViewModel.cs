@@ -1,19 +1,23 @@
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using TaskLens.Core.Models;
+using TaskLens.Core.Services;
 
 namespace TaskLens.Core.ViewModels;
 
 /// <summary>
 /// Taskmanager2's process list: a thin join layer over the existing <see cref="ProcessListViewModel"/>
 /// (<see cref="Inner"/>) — sort, filter and totals all live there and are not reimplemented here.
-/// This layer only adds, per tick: a per-row CPU% sparkline and the system-wide CPU temperature /
-/// package wattage / fan RPM sensor readings stamped onto every row.
+/// This layer adds, per tick: a per-row CPU% sparkline and the system-wide CPU temperature /
+/// package wattage / fan RPM sensor readings stamped onto every row — plus, since tm3-01, the
+/// selection and end-task commands (Task beenden / Prozessstruktur beenden).
 /// </summary>
 public sealed partial class Tm2ProcessListViewModel : ObservableObject
 {
     private readonly Dictionary<ProcessRowViewModel, Tm2ProcessRowViewModel> joined = [];
+    private readonly IProcessActionService? actions;
 
     private float? cpuTemp;
     private float? packageWatt;
@@ -21,14 +25,49 @@ public sealed partial class Tm2ProcessListViewModel : ObservableObject
     private bool applying;
 
     public Tm2ProcessListViewModel()
-        : this(new ProcessListViewModel())
+        : this(new ProcessListViewModel(), null)
     {
     }
 
-    public Tm2ProcessListViewModel(ProcessListViewModel inner)
+    public Tm2ProcessListViewModel(ProcessListViewModel inner, IProcessActionService? actions = null)
     {
         Inner = inner ?? throw new ArgumentNullException(nameof(inner));
+        this.actions = actions;
         Inner.Rows.CollectionChanged += OnInnerRowsChanged;
+    }
+
+    /// <summary>The row the end-task commands act on; cleared when the row leaves the list.</summary>
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(EndTaskCommand))]
+    [NotifyCanExecuteChangedFor(nameof(EndTreeCommand))]
+    private Tm2ProcessRowViewModel? selectedRow;
+
+    /// <summary>Error text of the last failed action; null when the last action succeeded.</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasActionError))]
+    private string? lastActionError;
+
+    public bool HasActionError => LastActionError is not null;
+
+    private bool CanRunAction() => actions is not null && SelectedRow is not null;
+
+    /// <summary>Task beenden — terminates only the selected process.</summary>
+    [RelayCommand(CanExecute = nameof(CanRunAction))]
+    private void EndTask() => RunAction(entireTree: false);
+
+    /// <summary>Prozessstruktur beenden — terminates the selected process and its descendants.</summary>
+    [RelayCommand(CanExecute = nameof(CanRunAction))]
+    private void EndTree() => RunAction(entireTree: true);
+
+    private void RunAction(bool entireTree)
+    {
+        if (actions is null || SelectedRow is null)
+        {
+            return;
+        }
+
+        var result = actions.Terminate(SelectedRow.Pid, entireTree);
+        LastActionError = result.Success ? null : result.Error;
     }
 
     /// <summary>The wrapped process list — bind sort/filter/totals directly to this.</summary>
@@ -98,6 +137,11 @@ public sealed partial class Tm2ProcessListViewModel : ObservableObject
         var visible = new HashSet<ProcessRowViewModel>(Inner.Rows);
         foreach (var key in joined.Keys.Where(k => !visible.Contains(k)).ToList())
         {
+            if (ReferenceEquals(joined[key], SelectedRow))
+            {
+                SelectedRow = null;
+            }
+
             joined[key].Detach();
             joined.Remove(key);
         }

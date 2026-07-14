@@ -29,5 +29,14 @@ internal sealed class StubSystemMetricsService : ISystemMetricsService
     public SystemMetrics Sample() => new(
         CpuTotalPercent: 17.3,
         MemoryUsedBytes: 9L * 1024 * 1024 * 1024,
-        MemoryTotalBytes: 32L * 1024 * 1024 * 1024);
+        MemoryTotalBytes: 32L * 1024 * 1024 * 1024,
+        Memory: new MemoryDetails(
+            CommittedBytes: 12L * 1024 * 1024 * 1024,
+            CommitLimitBytes: 36L * 1024 * 1024 * 1024,
+            CachedBytes: 6L * 1024 * 1024 * 1024,
+            PagedPoolBytes: 1600L * 1024 * 1024,
+            NonPagedPoolBytes: 1300L * 1024 * 1024,
+            ProcessCount: 214,
+            ThreadCount: 2801,
+            HandleCount: 94213));
 }
