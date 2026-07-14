@@ -71,13 +71,19 @@ public partial class App : Application
         .AddSingleton<ISensorService, StubSensorService>()
         .AddSingleton<ISystemMetricsService, StubSystemMetricsService>()
         .AddSingleton<IServiceCatalog, StubServiceCatalog>()
-        .AddSingleton<IStartupItemSource, StubStartupSource>()
+        // One instance serves list + toggle — the toggle must mutate what the list re-queries.
+        .AddSingleton<StubStartupSource>()
+        .AddSingleton<IStartupItemSource>(sp => sp.GetRequiredService<StubStartupSource>())
+        .AddSingleton<IStartupManager>(sp => sp.GetRequiredService<StubStartupSource>())
         .AddSingleton<IUserSessionSource, StubUserSessionSource>()
 #else
         .AddSingleton<ISensorService, LhmSensorService>()
         .AddSingleton<ISystemMetricsService, WinSystemMetricsService>()
         .AddSingleton<IServiceCatalog, ScmServiceCatalog>()
-        .AddSingleton<IStartupItemSource, RegistryStartupSource>()
+        // One instance serves list + toggle: the ToggleId contract stays within one class.
+        .AddSingleton<RegistryStartupSource>()
+        .AddSingleton<IStartupItemSource>(sp => sp.GetRequiredService<RegistryStartupSource>())
+        .AddSingleton<IStartupManager>(sp => sp.GetRequiredService<RegistryStartupSource>())
         .AddSingleton<IUserSessionSource, WtsUserSessionSource>()
 #endif
         // Real in DEBUG too — the process list is real there as well (NtProcessEnumerator above).

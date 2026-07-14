@@ -6,19 +6,24 @@ using TaskLens.Core.Services;
 namespace Taskmanager2.App.Services;
 
 /// <summary>
-/// Read-only <see cref="IStartupItemSource"/> over the classic autostart locations: the Run keys
-/// of HKLM/HKCU (64-bit view plus the explicit Wow6432Node variant) and both startup folders.
+/// <see cref="IStartupItemSource"/> over the classic autostart locations: the Run keys of
+/// HKLM/HKCU (64-bit view plus the explicit Wow6432Node variant) and both startup folders.
 /// Enabled/disabled comes honestly from the <c>Explorer\StartupApproved</c> keys — the same store
-/// the real Task Manager writes: first byte of the binary value 0x03 = disabled, anything else
-/// (0x02 in practice) or no record at all = enabled. Sources degrade individually (best effort);
-/// only a fully unreadable set reports AccessDenied. No enable/disable API anywhere
-/// (plan-tm2.md §2).
+/// the real Task Manager reads and writes: first byte of the binary value 0x03 = disabled,
+/// anything else (0x02 in practice) or no record at all = enabled. Sources degrade individually
+/// (best effort); only a fully unreadable set reports AccessDenied. Since tm3-06 it also
+/// implements <see cref="IStartupManager"/>: toggling writes the same 12-byte StartupApproved
+/// blob the real Task Manager writes (0x02 + zeros to enable, 0x03 + disable-FILETIME).
 /// </summary>
-internal sealed class RegistryStartupSource : IStartupItemSource
+internal sealed class RegistryStartupSource : IStartupItemSource, IStartupManager
 {
     private const string RunKey = @"Software\Microsoft\Windows\CurrentVersion\Run";
     private const string RunKeyWow = @"Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Run";
     private const string ApprovedBase = @"Software\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\";
+
+    // ToggleId format: "<HKLM|HKCU>\n<StartupApproved subkey>\n<value name>" — \n cannot occur in
+    // registry value names or file names, so the fields need no escaping.
+    private const char IdSeparator = '\n';
 
     public StartupSnapshot Query()
     {
@@ -71,7 +76,8 @@ internal sealed class RegistryStartupSource : IStartupItemSource
                 continue; // the key's default value is not a startup entry
             }
 
-            items.Add(new StartupItem(name, run.GetValue(name)?.ToString() ?? "", source, IsEnabled(approved, name)));
+            items.Add(new StartupItem(
+                name, run.GetValue(name)?.ToString() ?? "", source, IsEnabled(approved, name), MakeId(hive, approvedSubkey, name)));
         }
     }
 
@@ -96,7 +102,8 @@ internal sealed class RegistryStartupSource : IStartupItemSource
 
             // ponytail: Command is the .lnk path itself — resolving the shortcut target needs
             // COM/IShellLink; add only if someone actually misses the target line.
-            items.Add(new StartupItem(name, lnk, source, IsEnabled(approved, Path.GetFileName(lnk))));
+            items.Add(new StartupItem(
+                name, lnk, source, IsEnabled(approved, Path.GetFileName(lnk)), MakeId(hive, "StartupFolder", Path.GetFileName(lnk))));
         }
     }
 
@@ -107,4 +114,38 @@ internal sealed class RegistryStartupSource : IStartupItemSource
     /// </summary>
     private static bool IsEnabled(RegistryKey? approved, string name) =>
         approved?.GetValue(name) is not byte[] { Length: > 0 } value || value[0] != 0x03;
+
+    private static string MakeId(RegistryKey hive, string approvedSubkey, string valueName) =>
+        (ReferenceEquals(hive, Registry.LocalMachine) ? "HKLM" : "HKCU") + IdSeparator + approvedSubkey + IdSeparator + valueName;
+
+    /// <summary>Writes the StartupApproved blob; access denied (HKLM without admin) comes back as data.</summary>
+    public ActionResult SetEnabled(StartupItem item, bool enabled)
+    {
+        if (item.ToggleId?.Split(IdSeparator) is not [var hiveName, var approvedSubkey, var valueName])
+        {
+            return ActionResult.Fail("Dieser Eintrag kann nicht umgeschaltet werden.");
+        }
+
+        try
+        {
+            var hive = hiveName == "HKLM" ? Registry.LocalMachine : Registry.CurrentUser;
+            using var approved = hive.CreateSubKey(ApprovedBase + approvedSubkey, writable: true);
+
+            // The real TM's on-disk format: byte 0 is the verdict, bytes 4..11 the disable-time
+            // FILETIME (zeros when enabled) — Explorer shows that timestamp in its startup UI.
+            var value = new byte[12];
+            value[0] = enabled ? (byte)0x02 : (byte)0x03;
+            if (!enabled)
+            {
+                BitConverter.TryWriteBytes(value.AsSpan(4), DateTime.UtcNow.ToFileTimeUtc());
+            }
+
+            approved.SetValue(valueName, value, RegistryValueKind.Binary);
+            return ActionResult.Ok;
+        }
+        catch (Exception e) when (e is SecurityException or UnauthorizedAccessException or IOException)
+        {
+            return ActionResult.Fail(e.Message);
+        }
+    }
 }

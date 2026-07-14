@@ -79,12 +79,12 @@ public class Tm2ProcessActionsTests
         vm.ApplySnapshot(Snap(Delta(7, "alpha")));
         vm.SelectedRow = vm.Rows.Single();
 
-        actions.Result = ProcessActionResult.Fail("Zugriff verweigert");
+        actions.Result = ActionResult.Fail("Zugriff verweigert");
         vm.EndTaskCommand.Execute(null);
         Assert.Equal("Zugriff verweigert", vm.LastActionError);
         Assert.True(vm.HasActionError);
 
-        actions.Result = ProcessActionResult.Ok;
+        actions.Result = ActionResult.Ok;
         vm.EndTaskCommand.Execute(null);
         Assert.Null(vm.LastActionError);
         Assert.False(vm.HasActionError);

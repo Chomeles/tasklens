@@ -1,13 +1,14 @@
 namespace TaskLens.Core.Models;
 
 /// <summary>
-/// One autostart entry as observed by the Autostart-Apps page. Read-only by design
-/// (plan-tm2.md §2): Taskmanager2 observes autostart entries, it never toggles them.
+/// One autostart entry as observed by the Autostart-Apps page.
 /// <paramref name="Source"/> is the user-facing origin label („Registry (HKLM)",
 /// „Autostart-Ordner (Benutzer)" …); <paramref name="Enabled"/> reflects the StartupApproved
 /// registry state — entries without a StartupApproved record are enabled.
+/// <paramref name="ToggleId"/> is an opaque handle the producing source's
+/// <c>IStartupManager</c> understands (plan-tm3 tm3-06); null marks the entry as not toggleable.
 /// </summary>
-public sealed record StartupItem(string Name, string Command, string Source, bool Enabled)
+public sealed record StartupItem(string Name, string Command, string Source, bool Enabled, string? ToggleId = null)
 {
     public string Name { get; init; } =
         !string.IsNullOrWhiteSpace(Name)
