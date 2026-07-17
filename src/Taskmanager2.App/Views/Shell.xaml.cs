@@ -22,9 +22,13 @@ public sealed partial class Shell : Window
 
     private void OnSelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
     {
-        // Einstellungen is a visual-only stub (task spec) — no page behind it, so no navigation.
         if (args.IsSettingsSelected)
         {
+            if (ContentFrame.CurrentSourcePageType != typeof(EinstellungenPage))
+            {
+                ContentFrame.Navigate(typeof(EinstellungenPage));
+            }
+
             return;
         }
 
