@@ -17,6 +17,12 @@ public sealed partial class Shell : Window
     public Shell()
     {
         InitializeComponent();
+        // Real TM: the search box sits in the title bar itself. The left spacer is the drag
+        // surface, so the box stays clickable; system caption buttons overlay the right edge.
+        // ponytail: SetTitleBar nimmt genau ein Element — nur die linke Fläche zieht. Rechts vom
+        // Suchfeld zieht nichts; InputNonClientPointerSource-Passthrough-Regionen, falls das stört.
+        ExtendsContentIntoTitleBar = true;
+        SetTitleBar(DragRegionLeft);
         Nav.SelectedItem = Nav.MenuItems[0]; // triggers OnSelectionChanged -> ProzessePage
     }
 
