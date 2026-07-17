@@ -28,6 +28,10 @@ public static class ProcessFormat
     public static string HeaderPercent(double value) =>
         value.ToString("0", DisplayCulture) + "%";
 
+    /// <summary>"0:05:37:12" — d:hh:mm:ss, the real TM's Betriebszeit format.</summary>
+    public static string Uptime(TimeSpan value) =>
+        string.Create(DisplayCulture, $"{(int)value.TotalDays}:{value.Hours:00}:{value.Minutes:00}:{value.Seconds:00}");
+
     /// <summary>Disk-header aggregate from raw IO rates — one call because x:Bind can't nest functions.</summary>
     public static string DiskHeaderPercent(double readBytesPerSecond, double writeBytesPerSecond) =>
         HeaderPercent(HeatMap.DiskPercent(readBytesPerSecond, writeBytesPerSecond));

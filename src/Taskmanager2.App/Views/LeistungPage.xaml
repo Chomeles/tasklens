@@ -85,6 +85,22 @@
             Stroke="{ThemeResource AccentFillColorDefaultBrush}"
             StrokeThickness="1.5" />
         </Border>
+        <!-- CPU facts like the real TM: ticking Betriebszeit + logical processor count. -->
+        <Grid ColumnSpacing="32" Visibility="{x:Bind ViewModel.IsCpuSelected, Mode=OneWay}">
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="Auto" />
+          </Grid.ColumnDefinitions>
+          <StackPanel Grid.Column="0">
+            <TextBlock Style="{StaticResource CaptionTextBlockStyle}" Text="Betriebszeit" />
+            <TextBlock Style="{StaticResource SubtitleTextBlockStyle}" Text="{x:Bind ViewModel.UptimeText, Mode=OneWay}" />
+          </StackPanel>
+          <StackPanel Grid.Column="1">
+            <TextBlock Style="{StaticResource CaptionTextBlockStyle}" Text="Logische Prozessoren" />
+            <TextBlock Style="{StaticResource SubtitleTextBlockStyle}" Text="{x:Bind ViewModel.LogicalProcessorsText}" />
+          </StackPanel>
+        </Grid>
+
         <!-- Arbeitsspeicher detail panel (tm3-03): composition bar + the real TM value block. -->
         <StackPanel Spacing="12" Visibility="{x:Bind ViewModel.IsMemorySelected, Mode=OneWay}">
           <TextBlock Style="{StaticResource CaptionTextBlockStyle}" Text="Speicherzusammensetzung" />

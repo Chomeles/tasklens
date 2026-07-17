@@ -21,6 +21,13 @@ public class ProcessFormatTests
     public void Bytes_ScalesBinaryUnits(long value, string expected) =>
         Assert.Equal(expected, ProcessFormat.Bytes(value));
 
+    [Theory]
+    [InlineData(0, "0:00:00:00")]
+    [InlineData(20232, "0:05:37:12")]
+    [InlineData(90061, "1:01:01:01")]
+    public void Uptime_FormatsDaysHoursMinutesSeconds(double seconds, string expected) =>
+        Assert.Equal(expected, ProcessFormat.Uptime(TimeSpan.FromSeconds(seconds)));
+
     [Fact]
     public void Rate_AppendsPerSecond() =>
         Assert.Equal("1,5 KB/s", ProcessFormat.Rate(1536));

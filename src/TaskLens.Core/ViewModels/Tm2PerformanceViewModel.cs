@@ -148,14 +148,29 @@ public sealed partial class Tm2PerformanceViewModel : ObservableObject
     /// <summary>True while the Arbeitsspeicher rail entry is selected — shows the detail panel.</summary>
     public bool IsMemorySelected => ReferenceEquals(SelectedEntry, memory);
 
-    partial void OnSelectedEntryChanged(Tm2PerformanceEntryViewModel value) =>
+    /// <summary>True while the CPU rail entry is selected — shows Betriebszeit/Prozessoren facts.</summary>
+    public bool IsCpuSelected => ReferenceEquals(SelectedEntry, cpu);
+
+    /// <summary>"0:05:37:12" — time since boot (d:hh:mm:ss), ticking like the real TM.</summary>
+    [ObservableProperty]
+    private string uptimeText = "—";
+
+    /// <summary>Logical processor count — constant, real data.</summary>
+    public string LogicalProcessorsText { get; } =
+        Environment.ProcessorCount.ToString(ProcessFormat.DisplayCulture);
+
+    partial void OnSelectedEntryChanged(Tm2PerformanceEntryViewModel value)
+    {
         OnPropertyChanged(nameof(IsMemorySelected));
+        OnPropertyChanged(nameof(IsCpuSelected));
+    }
 
     /// <summary>Applies one snapshot: delegates to <see cref="Sensors"/>, then composes the rail.</summary>
     public void ApplySnapshot(SystemSnapshot snapshot)
     {
         ArgumentNullException.ThrowIfNull(snapshot);
         Sensors.ApplySnapshot(snapshot);
+        UptimeText = ProcessFormat.Uptime(TimeSpan.FromMilliseconds(Environment.TickCount64));
         SyncGroupEntries();
 
         var cpuPercent = (float)snapshot.CpuTotalPercent;
