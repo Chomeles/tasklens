@@ -14,7 +14,7 @@ namespace TaskLens.App.SmokeTests;
 public class EtwProcessNetworkServiceSmokeTests
 {
     [Fact]
-    public void LoopbackTransfer_AttributesBytesToOwnPid()
+    public async Task LoopbackTransfer_AttributesBytesToOwnPid()
     {
         using var service = new EtwProcessNetworkService();
         if (service.Availability == NetworkAttributionAvailability.RequiresAdmin)
@@ -54,10 +54,10 @@ public class EtwProcessNetworkServiceSmokeTests
                         remaining -= read;
                     }
 
-                    send.GetAwaiter().GetResult();
+                    await send;
                 }
 
-                Thread.Sleep(500); // give the session's flush timer a chance to deliver buffers
+                await Task.Delay(500); // give the session's flush timer a chance to deliver buffers
                 var rates = service.SampleNetworkBytesPerSecondByPid();
                 if (rates.TryGetValue(Environment.ProcessId, out var rate) && rate > 0)
                 {

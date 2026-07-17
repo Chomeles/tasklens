@@ -108,24 +108,24 @@ internal static class ShellLink
     [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
     private interface IShellLinkW
     {
-        void GetPath([Out][MarshalAs(UnmanagedType.LPWStr)] StringBuilder pszFile, int cch, IntPtr pfd, uint fFlags);
-        void GetIDList(out IntPtr ppidl);
-        void SetIDList(IntPtr pidl);
-        void GetDescription([Out][MarshalAs(UnmanagedType.LPWStr)] StringBuilder pszName, int cch);
-        void SetDescription([MarshalAs(UnmanagedType.LPWStr)] string pszName);
-        void GetWorkingDirectory([Out][MarshalAs(UnmanagedType.LPWStr)] StringBuilder pszDir, int cch);
-        void SetWorkingDirectory([MarshalAs(UnmanagedType.LPWStr)] string pszDir);
-        void GetArguments([Out][MarshalAs(UnmanagedType.LPWStr)] StringBuilder pszArgs, int cch);
-        void SetArguments([MarshalAs(UnmanagedType.LPWStr)] string pszArgs);
-        void GetHotkey(out ushort pwHotkey);
-        void SetHotkey(ushort wHotkey);
-        void GetShowCmd(out int piShowCmd);
-        void SetShowCmd(int iShowCmd);
-        void GetIconLocation([Out][MarshalAs(UnmanagedType.LPWStr)] StringBuilder pszIconPath, int cch, out int piIcon);
-        void SetIconLocation([MarshalAs(UnmanagedType.LPWStr)] string pszIconPath, int iIcon);
-        void SetRelativePath([MarshalAs(UnmanagedType.LPWStr)] string pszPathRel, uint dwReserved);
-        void Resolve(IntPtr hwnd, uint fFlags);
-        void SetPath([MarshalAs(UnmanagedType.LPWStr)] string pszFile);
+        public void GetPath([Out][MarshalAs(UnmanagedType.LPWStr)] StringBuilder pszFile, int cch, IntPtr pfd, uint fFlags);
+        public void GetIDList(out IntPtr ppidl);
+        public void SetIDList(IntPtr pidl);
+        public void GetDescription([Out][MarshalAs(UnmanagedType.LPWStr)] StringBuilder pszName, int cch);
+        public void SetDescription([MarshalAs(UnmanagedType.LPWStr)] string pszName);
+        public void GetWorkingDirectory([Out][MarshalAs(UnmanagedType.LPWStr)] StringBuilder pszDir, int cch);
+        public void SetWorkingDirectory([MarshalAs(UnmanagedType.LPWStr)] string pszDir);
+        public void GetArguments([Out][MarshalAs(UnmanagedType.LPWStr)] StringBuilder pszArgs, int cch);
+        public void SetArguments([MarshalAs(UnmanagedType.LPWStr)] string pszArgs);
+        public void GetHotkey(out ushort pwHotkey);
+        public void SetHotkey(ushort wHotkey);
+        public void GetShowCmd(out int piShowCmd);
+        public void SetShowCmd(int iShowCmd);
+        public void GetIconLocation([Out][MarshalAs(UnmanagedType.LPWStr)] StringBuilder pszIconPath, int cch, out int piIcon);
+        public void SetIconLocation([MarshalAs(UnmanagedType.LPWStr)] string pszIconPath, int iIcon);
+        public void SetRelativePath([MarshalAs(UnmanagedType.LPWStr)] string pszPathRel, uint dwReserved);
+        public void Resolve(IntPtr hwnd, uint fFlags);
+        public void SetPath([MarshalAs(UnmanagedType.LPWStr)] string pszFile);
     }
 
     /// <summary>Includes the inherited IPersist slot (GetClassID) — same vtable rule as above.</summary>
@@ -134,14 +134,14 @@ internal static class ShellLink
     [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
     private interface IPersistFile
     {
-        void GetClassID(out Guid pClassId);
+        public void GetClassID(out Guid pClassId);
 
         [PreserveSig]
-        int IsDirty();
+        public int IsDirty();
 
-        void Load([MarshalAs(UnmanagedType.LPWStr)] string pszFileName, uint dwMode);
-        void Save([MarshalAs(UnmanagedType.LPWStr)] string? pszFileName, [MarshalAs(UnmanagedType.Bool)] bool fRemember);
-        void SaveCompleted([MarshalAs(UnmanagedType.LPWStr)] string pszFileName);
-        void GetCurFile(out IntPtr ppszFileName);
+        public void Load([MarshalAs(UnmanagedType.LPWStr)] string pszFileName, uint dwMode);
+        public void Save([MarshalAs(UnmanagedType.LPWStr)] string? pszFileName, [MarshalAs(UnmanagedType.Bool)] bool fRemember);
+        public void SaveCompleted([MarshalAs(UnmanagedType.LPWStr)] string pszFileName);
+        public void GetCurFile(out IntPtr ppszFileName);
     }
 }
