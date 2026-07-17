@@ -43,18 +43,20 @@
       Severity="Error"
       Title="Autostart-Eintrag konnte nicht geändert werden" />
 
-    <!-- Fixed order: alphabetisch nach Name — keine Sortier-UI. -->
+    <!-- Real Win11 Autostart columns: Name, Herausgeber, Status, Startauswirkungen. Publisher and
+         impact have no backing data (no version-info read, no boot trace) — the real TM's own
+         honest fallbacks („—", „Nicht gemessen") fill them; Befehl/Quelle live in the row tooltip. -->
     <Grid Grid.Row="3" Padding="12,0" ColumnSpacing="8">
       <Grid.ColumnDefinitions>
-        <ColumnDefinition Width="220" />
         <ColumnDefinition Width="*" />
         <ColumnDefinition Width="200" />
         <ColumnDefinition Width="110" />
+        <ColumnDefinition Width="160" />
       </Grid.ColumnDefinitions>
-      <TextBlock Grid.Column="0" VerticalAlignment="Center" Text="Name" />
-      <TextBlock Grid.Column="1" VerticalAlignment="Center" Text="Befehl" />
-      <TextBlock Grid.Column="2" VerticalAlignment="Center" Text="Quelle" />
-      <TextBlock Grid.Column="3" VerticalAlignment="Center" Text="Status" />
+      <TextBlock Grid.Column="0" VerticalAlignment="Bottom" FontSize="12" Opacity="0.8" Text="Name" />
+      <TextBlock Grid.Column="1" VerticalAlignment="Bottom" FontSize="12" Opacity="0.8" Text="Herausgeber" />
+      <TextBlock Grid.Column="2" VerticalAlignment="Bottom" FontSize="12" Opacity="0.8" Text="Status" />
+      <TextBlock Grid.Column="3" VerticalAlignment="Bottom" FontSize="12" Opacity="0.8" Text="Startauswirkungen" />
     </Grid>
 
     <ListView
@@ -78,15 +80,16 @@
               </MenuFlyout>
             </Grid.ContextFlyout>
             <Grid.ColumnDefinitions>
-              <ColumnDefinition Width="220" />
               <ColumnDefinition Width="*" />
               <ColumnDefinition Width="200" />
               <ColumnDefinition Width="110" />
+              <ColumnDefinition Width="160" />
             </Grid.ColumnDefinitions>
-            <TextBlock Grid.Column="0" VerticalAlignment="Center" Text="{x:Bind Name}" TextTrimming="CharacterEllipsis" />
-            <TextBlock Grid.Column="1" VerticalAlignment="Center" Text="{x:Bind Command, Mode=OneWay}" TextTrimming="CharacterEllipsis" />
-            <TextBlock Grid.Column="2" VerticalAlignment="Center" Text="{x:Bind Source}" TextTrimming="CharacterEllipsis" />
-            <TextBlock Grid.Column="3" VerticalAlignment="Center" Text="{x:Bind StatusText, Mode=OneWay}" />
+            <TextBlock Grid.Column="0" VerticalAlignment="Center" Text="{x:Bind Name}" TextTrimming="CharacterEllipsis"
+                       ToolTipService.ToolTip="{x:Bind Command, Mode=OneWay}" />
+            <TextBlock Grid.Column="1" VerticalAlignment="Center" Text="—" ToolTipService.ToolTip="{x:Bind Source}" />
+            <TextBlock Grid.Column="2" VerticalAlignment="Center" Text="{x:Bind StatusText, Mode=OneWay}" />
+            <TextBlock Grid.Column="3" VerticalAlignment="Center" Text="Nicht gemessen" />
           </Grid>
         </DataTemplate>
       </ListView.ItemTemplate>

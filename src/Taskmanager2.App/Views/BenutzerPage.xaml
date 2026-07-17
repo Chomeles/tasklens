@@ -31,9 +31,9 @@
         <ColumnDefinition Width="100" />
         <ColumnDefinition Width="130" />
       </Grid.ColumnDefinitions>
-      <TextBlock Grid.Column="0" VerticalAlignment="Center" Text="Benutzer" />
-      <TextBlock Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center" Text="Sitzungs-ID" />
-      <TextBlock Grid.Column="2" VerticalAlignment="Center" Text="Status" />
+      <TextBlock Grid.Column="0" VerticalAlignment="Bottom" FontSize="12" Opacity="0.8" Text="Benutzer" />
+      <TextBlock Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Bottom" FontSize="12" Opacity="0.8" Text="Sitzungs-ID" />
+      <TextBlock Grid.Column="2" VerticalAlignment="Bottom" FontSize="12" Opacity="0.8" Text="Status" />
     </Grid>
 
     <ListView
