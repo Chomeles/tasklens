@@ -89,6 +89,7 @@ public partial class App : Application
         // Real in DEBUG too — the process list is real there as well (NtProcessEnumerator above).
         .AddSingleton<IProcessActionService, WinProcessActionService>()
         .AddSingleton<IServiceControl, ScmServiceControl>()
+        .AddSingleton<ISessionActions, WtsSessionActions>()
         .AddSingleton<ISettingsStore, JsonSettingsStore>()
         .AddSingleton<SamplingEngine>()
         // Factory, not open registration: constructor injection would pick the (ProcessListViewModel)

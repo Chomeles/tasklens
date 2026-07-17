@@ -70,7 +70,7 @@ Windows CI (full-sln build + format) must stay green on `main` for every task.
 - [x] tm3-07-services-control — Starten/Beenden/Neu starten via `ServiceController` with manage
   rights requested per-operation (query-only catalog stays for listing), result-data errors,
   context menu; accept: command/error logic Linux-tested.
-- [ ] tm3-08-users-actions — Verbindung trennen / Abmelden (`WTSDisconnectSession`/
+- [x] tm3-08-users-actions — Verbindung trennen / Abmelden (`WTSDisconnectSession`/
   `WTSLogoffSession`), expandable per-user process grouping (join over the process list by
   session id); accept: grouping + command logic Linux-tested.
 - [x] tm3-09-processes-parity — Apps/Hintergrundprozesse grouping (visible top-level window ⇒

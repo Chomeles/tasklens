@@ -62,6 +62,25 @@ internal sealed class FakeSystemMetricsService : ISystemMetricsService
     public SystemMetrics Sample() => Metrics;
 }
 
+internal sealed class FakeSessionActions : ISessionActions
+{
+    public ActionResult Result { get; set; } = ActionResult.Ok;
+
+    public List<(int SessionId, string Action)> Calls { get; } = [];
+
+    public ActionResult Disconnect(int sessionId)
+    {
+        Calls.Add((sessionId, "disconnect"));
+        return Result;
+    }
+
+    public ActionResult Logoff(int sessionId)
+    {
+        Calls.Add((sessionId, "logoff"));
+        return Result;
+    }
+}
+
 internal sealed class FakeServiceControl : IServiceControl
 {
     public ActionResult Result { get; set; } = ActionResult.Ok;

@@ -9,6 +9,7 @@
       <RowDefinition Height="Auto" />
       <RowDefinition Height="Auto" />
       <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
       <RowDefinition Height="*" />
     </Grid.RowDefinitions>
 
@@ -36,10 +37,19 @@
       <TextBlock Grid.Column="2" VerticalAlignment="Bottom" FontSize="12" Opacity="0.8" Text="Status" />
     </Grid>
 
-    <ListView
+    <InfoBar
       Grid.Row="3"
+      CloseButtonClick="OnErrorClosed"
+      IsOpen="{x:Bind ViewModel.HasActionError, Mode=OneWay}"
+      Message="{x:Bind ViewModel.LastActionError, Mode=OneWay}"
+      Severity="Error"
+      Title="Sitzungsaktion fehlgeschlagen" />
+
+    <ListView
+      Grid.Row="4"
       ItemsSource="{x:Bind ViewModel.Rows}"
-      SelectionMode="None">
+      SelectionChanged="OnSelectionChanged"
+      SelectionMode="Single">
       <ListView.ItemContainerStyle>
         <Style TargetType="ListViewItem">
           <Setter Property="HorizontalContentAlignment" Value="Stretch" />
@@ -49,7 +59,13 @@
       </ListView.ItemContainerStyle>
       <ListView.ItemTemplate>
         <DataTemplate x:DataType="vm:Tm2UserRowViewModel">
-          <Grid ColumnSpacing="8">
+          <Grid Background="Transparent" ColumnSpacing="8">
+            <Grid.ContextFlyout>
+              <MenuFlyout>
+                <MenuFlyoutItem Click="OnDisconnectClick" Text="Verbindung trennen" />
+                <MenuFlyoutItem Click="OnLogoffClick" Text="Abmelden" />
+              </MenuFlyout>
+            </Grid.ContextFlyout>
             <Grid.ColumnDefinitions>
               <ColumnDefinition Width="260" />
               <ColumnDefinition Width="100" />

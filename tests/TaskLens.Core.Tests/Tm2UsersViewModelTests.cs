@@ -9,11 +9,12 @@ public class Tm2UsersViewModelTests
     private static readonly DateTime Start = new(2026, 7, 13, 8, 0, 0, DateTimeKind.Utc);
 
     private readonly FakeUserSessionSource source = new();
+    private readonly FakeSessionActions actions = new();
     private readonly Tm2UsersViewModel vm;
 
     public Tm2UsersViewModelTests()
     {
-        vm = new Tm2UsersViewModel(source);
+        vm = new Tm2UsersViewModel(source, actions);
     }
 
     private static SystemSnapshot Snap() => new(
@@ -115,5 +116,29 @@ public class Tm2UsersViewModelTests
         Refresh();
 
         Assert.Equal([1], vm.Rows.Select(r => r.SessionId));
+    }
+    [Fact]
+    public void SessionActions_RunOnSelectedRow_AndSurfaceErrors()
+    {
+        source.Snapshot = new([new UserSession(3, "orkan", "Aktiv")], CatalogAvailability.Available);
+        vm.ApplySnapshot(Snap());
+        vm.SelectedRow = vm.Rows.Single();
+
+        Assert.True(vm.DisconnectSelectedCommand.CanExecute(null));
+        vm.DisconnectSelectedCommand.Execute(null);
+        vm.LogoffSelectedCommand.Execute(null);
+        Assert.Equal([(3, "disconnect"), (3, "logoff")], actions.Calls);
+        Assert.Null(vm.LastActionError);
+
+        actions.Result = ActionResult.Fail("nope");
+        vm.LogoffSelectedCommand.Execute(null);
+        Assert.Equal("nope", vm.LastActionError);
+    }
+
+    [Fact]
+    public void SessionActions_WithoutSelection_CannotExecute()
+    {
+        Assert.False(vm.DisconnectSelectedCommand.CanExecute(null));
+        Assert.False(vm.LogoffSelectedCommand.CanExecute(null));
     }
 }

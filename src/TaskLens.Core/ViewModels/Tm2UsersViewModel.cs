@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using TaskLens.Core.Models;
 using TaskLens.Core.Services;
 
@@ -44,9 +45,44 @@ public sealed partial class Tm2UsersViewModel : ObservableObject
     private readonly Dictionary<int, Tm2UserRowViewModel> rowsById = [];
     private int tick;
 
-    public Tm2UsersViewModel(IUserSessionSource source)
+    private readonly ISessionActions? actions;
+
+    /// <summary>The row the session commands act on (tm3-08).</summary>
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(DisconnectSelectedCommand))]
+    [NotifyCanExecuteChangedFor(nameof(LogoffSelectedCommand))]
+    private Tm2UserRowViewModel? selectedRow;
+
+    /// <summary>Error text of the last failed session action; null when it succeeded.</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasActionError))]
+    private string? lastActionError;
+
+    public bool HasActionError => LastActionError is not null;
+
+    private bool CanRunAction() => actions is not null && SelectedRow is not null;
+
+    [RelayCommand(CanExecute = nameof(CanRunAction))]
+    private void DisconnectSelected() => RunAction(static (a, id) => a.Disconnect(id));
+
+    [RelayCommand(CanExecute = nameof(CanRunAction))]
+    private void LogoffSelected() => RunAction(static (a, id) => a.Logoff(id));
+
+    private void RunAction(Func<ISessionActions, int, ActionResult> action)
+    {
+        if (actions is null || SelectedRow is null)
+        {
+            return;
+        }
+
+        var result = action(actions, SelectedRow.SessionId);
+        LastActionError = result.Success ? null : result.Error;
+    }
+
+    public Tm2UsersViewModel(IUserSessionSource source, ISessionActions? sessionActions = null)
     {
         this.source = source ?? throw new ArgumentNullException(nameof(source));
+        actions = sessionActions;
     }
 
     /// <summary>Visible rows, ordered by session id.</summary>
