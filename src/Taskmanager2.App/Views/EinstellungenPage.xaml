@@ -43,6 +43,27 @@
           <ColumnDefinition Width="Auto" />
         </Grid.ColumnDefinitions>
         <StackPanel Grid.Column="0" Spacing="2">
+          <TextBlock Text="Standardstartseite" />
+          <TextBlock FontSize="12" Opacity="0.7" Text="Die beim Start angezeigte Seite" />
+        </StackPanel>
+        <ComboBox Grid.Column="1" MinWidth="160" VerticalAlignment="Center"
+                  SelectedIndex="{x:Bind ViewModel.StartPageIndex, Mode=TwoWay}">
+          <ComboBoxItem Content="Prozesse" />
+          <ComboBoxItem Content="Leistung" />
+          <ComboBoxItem Content="App-Verlauf" />
+          <ComboBoxItem Content="Autostart-Apps" />
+          <ComboBoxItem Content="Benutzer" />
+          <ComboBoxItem Content="Details" />
+          <ComboBoxItem Content="Dienste" />
+        </ComboBox>
+      </Grid>
+
+      <Grid Style="{StaticResource SettingCard}">
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="*" />
+          <ColumnDefinition Width="Auto" />
+        </Grid.ColumnDefinitions>
+        <StackPanel Grid.Column="0" Spacing="2">
           <TextBlock Text="Echtzeitaktualisierungsgeschwindigkeit" />
           <TextBlock FontSize="12" Opacity="0.7" Text="Wie oft die Prozess- und Sensorwerte neu abgetastet werden" />
         </StackPanel>

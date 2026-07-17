@@ -23,6 +23,7 @@ public sealed partial class SettingsViewModel : ObservableObject
         TemperatureUnit = loaded.TemperatureUnit;
         CpuNormalization = loaded.CpuNormalization;
         Theme = loaded.Theme;
+        StartPage = loaded.StartPage;
         loading = false;
     }
 
@@ -40,6 +41,9 @@ public sealed partial class SettingsViewModel : ObservableObject
 
     [ObservableProperty]
     private AppTheme theme;
+
+    [ObservableProperty]
+    private StartPage startPage;
 
     /// <summary>0/1 view of <see cref="TemperatureUnit"/> for XAML <c>ComboBox.SelectedIndex</c> binding.</summary>
     public int TemperatureUnitIndex
@@ -62,6 +66,13 @@ public sealed partial class SettingsViewModel : ObservableObject
         set => Theme = (AppTheme)value;
     }
 
+    /// <summary>0..6 view of <see cref="StartPage"/> for the Standardstartseite ComboBox.</summary>
+    public int StartPageIndex
+    {
+        get => (int)StartPage;
+        set => StartPage = (StartPage)value;
+    }
+
     partial void OnRefreshIntervalSecondsChanged(double value) => SaveAndApply();
 
     partial void OnTemperatureUnitChanged(TemperatureUnit value) => SaveAndApply();
@@ -71,6 +82,12 @@ public sealed partial class SettingsViewModel : ObservableObject
     partial void OnThemeChanged(AppTheme value)
     {
         OnPropertyChanged(nameof(ThemeIndex));
+        SaveAndApply();
+    }
+
+    partial void OnStartPageChanged(StartPage value)
+    {
+        OnPropertyChanged(nameof(StartPageIndex));
         SaveAndApply();
     }
 
@@ -89,6 +106,7 @@ public sealed partial class SettingsViewModel : ObservableObject
             TemperatureUnit = TemperatureUnit,
             CpuNormalization = CpuNormalization,
             Theme = Theme,
+            StartPage = StartPage,
         };
         store.Save(settings);
         Applied?.Invoke(settings);

@@ -74,4 +74,15 @@ public class SettingsViewModelTests
         Assert.Equal(AppTheme.Dark, store.Current.Theme);
         Assert.Equal(AppTheme.Dark, applied?.Theme);
     }
+    [Fact]
+    public void StartPageIndex_MapsAndPersists()
+    {
+        var store = new InMemorySettingsStore();
+        var vm = new SettingsViewModel(store);
+
+        vm.StartPageIndex = 5; // Details
+
+        Assert.Equal(StartPage.Details, vm.StartPage);
+        Assert.Equal(StartPage.Details, store.Current.StartPage);
+    }
 }

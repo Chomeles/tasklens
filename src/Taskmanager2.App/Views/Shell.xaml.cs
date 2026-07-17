@@ -1,6 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using TaskLens.Core.Models;
 using TaskLens.Core.ViewModels;
 
 namespace Taskmanager2.App.Views;
@@ -23,7 +24,9 @@ public sealed partial class Shell : Window
         // Suchfeld zieht nichts; InputNonClientPointerSource-Passthrough-Regionen, falls das stört.
         ExtendsContentIntoTitleBar = true;
         SetTitleBar(DragRegionLeft);
-        Nav.SelectedItem = Nav.MenuItems[0]; // triggers OnSelectionChanged -> ProzessePage
+        // Standardstartseite: open the user's configured page (real TM), default Prozesse.
+        var startIndex = (int)App.Services.GetRequiredService<SettingsViewModel>().StartPage;
+        Nav.SelectedItem = Nav.MenuItems[startIndex]; // triggers OnSelectionChanged -> that page
     }
 
     private void OnSelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)

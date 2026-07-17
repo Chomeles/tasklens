@@ -26,6 +26,18 @@ public enum AppTheme
     Dark,
 }
 
+/// <summary>Which page opens on launch — the real TM's „Standardstartseite" setting.</summary>
+public enum StartPage
+{
+    Prozesse,
+    Leistung,
+    AppVerlauf,
+    Autostart,
+    Benutzer,
+    Details,
+    Dienste,
+}
+
 /// <summary>User settings. Persisted by <c>ISettingsStore</c> (task 14); live-applied.</summary>
 public sealed record Settings
 {
@@ -47,4 +59,7 @@ public sealed record Settings
 
     /// <summary>App-Theme like the real TM: System (default), Hell or Dunkel.</summary>
     public AppTheme Theme { get; init; } = AppTheme.System;
+
+    /// <summary>Standardstartseite like the real TM: the page shown on launch (default Prozesse).</summary>
+    public StartPage StartPage { get; init; } = StartPage.Prozesse;
 }
