@@ -172,6 +172,14 @@ internal sealed class FakeProcessActionService : IProcessActionService
         Launches.Add((command, elevated));
         return Result;
     }
+
+    public List<(int Pid, ProcessPriority Priority)> PriorityCalls { get; } = [];
+
+    public ActionResult SetPriority(int pid, ProcessPriority priority)
+    {
+        PriorityCalls.Add((pid, priority));
+        return Result;
+    }
 }
 
 internal sealed class FakeStartupManager : IStartupManager

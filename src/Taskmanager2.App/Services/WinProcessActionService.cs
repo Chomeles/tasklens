@@ -86,6 +86,30 @@ public sealed class WinProcessActionService : IProcessActionService
         }
     }
 
+    /// <summary>Details context menu: map the TM priority level to a Win32 priority class.</summary>
+    public ActionResult SetPriority(int pid, ProcessPriority priority)
+    {
+        try
+        {
+            using var process = Process.GetProcessById(pid);
+            process.PriorityClass = priority switch
+            {
+                ProcessPriority.Idle => ProcessPriorityClass.Idle,
+                ProcessPriority.BelowNormal => ProcessPriorityClass.BelowNormal,
+                ProcessPriority.Normal => ProcessPriorityClass.Normal,
+                ProcessPriority.AboveNormal => ProcessPriorityClass.AboveNormal,
+                ProcessPriority.High => ProcessPriorityClass.High,
+                ProcessPriority.Realtime => ProcessPriorityClass.RealTime,
+                _ => ProcessPriorityClass.Normal,
+            };
+            return ActionResult.Ok;
+        }
+        catch (Exception ex) when (ex is ArgumentException or InvalidOperationException or Win32Exception)
+        {
+            return ActionResult.Fail(ex.Message);
+        }
+    }
+
     private const int ProcessSetInformation = 0x0200;
     private const int ProcessPowerThrottlingClass = 4; // PROCESS_INFORMATION_CLASS.ProcessPowerThrottling
     private const uint PowerThrottlingExecutionSpeed = 0x1;

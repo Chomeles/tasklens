@@ -11,4 +11,18 @@ public interface IProcessActionService
 
     /// <summary>„Neuen Task ausführen": shell-launches the command, optionally elevated (tm3-02).</summary>
     public ActionResult Launch(string command, bool elevated);
+
+    /// <summary>Sets the process priority class (Details context menu, tm3-05-extended).</summary>
+    public ActionResult SetPriority(int pid, ProcessPriority priority);
+}
+
+/// <summary>The real TM's six priority levels, ordered low→high.</summary>
+public enum ProcessPriority
+{
+    Idle,
+    BelowNormal,
+    Normal,
+    AboveNormal,
+    High,
+    Realtime,
 }

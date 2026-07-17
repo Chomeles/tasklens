@@ -62,7 +62,21 @@
       </ListView.ItemContainerStyle>
       <ListView.ItemTemplate>
         <DataTemplate x:DataType="vm:ProcessRowViewModel">
-          <Grid ColumnSpacing="8">
+          <Grid Background="Transparent" ColumnSpacing="8">
+            <Grid.ContextFlyout>
+              <!-- Real TM Details menu: Priorität festlegen (tm3-05-extended). Task beenden lives
+                   on the Prozesse page; here the priority submenu is the headline action. -->
+              <MenuFlyout>
+                <MenuFlyoutSubItem Text="Priorität festlegen">
+                  <MenuFlyoutItem Click="OnPriorityClick" Tag="Realtime" Text="Echtzeit" />
+                  <MenuFlyoutItem Click="OnPriorityClick" Tag="High" Text="Hoch" />
+                  <MenuFlyoutItem Click="OnPriorityClick" Tag="AboveNormal" Text="Höher als normal" />
+                  <MenuFlyoutItem Click="OnPriorityClick" Tag="Normal" Text="Normal" />
+                  <MenuFlyoutItem Click="OnPriorityClick" Tag="BelowNormal" Text="Niedriger als normal" />
+                  <MenuFlyoutItem Click="OnPriorityClick" Tag="Idle" Text="Niedrig" />
+                </MenuFlyoutSubItem>
+              </MenuFlyout>
+            </Grid.ContextFlyout>
             <Grid.ColumnDefinitions>
               <ColumnDefinition Width="*" />
               <ColumnDefinition Width="64" />
