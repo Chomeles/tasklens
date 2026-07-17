@@ -28,6 +28,13 @@ public class ProcessFormatTests
     public void Uptime_FormatsDaysHoursMinutesSeconds(double seconds, string expected) =>
         Assert.Equal(expected, ProcessFormat.Uptime(TimeSpan.FromSeconds(seconds)));
 
+    [Theory]
+    [InlineData(125, "1,0 KBit/s")]
+    [InlineData(125_000, "1,0 MBit/s")]
+    [InlineData(1_250_000_000, "10,0 GBit/s")]
+    public void BitRate_ScalesDecimalBits(double bytesPerSecond, string expected) =>
+        Assert.Equal(expected, ProcessFormat.BitRate(bytesPerSecond));
+
     [Fact]
     public void Rate_AppendsPerSecond() =>
         Assert.Equal("1,5 KB/s", ProcessFormat.Rate(1536));

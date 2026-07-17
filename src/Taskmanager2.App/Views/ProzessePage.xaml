@@ -137,10 +137,12 @@
                      Text="{x:Bind vm:ProcessFormat.Header('Datenträger', 'Disk', ViewModel.Inner.SortColumn, ViewModel.Inner.SortDescending), Mode=OneWay}" />
         </StackPanel>
       </Button>
-      <StackPanel Grid.Column="5" Margin="8,4" VerticalAlignment="Bottom">
-        <!-- ponytail: kein Per-Prozess-Netzwerk in Core (bräuchte ETW, plan-tm3) — Header zeigt wie
-             der echte TM bei Leerlauf 0%, Zellen 0 MBit/s. -->
-        <TextBlock HorizontalAlignment="Right" FontSize="14" Text="0%" />
+      <!-- Header: echte Adapter-Auslastung (tm3-04). Zellen bleiben 0 MBit/s — Per-Prozess-
+           Attribution bräuchte ETW, keine erfundenen Werte. -->
+      <StackPanel Grid.Column="5" Margin="8,4" VerticalAlignment="Bottom"
+                  Background="{x:Bind svc:CellHeat.Brush(ViewModel.Inner.SystemNetworkPercent), Mode=OneWay}">
+        <TextBlock HorizontalAlignment="Right" FontSize="14"
+                   Text="{x:Bind vm:ProcessFormat.HeaderPercent(ViewModel.Inner.SystemNetworkPercent), Mode=OneWay}" />
         <TextBlock HorizontalAlignment="Right" FontSize="12" Opacity="0.8" Text="Netzwerk" />
       </StackPanel>
       <Button Grid.Column="6" Style="{StaticResource HeaderCellButton}" Tag="Gpu" Click="OnSortHeaderClick"

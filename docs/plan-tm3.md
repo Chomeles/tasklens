@@ -58,7 +58,7 @@ Windows CI (full-sln build + format) must stay green on `main` for every task.
   page gets the real TM detail panels for CPU (Auslastung, Geschwindigkeit, Prozesse, Threads,
   Handles, Betriebszeit, Basistakt, Kerne/logische Prozessoren) and Arbeitsspeicher incl. the
   Speicherzusammensetzung bar; accept: composition/formatting Linux-tested.
-- [ ] tm3-04-network — `INetworkMetricsService` (per-adapter send/receive B/s, adapter kind
+- [x] tm3-04-network (Adapter-Raten via NetworkInterface-Counter; Per-Prozess-ETW weiter offen) — `INetworkMetricsService` (per-adapter send/receive B/s, adapter kind
   Ethernet/WLAN, link speed, addresses); Ethernet/WLAN entries in the Leistung rail with
   send/receive graphs and detail panel; accept: rate computation + adapter grouping Linux-tested.
 - [ ] tm3-05-disk-gpu-details — per-physical-disk metrics (active time %, read/write B/s, response

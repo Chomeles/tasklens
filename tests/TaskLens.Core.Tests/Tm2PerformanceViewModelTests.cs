@@ -243,4 +243,23 @@ public class Tm2PerformanceViewModelTests
         Assert.True(vm.IsMemorySelected);
         Assert.True(notified);
     }
+    [Fact]
+    public void NetworkAdapters_GetRailEntries_WithUtilizationHistory()
+    {
+        vm.ApplySnapshot(Snap() with
+        {
+            Network = [new NetworkAdapterRate("Ethernet", ReceivedBytesPerSecond: 1_250_000, SentBytesPerSecond: 0, LinkSpeedBitsPerSecond: 100_000_000)],
+        });
+
+        var entry = vm.Entries.Single(e => e.Name == "Ethernet");
+        Assert.Equal(4, vm.Entries.IndexOf(entry)); // after CPU/Arbeitsspeicher/Datenträger/GPU
+        Assert.Equal(10f, entry.History[^1]); // 10 MBit/s of 100 MBit/s
+        Assert.Contains("E: 10,0 MBit/s", entry.ValueText);
+
+        vm.ApplySnapshot(Snap() with
+        {
+            Network = [new NetworkAdapterRate("Ethernet", 0, 0, 100_000_000)],
+        });
+        Assert.Same(entry, vm.Entries.Single(e => e.Name == "Ethernet")); // persistent entry
+    }
 }

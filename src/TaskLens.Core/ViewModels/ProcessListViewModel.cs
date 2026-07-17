@@ -66,6 +66,10 @@ public sealed partial class ProcessListViewModel : ObservableObject
     [ObservableProperty]
     private double systemMemoryPercent;
 
+    /// <summary>Busiest adapter's utilization %, above the Netzwerk column header (tm3-04).</summary>
+    [ObservableProperty]
+    private double systemNetworkPercent;
+
     partial void OnFilterChanged(string value) => RefreshView();
 
     partial void OnSortColumnChanged(ProcessColumn value) => RefreshView();
@@ -95,6 +99,9 @@ public sealed partial class ProcessListViewModel : ObservableObject
         SystemCpuPercent = snapshot.CpuTotalPercent;
         SystemMemoryPercent = snapshot.MemoryTotalBytes > 0
             ? snapshot.MemoryUsedBytes * 100.0 / snapshot.MemoryTotalBytes
+            : 0;
+        SystemNetworkPercent = snapshot.Network.Count > 0
+            ? snapshot.Network.Max(a => a.UtilizationPercent)
             : 0;
 
         allRows.Clear();

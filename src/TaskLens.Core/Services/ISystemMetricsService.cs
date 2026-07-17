@@ -5,7 +5,8 @@ public sealed record SystemMetrics(
     double CpuTotalPercent,
     long MemoryUsedBytes,
     long MemoryTotalBytes,
-    Models.MemoryDetails? Memory = null);
+    Models.MemoryDetails? Memory = null,
+    IReadOnlyList<Models.NetworkAdapterRate>? Network = null);
 
 /// <summary>Reads system-wide metrics (total CPU, RAM).</summary>
 public interface ISystemMetricsService

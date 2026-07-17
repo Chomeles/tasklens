@@ -32,6 +32,7 @@
     <Compile Include="..\TaskLens.App\Services\ProcessIdentity.cs" LinkBase="Linked" />
     <Compile Include="..\TaskLens.App\Services\LhmSensorService.cs" LinkBase="Linked" />
     <Compile Include="..\TaskLens.App\Services\WinSystemMetricsService.cs" LinkBase="Linked" />
+    <Compile Include="..\TaskLens.App\Services\NetworkRateSampler.cs" LinkBase="Linked" />
     <Compile Include="..\TaskLens.App\Services\PdhGpuProcessService.cs" LinkBase="Linked" />
     <Compile Include="..\TaskLens.App\Services\DispatcherQueueDispatcher.cs" LinkBase="Linked" />
     <Compile Include="..\TaskLens.App\Services\Interop\NtDll.cs" LinkBase="Linked" />

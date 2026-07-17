@@ -250,6 +250,21 @@ public class ProcessListViewModelTests
     }
 
     [Fact]
+    public void SystemNetworkPercent_IsBusiestAdapter()
+    {
+        vm.ApplySnapshot(Snap() with
+        {
+            Network =
+            [
+                new NetworkAdapterRate("Ethernet", 1_250_000, 0, 100_000_000), // 10%
+                new NetworkAdapterRate("WLAN", 0, 625_000, 100_000_000), // 5%
+            ],
+        });
+
+        Assert.Equal(10, vm.SystemNetworkPercent, 3);
+    }
+
+    [Fact]
     public void ResortAfterValueChange_MovesRowsWithoutRecreatingThem()
     {
         vm.SortColumn = ProcessColumn.Cpu;

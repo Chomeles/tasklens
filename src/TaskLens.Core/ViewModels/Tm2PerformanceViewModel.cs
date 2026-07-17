@@ -116,6 +116,11 @@ public sealed partial class Tm2PerformanceViewModel : ObservableObject
 {
     private const int SystemEntryCount = 4;
 
+    // Per-adapter network entries sit between the four system entries and the sensor-group tail.
+    private readonly Dictionary<string, Tm2PerformanceEntryViewModel> networkByName = [];
+
+    private int HeadCount => SystemEntryCount + networkByName.Count;
+
     private readonly Tm2PerformanceEntryViewModel cpu = new("CPU");
     private readonly Tm2PerformanceEntryViewModel memory = new("Arbeitsspeicher");
     private readonly Tm2PerformanceEntryViewModel disk = new("Datenträger");
@@ -203,6 +208,30 @@ public sealed partial class Tm2PerformanceViewModel : ObservableObject
         // processes peak on different engines, which is the price of not inventing data.
         var gpuPercent = FirstGpuLoad(snapshot.Sensors) ?? (float)gpuSum;
         gpu.Append(gpuPercent, SensorRowViewModel.Format(SensorKind.Load, gpuPercent));
+
+        SyncNetworkEntries(snapshot.Network);
+    }
+
+    /// <summary>One rail entry per up-adapter, like the real TM's Ethernet/WLAN entries (tm3-04).
+    /// Graph = utilization % of link speed; headline = send/receive bit rates.</summary>
+    private void SyncNetworkEntries(IReadOnlyList<NetworkAdapterRate> adapters)
+    {
+        foreach (var adapter in adapters)
+        {
+            if (!networkByName.TryGetValue(adapter.Name, out var entry))
+            {
+                entry = new Tm2PerformanceEntryViewModel(adapter.Name);
+                networkByName[adapter.Name] = entry;
+                Entries.Insert(SystemEntryCount + networkByName.Count - 1, entry);
+            }
+
+            entry.Append(
+                (float)adapter.UtilizationPercent,
+                $"S: {ProcessFormat.BitRate(adapter.SentBytesPerSecond)}  E: {ProcessFormat.BitRate(adapter.ReceivedBytesPerSecond)}");
+        }
+
+        // ponytail: vanished adapters keep their (frozen) rail entry — adapters disappear so
+        // rarely that removal handling is not worth the index bookkeeping; restart clears them.
     }
 
     /// <summary>
@@ -215,7 +244,7 @@ public sealed partial class Tm2PerformanceViewModel : ObservableObject
         var groups = Sensors.Groups;
         if (!TailMatches(groups))
         {
-            while (Entries.Count > SystemEntryCount)
+            while (Entries.Count > HeadCount)
             {
                 Entries.RemoveAt(Entries.Count - 1);
             }
@@ -231,7 +260,7 @@ public sealed partial class Tm2PerformanceViewModel : ObservableObject
             }
         }
 
-        for (var i = SystemEntryCount; i < Entries.Count; i++)
+        for (var i = HeadCount; i < Entries.Count; i++)
         {
             var headline = Headline(Entries[i].Group!);
             Entries[i].Append(headline.Value, headline.ValueText);
@@ -240,14 +269,14 @@ public sealed partial class Tm2PerformanceViewModel : ObservableObject
 
     private bool TailMatches(ObservableCollection<HardwareGroupViewModel> groups)
     {
-        if (Entries.Count != SystemEntryCount + groups.Count)
+        if (Entries.Count != HeadCount + groups.Count)
         {
             return false;
         }
 
         for (var i = 0; i < groups.Count; i++)
         {
-            if (!ReferenceEquals(Entries[SystemEntryCount + i].Group, groups[i]))
+            if (!ReferenceEquals(Entries[HeadCount + i].Group, groups[i]))
             {
                 return false;
             }
