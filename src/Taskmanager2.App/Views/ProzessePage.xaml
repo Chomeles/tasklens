@@ -199,6 +199,7 @@
                           <MenuFlyoutSeparator />
                           <MenuFlyoutItem Click="OnOpenLocationClick" Text="Dateispeicherort öffnen" />
                           <MenuFlyoutItem Click="OnSearchOnlineClick" Text="Onlinesuche" />
+                          <MenuFlyoutItem Click="OnNetConnectionsClick" Text="Netzwerkverbindungen" />
                         </MenuFlyout>
                       </Grid.ContextFlyout>
                       <Grid.ColumnDefinitions>

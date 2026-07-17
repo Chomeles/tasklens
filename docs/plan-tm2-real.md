@@ -24,7 +24,7 @@ verschachtelte Aufrufe; TextBlock ohne Background (Border).
 - [x] **tm2r-02: Befehlszeile-Spalte (Details)** — echte TM-Spalte, Process-Explorer-Standard.
   `NtQueryInformationProcess` Klasse 60 (ProcessCommandLineInformation), PID-Cache mit Prune wie
   Benutzername/Architektur. Smoke-Test: eigene Befehlszeile enthält Prozessnamen.
-- [ ] **tm2r-03: Netzwerkverbindungen-Dialog (TCPView-Ersatz)** — Kontextmenü Details/Prozesse →
+- [x] **tm2r-03: Netzwerkverbindungen-Dialog (TCPView-Ersatz)** — Kontextmenü Details/Prozesse →
   „Netzwerkverbindungen": ContentDialog mit Protokoll / lokale Adresse / Remoteadresse / Status pro
   Prozess. `GetExtendedTcpTable`/`GetExtendedUdpTable` (v4+v6, ohne Admin). Smoke-Test: eigener
   Listener sichtbar.

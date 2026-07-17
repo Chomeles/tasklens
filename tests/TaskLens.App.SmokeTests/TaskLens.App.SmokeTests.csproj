@@ -37,6 +37,8 @@
     <Compile Include="..\..\src\TaskLens.App\Services\Interop\NtDll.cs" LinkBase="Linked" />
     <Compile Include="..\..\src\TaskLens.App\Services\Interop\Kernel32.cs" LinkBase="Linked" />
     <Compile Include="..\..\src\TaskLens.App\Services\Interop\User32.cs" LinkBase="Linked" />
+    <Compile Include="..\..\src\TaskLens.App\Services\Interop\Iphlpapi.cs" LinkBase="Linked" />
+    <Compile Include="..\..\src\TaskLens.App\Services\NetConnectionEnumerator.cs" LinkBase="Linked" />
   </ItemGroup>
 
   <ItemGroup>

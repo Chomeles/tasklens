@@ -83,6 +83,8 @@
                   <MenuFlyoutItem Click="OnPriorityClick" Tag="BelowNormal" Text="Niedriger als normal" />
                   <MenuFlyoutItem Click="OnPriorityClick" Tag="Idle" Text="Niedrig" />
                 </MenuFlyoutSubItem>
+                <MenuFlyoutSeparator />
+                <MenuFlyoutItem Click="OnNetConnectionsClick" Text="Netzwerkverbindungen" />
               </MenuFlyout>
             </Grid.ContextFlyout>
             <Grid.ColumnDefinitions>

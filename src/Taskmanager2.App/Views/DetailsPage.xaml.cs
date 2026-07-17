@@ -36,4 +36,11 @@ public sealed partial class DetailsPage : Page
     /// <summary>„Neuen Task ausführen": shared run dialog, on every page like the real TM (tm3-10).</summary>
     private async void OnRunTaskClick(object sender, RoutedEventArgs e) =>
         await Taskmanager2.App.Services.RunTaskDialog.ShowAsync(XamlRoot);
+
+    /// <summary>„Netzwerkverbindungen" (tm2r-03): TCPView dialog for the exact right-clicked PID.</summary>
+    private async void OnNetConnectionsClick(object sender, RoutedEventArgs e)
+    {
+        var row = (ProcessRowViewModel)((FrameworkElement)sender).DataContext;
+        await Taskmanager2.App.Services.NetworkConnectionsDialog.ShowAsync(XamlRoot, row.Name, new[] { row.Pid });
+    }
 }
