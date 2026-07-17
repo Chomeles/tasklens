@@ -39,6 +39,10 @@
     <Compile Include="..\..\src\TaskLens.App\Services\Interop\User32.cs" LinkBase="Linked" />
     <Compile Include="..\..\src\TaskLens.App\Services\Interop\Iphlpapi.cs" LinkBase="Linked" />
     <Compile Include="..\..\src\TaskLens.App\Services\NetConnectionEnumerator.cs" LinkBase="Linked" />
+    <Compile Include="..\..\src\TaskLens.App\Services\Interop\ShellLink.cs" LinkBase="Linked" />
+    <!-- First Taskmanager2.App file under smoke test: the Autostart source is pure
+         registry/filesystem/COM — no Windows App SDK needed, same rule as the lines above. -->
+    <Compile Include="..\..\src\Taskmanager2.App\Services\RegistryStartupSource.cs" LinkBase="Linked" />
   </ItemGroup>
 
   <ItemGroup>

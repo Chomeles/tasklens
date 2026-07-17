@@ -57,6 +57,22 @@ public class Tm2StartupViewModelTests
     }
 
     [Fact]
+    public void Publisher_FlowsToRow_EmptyRendersAsDash()
+    {
+        source.Snapshot = new(
+            [
+                Item("Cloud-Sync") with { Publisher = "Contoso GmbH" },
+                Item("Updater"),
+            ],
+            CatalogAvailability.Available);
+
+        Refresh();
+
+        Assert.Equal(["Contoso GmbH", "—"], vm.Rows.Select(r => r.PublisherText));
+        Assert.Equal(["Contoso GmbH", ""], vm.Rows.Select(r => r.Publisher));
+    }
+
+    [Fact]
     public void AccessDenied_ShowsBanner_NoRows_AndRecovers()
     {
         source.Snapshot = new([], CatalogAvailability.AccessDenied);

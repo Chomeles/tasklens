@@ -7,8 +7,11 @@ namespace TaskLens.Core.Models;
 /// registry state — entries without a StartupApproved record are enabled.
 /// <paramref name="ToggleId"/> is an opaque handle the producing source's
 /// <c>IStartupManager</c> understands (plan-tm3 tm3-06); null marks the entry as not toggleable.
+/// <paramref name="Publisher"/> is the CompanyName from the target's version resource — honestly
+/// empty when none is readable (tm2r-04).
 /// </summary>
-public sealed record StartupItem(string Name, string Command, string Source, bool Enabled, string? ToggleId = null)
+public sealed record StartupItem(
+    string Name, string Command, string Source, bool Enabled, string? ToggleId = null, string Publisher = "")
 {
     public string Name { get; init; } =
         !string.IsNullOrWhiteSpace(Name)
@@ -22,4 +25,7 @@ public sealed record StartupItem(string Name, string Command, string Source, boo
         !string.IsNullOrWhiteSpace(Source)
             ? Source
             : throw new ArgumentException("Source must be non-empty.", nameof(Source));
+
+    public string Publisher { get; init; } =
+        Publisher ?? throw new ArgumentNullException(nameof(Publisher));
 }

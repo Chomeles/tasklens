@@ -43,6 +43,7 @@
     <Compile Include="..\TaskLens.App\Services\Interop\Pdh.cs" LinkBase="Linked" />
     <Compile Include="..\TaskLens.App\Services\Interop\Advapi32.cs" LinkBase="Linked" />
     <Compile Include="..\TaskLens.App\Services\Interop\Iphlpapi.cs" LinkBase="Linked" />
+    <Compile Include="..\TaskLens.App\Services\Interop\ShellLink.cs" LinkBase="Linked" />
     <Compile Include="..\TaskLens.App\Services\NetConnectionEnumerator.cs" LinkBase="Linked" />
     <Compile Include="..\TaskLens.App\Views\SparklineRender.cs" LinkBase="Linked" />
     <Compile Include="..\TaskLens.App\Services\StubServices.cs" LinkBase="Linked" />

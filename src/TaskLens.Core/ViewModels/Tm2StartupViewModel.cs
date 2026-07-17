@@ -29,16 +29,24 @@ public sealed partial class Tm2StartupRowViewModel : ObservableObject
     private string command = "";
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(PublisherText))]
+    private string publisher = "";
+
+    [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(StatusText))]
     private bool enabled = true;
 
     /// <summary>Status column text, Win11 Task Manager wording.</summary>
     public string StatusText => Enabled ? "Aktiviert" : "Deaktiviert";
 
+    /// <summary>Herausgeber column: version-info CompanyName, the real TM's honest „—" without.</summary>
+    public string PublisherText => Publisher.Length > 0 ? Publisher : "—";
+
     internal void Update(StartupItem item)
     {
         Item = item;
         Command = item.Command;
+        Publisher = item.Publisher;
         Enabled = item.Enabled;
     }
 }

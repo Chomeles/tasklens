@@ -21,8 +21,8 @@ internal sealed class StubStartupSource : IStartupItemSource, IStartupManager
             "Registry (HKCU)", Enabled: true, ToggleId: "stub-2"),
         new StartupItem(
             "Stub-Notizen",
-            @"C:\Users\Stub\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup\Stub-Notizen.lnk",
-            "Autostart-Ordner (Benutzer)", Enabled: true, ToggleId: "stub-3"),
+            @"C:\Program Files\Stub\Notizen.exe",
+            "Autostart-Ordner (Benutzer)", Enabled: true, ToggleId: "stub-3", Publisher: "Stub Software GmbH"),
     ];
 
     public StartupSnapshot Query() => new([.. items], CatalogAvailability.Available);
