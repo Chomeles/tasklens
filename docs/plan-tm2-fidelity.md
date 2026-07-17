@@ -18,6 +18,14 @@ auf echtem Windows (Screenshot echter TM neben Taskmanager2).
 - [x] Globale Suche in der Shell-Kopfzeile (wie im echten TM), Seiten haben große Seitentitel (Prozesse/Leistung/App-Verlauf/Autostart-Apps/Benutzer/Details/Dienste)
 - [x] Dezimal-Komma: alle Zellformate auf de-DE („2,1%", „64,0 MB", „54,0 °C")
 
+## Erledigt (Runden 3–7)
+- [x] Fallback-Icon (SHGetStockIconInfo), Autostart-Originalspalten, dezente Listen-Header
+- [x] Aufklappbare App-Zeilen mit Fenstertitel-Kind (GetWindowTextW pro PID)
+- [x] Echte Einstellungen-Seite (Win11-Karten, Hoch/Normal/Niedrig = 0,5/1/4 s)
+- [x] Details: Benutzername + Architektur (Token-Lookup, IsWow64Process2, PID-Cache mit Prune)
+- [x] Leistung-CPU-Panel: Betriebszeit (tickend) + logische Prozessoren
+- [x] CI-Lektionen: TextBlock hat kein Background (Border), x:Bind kann nicht verschachteln (kombinierte Helper), Link-Compile-Listen nachziehen
+
 ## Offen — nur mit Windows-Sichtprüfung sinnvoll abschließbar
 1. **Screenshot-Abgleich** (Nutzer): echter TM vs. Taskmanager2, Abweichungsliste → Feinschliff-Task pro Fund (Abstände, Zeilenhöhe, Fonts, Farben Light/Dark).
 2. **Suche in die echte Titelleiste** (ExtendsContentIntoTitleBar + NonClient-Passthrough) — nur mit Windows-Box riskolos.
