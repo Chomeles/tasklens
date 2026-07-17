@@ -108,6 +108,28 @@
           </StackPanel>
         </Grid>
 
+        <!-- Disk facts (tm3-05, honest subset): read/write rates from per-process IO sums,
+             capacity from DriveInfo. Aktive Zeit/Antwortzeit bräuchten PDH-Disk-Counter — offen. -->
+        <Grid ColumnSpacing="32" Visibility="{x:Bind ViewModel.IsDiskSelected, Mode=OneWay}">
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="Auto" />
+          </Grid.ColumnDefinitions>
+          <StackPanel Grid.Column="0">
+            <TextBlock Style="{StaticResource CaptionTextBlockStyle}" Text="Lesegeschwindigkeit" />
+            <TextBlock Style="{StaticResource SubtitleTextBlockStyle}" Text="{x:Bind ViewModel.DiskReadText, Mode=OneWay}" />
+          </StackPanel>
+          <StackPanel Grid.Column="1">
+            <TextBlock Style="{StaticResource CaptionTextBlockStyle}" Text="Schreibgeschwindigkeit" />
+            <TextBlock Style="{StaticResource SubtitleTextBlockStyle}" Text="{x:Bind ViewModel.DiskWriteText, Mode=OneWay}" />
+          </StackPanel>
+          <StackPanel Grid.Column="2">
+            <TextBlock Style="{StaticResource CaptionTextBlockStyle}" Text="Kapazität" />
+            <TextBlock Style="{StaticResource SubtitleTextBlockStyle}" Text="{x:Bind ViewModel.DiskCapacityText}" />
+          </StackPanel>
+        </Grid>
+
         <!-- Arbeitsspeicher detail panel (tm3-03): composition bar + the real TM value block. -->
         <StackPanel Spacing="12" Visibility="{x:Bind ViewModel.IsMemorySelected, Mode=OneWay}">
           <TextBlock Style="{StaticResource CaptionTextBlockStyle}" Text="Speicherzusammensetzung" />

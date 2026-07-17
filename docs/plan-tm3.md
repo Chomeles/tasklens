@@ -61,7 +61,7 @@ Windows CI (full-sln build + format) must stay green on `main` for every task.
 - [x] tm3-04-network (Adapter-Raten via NetworkInterface-Counter; Per-Prozess-ETW weiter offen) — `INetworkMetricsService` (per-adapter send/receive B/s, adapter kind
   Ethernet/WLAN, link speed, addresses); Ethernet/WLAN entries in the Leistung rail with
   send/receive graphs and detail panel; accept: rate computation + adapter grouping Linux-tested.
-- [ ] tm3-05-disk-gpu-details — per-physical-disk metrics (active time %, read/write B/s, response
+- [x] tm3-05-disk-gpu-details (ehrliches Subset: Lese-/Schreibrate + Kapazität; Aktivzeit/Antwortzeit brauchen PDH-Disk-Counter, offen) — per-physical-disk metrics (active time %, read/write B/s, response
   time via PDH `PhysicalDisk`; capacity, kind SSD/HDD) with one rail entry per disk; GPU panel
   gains dedicated/shared memory (PDH GPU Adapter Memory); accept: VM logic Linux-tested.
 - [x] tm3-06-startup-manage — enable/disable via `StartupApproved\Run` registry values, state

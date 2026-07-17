@@ -156,6 +156,35 @@ public sealed partial class Tm2PerformanceViewModel : ObservableObject
     /// <summary>True while the CPU rail entry is selected — shows Betriebszeit/Prozessoren facts.</summary>
     public bool IsCpuSelected => ReferenceEquals(SelectedEntry, cpu);
 
+    /// <summary>True while the Datenträger rail entry is selected — shows the disk facts (tm3-05).</summary>
+    public bool IsDiskSelected => ReferenceEquals(SelectedEntry, disk);
+
+    /// <summary>"1,5 KB/s" — system read rate (sum of per-process IO, the honest value).</summary>
+    [ObservableProperty]
+    private string diskReadText = "—";
+
+    /// <summary>"0,3 KB/s" — system write rate.</summary>
+    [ObservableProperty]
+    private string diskWriteText = "—";
+
+    /// <summary>Total capacity of all fixed drives — real DriveInfo data, computed once.</summary>
+    public string DiskCapacityText { get; } = ComputeDiskCapacity();
+
+    private static string ComputeDiskCapacity()
+    {
+        try
+        {
+            var total = DriveInfo.GetDrives()
+                .Where(d => d is { DriveType: DriveType.Fixed, IsReady: true })
+                .Sum(d => d.TotalSize);
+            return total > 0 ? ProcessFormat.Bytes(total) : "—";
+        }
+        catch (IOException)
+        {
+            return "—";
+        }
+    }
+
     /// <summary>"0:05:37:12" — time since boot (d:hh:mm:ss), ticking like the real TM.</summary>
     [ObservableProperty]
     private string uptimeText = "—";
@@ -168,6 +197,7 @@ public sealed partial class Tm2PerformanceViewModel : ObservableObject
     {
         OnPropertyChanged(nameof(IsMemorySelected));
         OnPropertyChanged(nameof(IsCpuSelected));
+        OnPropertyChanged(nameof(IsDiskSelected));
     }
 
     /// <summary>Applies one snapshot: delegates to <see cref="Sensors"/>, then composes the rail.</summary>
@@ -202,6 +232,8 @@ public sealed partial class Tm2PerformanceViewModel : ObservableObject
         // SystemSnapshot has no system-wide disk counter — the sum of the per-process IO rates is
         // the honest system value (it only misses IO not attributed to any process).
         disk.Append((float)(readRate + writeRate), ProcessFormat.DiskRate(readRate, writeRate));
+        DiskReadText = ProcessFormat.Rate(readRate);
+        DiskWriteText = ProcessFormat.Rate(writeRate);
 
         // Honest system GPU value: prefer a real GPU load sensor when one exists; without one
         // (no admin, VM) fall back to the sum of per-process GPU% — that sum can exceed 100 when
