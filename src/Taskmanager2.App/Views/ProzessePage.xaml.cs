@@ -22,6 +22,18 @@ public sealed partial class ProzessePage : Page
     private void OnSortHeaderClick(object sender, RoutedEventArgs e) =>
         ViewModel.Inner.SortByCommand.Execute(Enum.Parse<ProcessColumn>((string)((FrameworkElement)sender).Tag));
 
+    /// <summary>„Neuen Task ausführen": show the run dialog, launch on OK (tm3-02).</summary>
+    private async void OnRunTaskClick(object sender, RoutedEventArgs e)
+    {
+        RunTaskCommand.Text = string.Empty;
+        RunTaskElevated.IsChecked = false;
+        RunTaskDialog.XamlRoot = XamlRoot;
+        if (await RunTaskDialog.ShowAsync() == ContentDialogResult.Primary && RunTaskCommand.Text.Length > 0)
+        {
+            ViewModel.RunTask(RunTaskCommand.Text, RunTaskElevated.IsChecked == true);
+        }
+    }
+
     /// <summary>App-row chevron: flip the row's window-child visibility.</summary>
     private void OnRowToggleClick(object sender, RoutedEventArgs e)
     {
@@ -72,6 +84,12 @@ public sealed partial class ProzessePage : Page
 
     private void OnEndTreeClick(object sender, RoutedEventArgs e) =>
         RunOnRow(sender, entireTree: true);
+
+    private void OnEfficiencyClick(object sender, RoutedEventArgs e)
+    {
+        ViewModel.SelectedRow = (Tm2ProcessRowViewModel)((FrameworkElement)sender).DataContext;
+        ViewModel.EfficiencyCommand.Execute(null);
+    }
 
     private void RunOnRow(object sender, bool entireTree)
     {

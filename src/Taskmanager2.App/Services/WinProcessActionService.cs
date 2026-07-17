@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 using TaskLens.Core.Services;
 
 namespace Taskmanager2.App.Services;
@@ -28,4 +29,85 @@ public sealed class WinProcessActionService : IProcessActionService
             return ActionResult.Fail(ex.Message);
         }
     }
+
+    /// <summary>Real TM's Effizienzmodus: EcoQoS execution-speed throttling + idle priority.</summary>
+    public ActionResult SetEfficiencyMode(int pid)
+    {
+        var handle = OpenProcess(ProcessSetInformation, false, pid);
+        if (handle == IntPtr.Zero)
+        {
+            return ActionResult.Fail("Zugriff verweigert oder Prozess beendet.");
+        }
+
+        try
+        {
+            var state = new ProcessPowerThrottlingState
+            {
+                Version = 1,
+                ControlMask = PowerThrottlingExecutionSpeed,
+                StateMask = PowerThrottlingExecutionSpeed,
+            };
+            if (!SetProcessInformation(handle, ProcessPowerThrottlingClass, ref state, (uint)Marshal.SizeOf<ProcessPowerThrottlingState>()))
+            {
+                return ActionResult.Fail(new Win32Exception().Message);
+            }
+
+            SetPriorityClass(handle, IdlePriorityClass); // best effort, EcoQoS is the main lever
+            return ActionResult.Ok;
+        }
+        finally
+        {
+            CloseHandle(handle);
+        }
+    }
+
+    /// <summary>„Neuen Task ausführen": shell launch so URLs/documents work, optional runas.</summary>
+    public ActionResult Launch(string command, bool elevated)
+    {
+        if (string.IsNullOrWhiteSpace(command))
+        {
+            return ActionResult.Fail("Kein Befehl angegeben.");
+        }
+
+        try
+        {
+            var info = new ProcessStartInfo { FileName = command.Trim(), UseShellExecute = true };
+            if (elevated)
+            {
+                info.Verb = "runas";
+            }
+
+            using var _ = Process.Start(info);
+            return ActionResult.Ok;
+        }
+        catch (Exception ex) when (ex is Win32Exception or InvalidOperationException or System.IO.FileNotFoundException or PlatformNotSupportedException)
+        {
+            return ActionResult.Fail(ex.Message);
+        }
+    }
+
+    private const int ProcessSetInformation = 0x0200;
+    private const int ProcessPowerThrottlingClass = 4; // PROCESS_INFORMATION_CLASS.ProcessPowerThrottling
+    private const uint PowerThrottlingExecutionSpeed = 0x1;
+    private const uint IdlePriorityClass = 0x40;
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct ProcessPowerThrottlingState
+    {
+        public uint Version;
+        public uint ControlMask;
+        public uint StateMask;
+    }
+
+    [DllImport("kernel32.dll", SetLastError = true)]
+    private static extern IntPtr OpenProcess(int desiredAccess, bool inheritHandle, int processId);
+
+    [DllImport("kernel32.dll", SetLastError = true)]
+    private static extern bool SetProcessInformation(IntPtr process, int infoClass, ref ProcessPowerThrottlingState info, uint size);
+
+    [DllImport("kernel32.dll", SetLastError = true)]
+    private static extern bool SetPriorityClass(IntPtr process, uint priorityClass);
+
+    [DllImport("kernel32.dll", SetLastError = true)]
+    private static extern bool CloseHandle(IntPtr handle);
 }

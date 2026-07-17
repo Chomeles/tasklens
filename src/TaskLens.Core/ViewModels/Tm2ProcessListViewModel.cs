@@ -49,6 +49,7 @@ public sealed partial class Tm2ProcessListViewModel : ObservableObject
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(EndTaskCommand))]
     [NotifyCanExecuteChangedFor(nameof(EndTreeCommand))]
+    [NotifyCanExecuteChangedFor(nameof(EfficiencyCommand))]
     private Tm2ProcessRowViewModel? selectedRow;
 
     /// <summary>Error text of the last failed action; null when the last action succeeded.</summary>
@@ -67,6 +68,27 @@ public sealed partial class Tm2ProcessListViewModel : ObservableObject
     /// <summary>Prozessstruktur beenden — terminates the selected process and its descendants.</summary>
     [RelayCommand(CanExecute = nameof(CanRunAction))]
     private void EndTree() => RunAction(entireTree: true);
+
+    /// <summary>Effizienzmodus — EcoQoS throttling for the selected process (tm3-02).</summary>
+    [RelayCommand(CanExecute = nameof(CanRunAction))]
+    private void Efficiency()
+    {
+        if (actions is not null && SelectedRow is not null)
+        {
+            var result = actions.SetEfficiencyMode(SelectedRow.Pid);
+            LastActionError = result.Success ? null : result.Error;
+        }
+    }
+
+    /// <summary>„Neuen Task ausführen" — shell launch from the run dialog (tm3-02).</summary>
+    public void RunTask(string command, bool elevated)
+    {
+        if (actions is not null)
+        {
+            var result = actions.Launch(command, elevated);
+            LastActionError = result.Success ? null : result.Error;
+        }
+    }
 
     private void RunAction(bool entireTree)
     {

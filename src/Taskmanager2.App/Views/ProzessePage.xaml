@@ -44,9 +44,8 @@
       <RowDefinition Height="*" />
     </Grid.RowDefinitions>
 
-    <!-- Real Win11 top bar: search left; „Neuen Task ausführen" (accent) / „Task beenden" /
-         „Effizienzmodus" / „…" right. Task beenden is real (tm3-01); the others are visual-only
-         no-ops for now — greyed-out buttons would break the 1:1 look. -->
+    <!-- Real Win11 top bar: „Neuen Task ausführen" (accent, echter Dialog) / „Task beenden" /
+         „Effizienzmodus" (echtes EcoQoS) / „…" — alle Aktionen real seit tm3-01/tm3-02. -->
     <Grid Grid.Row="0" ColumnSpacing="8">
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="*" />
@@ -56,14 +55,29 @@
            and action buttons, mirroring the Win11 layout. -->
       <TextBlock Grid.Column="0" VerticalAlignment="Center" FontSize="20" FontWeight="SemiBold" Text="Prozesse" />
       <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
-        <Button Content="Neuen Task ausführen" Style="{StaticResource AccentButtonStyle}" />
+        <Button Click="OnRunTaskClick" Content="Neuen Task ausführen" Style="{StaticResource AccentButtonStyle}" />
         <Button Command="{x:Bind ViewModel.EndTaskCommand}" Content="Task beenden" />
-        <Button Content="Effizienzmodus" />
+        <Button Command="{x:Bind ViewModel.EfficiencyCommand}" Content="Effizienzmodus" />
         <Button Padding="8,6">
           <FontIcon FontSize="14" Glyph="&#xE712;" />
         </Button>
       </StackPanel>
     </Grid>
+
+    <!-- „Neuen Task ausführen" — the real TM's run dialog: command box + admin checkbox. -->
+    <ContentDialog
+      x:Name="RunTaskDialog"
+      Title="Neuen Task erstellen"
+      CloseButtonText="Abbrechen"
+      DefaultButton="Primary"
+      PrimaryButtonText="OK">
+      <StackPanel Width="380" Spacing="12">
+        <TextBlock TextWrapping="Wrap"
+                   Text="Geben Sie den Namen eines Programms, Ordners, Dokuments oder einer Internetressource an." />
+        <TextBox x:Name="RunTaskCommand" PlaceholderText="Öffnen" />
+        <CheckBox x:Name="RunTaskElevated" Content="Diesen Task mit Administratorrechten erstellen" />
+      </StackPanel>
+    </ContentDialog>
 
     <InfoBar
       Grid.Row="1"
@@ -71,7 +85,7 @@
       IsOpen="{x:Bind ViewModel.HasActionError, Mode=OneWay}"
       Message="{x:Bind ViewModel.LastActionError, Mode=OneWay}"
       Severity="Error"
-      Title="Task konnte nicht beendet werden" />
+      Title="Aktion fehlgeschlagen" />
 
     <!-- Authentic header row: metric columns show the big system aggregate over the small column
          label, cell tinted by the same heat ramp as the rows; clicking sorts via Inner.SortBy. -->
@@ -188,6 +202,7 @@
                         <MenuFlyout>
                           <MenuFlyoutItem Click="OnEndTaskClick" Text="Task beenden" />
                           <MenuFlyoutItem Click="OnEndTreeClick" Text="Prozessstruktur beenden" />
+                          <MenuFlyoutItem Click="OnEfficiencyClick" Text="Effizienzmodus" />
                         </MenuFlyout>
                       </Grid.ContextFlyout>
                       <Grid.ColumnDefinitions>

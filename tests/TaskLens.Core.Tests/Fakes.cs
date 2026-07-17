@@ -112,6 +112,22 @@ internal sealed class FakeProcessActionService : IProcessActionService
         Calls.Add((pid, entireTree));
         return Result;
     }
+
+    public List<int> EfficiencyCalls { get; } = [];
+
+    public List<(string Command, bool Elevated)> Launches { get; } = [];
+
+    public ActionResult SetEfficiencyMode(int pid)
+    {
+        EfficiencyCalls.Add(pid);
+        return Result;
+    }
+
+    public ActionResult Launch(string command, bool elevated)
+    {
+        Launches.Add((command, elevated));
+        return Result;
+    }
 }
 
 internal sealed class FakeStartupManager : IStartupManager
