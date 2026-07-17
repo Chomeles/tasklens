@@ -59,6 +59,20 @@ public sealed partial class ProcessRowViewModel : ObservableObject
     [ObservableProperty]
     private bool isExpanded;
 
+    /// <summary>Token owner ("Orkan"); null when the process can't be opened → "—" cell.</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(UserNameText))]
+    private string? userName;
+
+    /// <summary>"x64"/"x86"/"ARM64"; null when unknown → "—" cell.</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ArchitectureText))]
+    private string? architecture;
+
+    public string UserNameText => UserName ?? "—";
+
+    public string ArchitectureText => Architecture ?? "—";
+
     public void Update(ProcessDelta delta)
     {
         ArgumentNullException.ThrowIfNull(delta);
@@ -70,5 +84,7 @@ public sealed partial class ProcessRowViewModel : ObservableObject
         IoWriteBytesPerSecond = delta.IoWriteBytesPerSecond;
         Group = ProcessClassification.Classify(delta.Sample);
         WindowTitle = delta.Sample.WindowTitle;
+        UserName = delta.Sample.UserName;
+        Architecture = delta.Sample.Architecture;
     }
 }

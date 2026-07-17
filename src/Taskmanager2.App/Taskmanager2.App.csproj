@@ -29,6 +29,7 @@
   <ItemGroup>
     <!-- Link-compiled from TaskLens.App (plan-tm2.md: no logic duplicated, SmokeTests precedent). -->
     <Compile Include="..\TaskLens.App\Services\NtProcessEnumerator.cs" LinkBase="Linked" />
+    <Compile Include="..\TaskLens.App\Services\ProcessIdentity.cs" LinkBase="Linked" />
     <Compile Include="..\TaskLens.App\Services\LhmSensorService.cs" LinkBase="Linked" />
     <Compile Include="..\TaskLens.App\Services\WinSystemMetricsService.cs" LinkBase="Linked" />
     <Compile Include="..\TaskLens.App\Services\PdhGpuProcessService.cs" LinkBase="Linked" />

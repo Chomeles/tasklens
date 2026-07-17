@@ -110,13 +110,18 @@ internal sealed class NtProcessEnumerator : IProcessEnumerator
         }
 
         var result = new List<ProcessSample>(samples.Count);
+        var livePids = new HashSet<int>(samples.Count);
         foreach (var sample in samples)
         {
+            livePids.Add(sample.Pid);
+            var (user, architecture) = ProcessIdentity.Lookup(sample.Pid);
+            var enriched = sample with { UserName = user, Architecture = architecture };
             result.Add(windowTitles.TryGetValue(sample.Pid, out var title)
-                ? sample with { HasVisibleWindow = true, WindowTitle = title }
-                : sample);
+                ? enriched with { HasVisibleWindow = true, WindowTitle = title }
+                : enriched);
         }
 
+        ProcessIdentity.Prune(livePids);
         return result;
     }
 }

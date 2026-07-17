@@ -15,27 +15,31 @@
     <!-- Real TM page header: big title left, like every Win11 TM page. -->
     <TextBlock Grid.Row="0" FontSize="20" FontWeight="SemiBold" Text="Details" />
 
-    <!-- Dense table, real Win11 Details page columns — only what Core actually provides:
-         Name, PID, Status, CPU, Arbeitsspeicher. Benutzername/Architektur/Beschreibung dropped:
-         no per-process owner/architecture/description data exists in the pipeline (never fabricated). -->
+    <!-- Dense table, real Win11 Details page column order: Name, PID, Status, Benutzername,
+         CPU, Arbeitsspeicher, Architektur — owner/architecture are real token/IsWow64Process2
+         reads, em-dash when the process can't be opened (never fabricated). -->
     <Grid Grid.Row="1" Padding="12,0" ColumnSpacing="8">
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="*" />
         <ColumnDefinition Width="64" />
         <ColumnDefinition Width="90" />
+        <ColumnDefinition Width="130" />
         <ColumnDefinition Width="64" />
         <ColumnDefinition Width="110" />
+        <ColumnDefinition Width="90" />
       </Grid.ColumnDefinitions>
       <Button Grid.Column="0" HorizontalAlignment="Stretch" Tag="Name" Click="OnSortHeaderClick"
               Content="{x:Bind vm:ProcessFormat.Header('Name', 'Name', ViewModel.SortColumn, ViewModel.SortDescending), Mode=OneWay}" />
       <Button Grid.Column="1" HorizontalAlignment="Stretch" Tag="Pid" Click="OnSortHeaderClick"
               Content="{x:Bind vm:ProcessFormat.Header('PID', 'Pid', ViewModel.SortColumn, ViewModel.SortDescending), Mode=OneWay}" />
       <TextBlock Grid.Column="2" HorizontalAlignment="Center" VerticalAlignment="Center" Text="Status" />
-      <Button Grid.Column="3" HorizontalAlignment="Stretch" Tag="Cpu" Click="OnSortHeaderClick"
+      <TextBlock Grid.Column="3" VerticalAlignment="Center" Text="Benutzername" />
+      <Button Grid.Column="4" HorizontalAlignment="Stretch" Tag="Cpu" Click="OnSortHeaderClick"
               Content="{x:Bind vm:ProcessFormat.Header('CPU', 'Cpu', ViewModel.SortColumn, ViewModel.SortDescending), Mode=OneWay}" />
-      <Button Grid.Column="4" HorizontalAlignment="Stretch" Tag="Memory" Click="OnSortHeaderClick"
+      <Button Grid.Column="5" HorizontalAlignment="Stretch" Tag="Memory" Click="OnSortHeaderClick"
               Content="{x:Bind vm:ProcessFormat.Header('Arbeitsspeicher', 'Memory', ViewModel.SortColumn, ViewModel.SortDescending), Mode=OneWay}"
               ToolTipService.ToolTip="Aktiver privater Arbeitssatz" />
+      <TextBlock Grid.Column="6" VerticalAlignment="Center" Text="Architektur" />
     </Grid>
 
     <ListView
@@ -56,16 +60,20 @@
               <ColumnDefinition Width="*" />
               <ColumnDefinition Width="64" />
               <ColumnDefinition Width="90" />
+              <ColumnDefinition Width="130" />
               <ColumnDefinition Width="64" />
               <ColumnDefinition Width="110" />
+              <ColumnDefinition Width="90" />
             </Grid.ColumnDefinitions>
             <TextBlock Grid.Column="0" VerticalAlignment="Center" Text="{x:Bind Name, Mode=OneWay}" TextTrimming="CharacterEllipsis" />
             <TextBlock Grid.Column="1" VerticalAlignment="Center" Text="{x:Bind Pid}" TextAlignment="Right" />
             <!-- ponytail: Status-Zelle bleibt leer — keine Suspend-Detection in Core. -->
-            <Border Grid.Column="3" Background="{x:Bind svc:CellHeat.Brush(CpuPercent), Mode=OneWay}">
+            <TextBlock Grid.Column="3" VerticalAlignment="Center" Text="{x:Bind UserNameText, Mode=OneWay}" TextTrimming="CharacterEllipsis" />
+            <Border Grid.Column="4" Background="{x:Bind svc:CellHeat.Brush(CpuPercent), Mode=OneWay}">
               <TextBlock VerticalAlignment="Center" Text="{x:Bind vm:ProcessFormat.Percent(CpuPercent), Mode=OneWay}" TextAlignment="Right" />
             </Border>
-            <TextBlock Grid.Column="4" VerticalAlignment="Center" Text="{x:Bind vm:ProcessFormat.Bytes(WorkingSetBytes), Mode=OneWay}" TextAlignment="Right" />
+            <TextBlock Grid.Column="5" VerticalAlignment="Center" Text="{x:Bind vm:ProcessFormat.Bytes(WorkingSetBytes), Mode=OneWay}" TextAlignment="Right" />
+            <TextBlock Grid.Column="6" VerticalAlignment="Center" Text="{x:Bind ArchitectureText, Mode=OneWay}" TextAlignment="Right" />
           </Grid>
         </DataTemplate>
       </ListView.ItemTemplate>
