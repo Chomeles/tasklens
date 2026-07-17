@@ -14,7 +14,8 @@ public sealed record SystemSnapshot(
     long MemoryUsedBytes,
     long MemoryTotalBytes,
     MemoryDetails? Memory = null,
-    IReadOnlyList<NetworkAdapterRate>? Network = null)
+    IReadOnlyList<NetworkAdapterRate>? Network = null,
+    DiskDetails? Disk = null)
 {
     /// <summary>Per-adapter throughput; empty when the platform provides none.</summary>
     public IReadOnlyList<NetworkAdapterRate> Network { get; init; } = Network ?? [];

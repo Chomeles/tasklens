@@ -29,6 +29,7 @@
     <Compile Include="..\..\src\TaskLens.App\Services\NtProcessEnumerator.cs" LinkBase="Linked" />
     <Compile Include="..\..\src\TaskLens.App\Services\ProcessIdentity.cs" LinkBase="Linked" />
     <Compile Include="..\..\src\TaskLens.App\Services\WinSystemMetricsService.cs" LinkBase="Linked" />
+    <Compile Include="..\..\src\TaskLens.App\Services\PdhDiskMetrics.cs" LinkBase="Linked" />
     <Compile Include="..\..\src\TaskLens.App\Services\NetworkRateSampler.cs" LinkBase="Linked" />
     <Compile Include="..\..\src\TaskLens.App\Services\Interop\NtDll.cs" LinkBase="Linked" />
     <Compile Include="..\..\src\TaskLens.App\Services\Interop\Kernel32.cs" LinkBase="Linked" />

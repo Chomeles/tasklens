@@ -148,7 +148,8 @@ public sealed class SamplingEngine
             MemoryUsedBytes: metrics.MemoryUsedBytes,
             MemoryTotalBytes: metrics.MemoryTotalBytes,
             Memory: metrics.Memory,
-            Network: metrics.Network);
+            Network: metrics.Network,
+            Disk: metrics.Disk);
 
         dispatcher.Post(() => SnapshotReady?.Invoke(snapshot));
     }

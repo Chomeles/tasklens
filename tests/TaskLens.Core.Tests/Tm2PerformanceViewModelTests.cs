@@ -244,6 +244,19 @@ public class Tm2PerformanceViewModelTests
         Assert.True(notified);
     }
     [Fact]
+    public void DiskDetails_DriveGraphAndPanel_FallbackToIoSums()
+    {
+        vm.ApplySnapshot(Snap() with { Disk = new DiskDetails(ActiveTimePercent: 12.3, AverageResponseSeconds: 0.0014) });
+        Assert.Equal([12.3f], vm.Entries[2].History);
+        Assert.Equal("12,3 %", vm.DiskActiveText);
+        Assert.Equal("1,4 ms", vm.DiskResponseText);
+
+        vm.ApplySnapshot(Snap([Delta(1, ioRead: 1024 * 1024)]));
+        Assert.Equal("—", vm.DiskActiveText);
+        Assert.Equal([12.3f, 1024f * 1024], vm.Entries[2].History);
+    }
+
+    [Fact]
     public void NetworkAdapters_GetRailEntries_WithUtilizationHistory()
     {
         vm.ApplySnapshot(Snap() with

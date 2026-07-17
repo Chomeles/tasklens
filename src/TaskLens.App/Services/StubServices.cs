@@ -42,5 +42,6 @@ internal sealed class StubSystemMetricsService : ISystemMetricsService
         Network:
         [
             new NetworkAdapterRate("Ethernet", ReceivedBytesPerSecond: 262144, SentBytesPerSecond: 65536, LinkSpeedBitsPerSecond: 1_000_000_000),
-        ]);
+        ],
+        Disk: new DiskDetails(ActiveTimePercent: 7.5, AverageResponseSeconds: 0.0014));
 }

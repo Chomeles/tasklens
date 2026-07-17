@@ -37,6 +37,10 @@ public static class ProcessFormat
             : string.Create(DisplayCulture, $"{bits / 1_000:0.0} KBit/s");
     }
 
+    /// <summary>"1,4 ms" — average response time from seconds, the real TM's Antwortzeit format.</summary>
+    public static string Milliseconds(double seconds) =>
+        string.Create(DisplayCulture, $"{seconds * 1000:0.0} ms");
+
     /// <summary>"0:05:37:12" — d:hh:mm:ss, the real TM's Betriebszeit format.</summary>
     public static string Uptime(TimeSpan value) =>
         string.Create(DisplayCulture, $"{(int)value.TotalDays}:{value.Hours:00}:{value.Minutes:00}:{value.Seconds:00}");

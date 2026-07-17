@@ -167,6 +167,14 @@ public sealed partial class Tm2PerformanceViewModel : ObservableObject
     [ObservableProperty]
     private string diskWriteText = "—";
 
+    /// <summary>"12,3 %" — physical-disk active time; dash without PDH counters.</summary>
+    [ObservableProperty]
+    private string diskActiveText = "—";
+
+    /// <summary>"1,4 ms" — average transfer response; dash without PDH counters.</summary>
+    [ObservableProperty]
+    private string diskResponseText = "—";
+
     /// <summary>Total capacity of all fixed drives — real DriveInfo data, computed once.</summary>
     public string DiskCapacityText { get; } = ComputeDiskCapacity();
 
@@ -231,7 +239,21 @@ public sealed partial class Tm2PerformanceViewModel : ObservableObject
 
         // SystemSnapshot has no system-wide disk counter — the sum of the per-process IO rates is
         // the honest system value (it only misses IO not attributed to any process).
-        disk.Append((float)(readRate + writeRate), ProcessFormat.DiskRate(readRate, writeRate));
+        // With PDH disk counters the graph shows Aktive Zeit % like the real TM; without them it
+        // falls back to the per-process IO-rate sum (honest, but a rate, not a percent).
+        if (snapshot.Disk is { } diskDetails)
+        {
+            disk.Append((float)diskDetails.ActiveTimePercent, SensorRowViewModel.Format(SensorKind.Load, (float)diskDetails.ActiveTimePercent));
+            DiskActiveText = SensorRowViewModel.Format(SensorKind.Load, (float)diskDetails.ActiveTimePercent);
+            DiskResponseText = ProcessFormat.Milliseconds(diskDetails.AverageResponseSeconds);
+        }
+        else
+        {
+            disk.Append((float)(readRate + writeRate), ProcessFormat.DiskRate(readRate, writeRate));
+            DiskActiveText = "—";
+            DiskResponseText = "—";
+        }
+
         DiskReadText = ProcessFormat.Rate(readRate);
         DiskWriteText = ProcessFormat.Rate(writeRate);
 

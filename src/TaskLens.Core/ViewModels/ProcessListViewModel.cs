@@ -70,6 +70,11 @@ public sealed partial class ProcessListViewModel : ObservableObject
     [ObservableProperty]
     private double systemNetworkPercent;
 
+    /// <summary>Disk active time % (PDH), above the Datenträger column header; IO-sum tint fallback
+    /// applies in the view when this stays 0 without counters.</summary>
+    [ObservableProperty]
+    private double systemDiskPercent;
+
     partial void OnFilterChanged(string value) => RefreshView();
 
     partial void OnSortColumnChanged(ProcessColumn value) => RefreshView();
@@ -103,6 +108,10 @@ public sealed partial class ProcessListViewModel : ObservableObject
         SystemNetworkPercent = snapshot.Network.Count > 0
             ? snapshot.Network.Max(a => a.UtilizationPercent)
             : 0;
+        SystemDiskPercent = snapshot.Disk?.ActiveTimePercent
+            ?? HeatMap.DiskPercent(
+                snapshot.Processes.Sum(d => d.IoReadBytesPerSecond),
+                snapshot.Processes.Sum(d => d.IoWriteBytesPerSecond));
 
         allRows.Clear();
         var seen = new HashSet<(int Pid, DateTime StartTimeUtc)>();

@@ -33,6 +33,17 @@ internal static partial class Pdh
     internal static partial uint PdhGetFormattedCounterArray(
         nint counter, uint format, ref int bufferSize, ref int itemCount, nint itemBuffer);
 
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct FormattedCounterValue
+    {
+        public uint Status;
+        public double DoubleValue; // union member; only the double form is ever read (PdhFmtDouble)
+    }
+
+    [LibraryImport("pdh.dll", EntryPoint = "PdhGetFormattedCounterValue")]
+    internal static partial uint PdhGetFormattedCounterValue(
+        nint counter, uint format, nint counterType, out FormattedCounterValue value);
+
     [LibraryImport("pdh.dll")]
     internal static partial uint PdhCloseQuery(nint query);
 }

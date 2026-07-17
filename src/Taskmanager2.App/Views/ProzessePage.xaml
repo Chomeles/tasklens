@@ -115,10 +115,10 @@
         </StackPanel>
       </Button>
       <Button Grid.Column="4" Style="{StaticResource HeaderCellButton}" Tag="Disk" Click="OnSortHeaderClick"
-              Background="{x:Bind svc:CellHeat.DiskBrush(ViewModel.Inner.Totals.IoReadBytesPerSecond, ViewModel.Inner.Totals.IoWriteBytesPerSecond), Mode=OneWay}">
+              Background="{x:Bind svc:CellHeat.Brush(ViewModel.Inner.SystemDiskPercent), Mode=OneWay}">
         <StackPanel>
           <TextBlock HorizontalAlignment="Right" FontSize="14"
-                     Text="{x:Bind vm:ProcessFormat.DiskHeaderPercent(ViewModel.Inner.Totals.IoReadBytesPerSecond, ViewModel.Inner.Totals.IoWriteBytesPerSecond), Mode=OneWay}" />
+                     Text="{x:Bind vm:ProcessFormat.HeaderPercent(ViewModel.Inner.SystemDiskPercent), Mode=OneWay}" />
           <TextBlock HorizontalAlignment="Right" FontSize="12" Opacity="0.8"
                      Text="{x:Bind vm:ProcessFormat.Header('Datenträger', 'Disk', ViewModel.Inner.SortColumn, ViewModel.Inner.SortDescending), Mode=OneWay}" />
         </StackPanel>
