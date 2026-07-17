@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using TaskLens.App.Services;
 
 namespace TaskLens.App.SmokeTests;
@@ -35,6 +36,16 @@ public class NtProcessEnumeratorSmokeTests
         var me = Assert.Single(new NtProcessEnumerator().Enumerate(), s => s.Pid == Environment.ProcessId);
 
         Assert.EndsWith(".exe", me.Name, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public void CommandLine_OfOwnProcess_ContainsProcessName()
+    {
+        // Direct identity lookup: Enumerate() only enriches when the session has visible windows.
+        var (_, _, commandLine) = ProcessIdentity.Lookup(Environment.ProcessId);
+
+        Assert.False(string.IsNullOrEmpty(commandLine));
+        Assert.Contains(Process.GetCurrentProcess().ProcessName, commandLine, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]

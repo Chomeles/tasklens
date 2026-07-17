@@ -28,8 +28,9 @@
     </Grid>
 
     <!-- Dense table, real Win11 Details page column order: Name, PID, Status, Benutzername,
-         CPU, Arbeitsspeicher, Architektur — owner/architecture are real token/IsWow64Process2
-         reads, em-dash when the process can't be opened (never fabricated). -->
+         CPU, Arbeitsspeicher, Architektur, Befehlszeile — owner/architecture/command line are real
+         token/IsWow64Process2/NtQueryInformationProcess reads, em-dash (command line: empty) when
+         the process can't be opened (never fabricated). -->
     <Grid Grid.Row="1" Padding="12,0" ColumnSpacing="8">
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="*" />
@@ -39,6 +40,7 @@
         <ColumnDefinition Width="64" />
         <ColumnDefinition Width="110" />
         <ColumnDefinition Width="90" />
+        <ColumnDefinition Width="200" />
       </Grid.ColumnDefinitions>
       <Button Grid.Column="0" HorizontalAlignment="Stretch" Tag="Name" Click="OnSortHeaderClick"
               Content="{x:Bind vm:ProcessFormat.Header('Name', 'Name', ViewModel.SortColumn, ViewModel.SortDescending), Mode=OneWay}" />
@@ -52,6 +54,7 @@
               Content="{x:Bind vm:ProcessFormat.Header('Arbeitsspeicher', 'Memory', ViewModel.SortColumn, ViewModel.SortDescending), Mode=OneWay}"
               ToolTipService.ToolTip="Aktiver privater Arbeitssatz" />
       <TextBlock Grid.Column="6" VerticalAlignment="Center" Text="Architektur" />
+      <TextBlock Grid.Column="7" VerticalAlignment="Center" Text="Befehlszeile" />
     </Grid>
 
     <ListView
@@ -90,6 +93,7 @@
               <ColumnDefinition Width="64" />
               <ColumnDefinition Width="110" />
               <ColumnDefinition Width="90" />
+              <ColumnDefinition Width="200" />
             </Grid.ColumnDefinitions>
             <TextBlock Grid.Column="0" VerticalAlignment="Center" Text="{x:Bind Name, Mode=OneWay}" TextTrimming="CharacterEllipsis" />
             <TextBlock Grid.Column="1" VerticalAlignment="Center" Text="{x:Bind Pid}" TextAlignment="Right" />
@@ -100,6 +104,7 @@
             </Border>
             <TextBlock Grid.Column="5" VerticalAlignment="Center" Text="{x:Bind vm:ProcessFormat.Bytes(WorkingSetBytes), Mode=OneWay}" TextAlignment="Right" />
             <TextBlock Grid.Column="6" VerticalAlignment="Center" Text="{x:Bind ArchitectureText, Mode=OneWay}" TextAlignment="Right" />
+            <TextBlock Grid.Column="7" VerticalAlignment="Center" Text="{x:Bind CommandLineText, Mode=OneWay}" TextTrimming="CharacterEllipsis" />
           </Grid>
         </DataTemplate>
       </ListView.ItemTemplate>

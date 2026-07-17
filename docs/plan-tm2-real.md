@@ -21,7 +21,7 @@ verschachtelte Aufrufe; TextBlock ohne Background (Border).
   Session-Waisen beim Start stoppen, ohne Admin → Availability „RequiresAdmin", Zellen ehrlich 0.
   Prozesse-Spalte + Heatmap echt statt hart „0 MBit/s". Smoke-Test: Loopback-Transfer, eigene PID
   taucht auf (CI-Runner sind admin; ohne Rechte → skip).
-- [ ] **tm2r-02: Befehlszeile-Spalte (Details)** — echte TM-Spalte, Process-Explorer-Standard.
+- [x] **tm2r-02: Befehlszeile-Spalte (Details)** — echte TM-Spalte, Process-Explorer-Standard.
   `NtQueryInformationProcess` Klasse 60 (ProcessCommandLineInformation), PID-Cache mit Prune wie
   Benutzername/Architektur. Smoke-Test: eigene Befehlszeile enthält Prozessnamen.
 - [ ] **tm2r-03: Netzwerkverbindungen-Dialog (TCPView-Ersatz)** — Kontextmenü Details/Prozesse →

@@ -73,9 +73,17 @@ public sealed partial class ProcessRowViewModel : ObservableObject
     [NotifyPropertyChangedFor(nameof(ArchitectureText))]
     private string? architecture;
 
+    /// <summary>Full command line; null when the process can't be queried → empty cell,
+    /// like the real TM's Befehlszeile column for protected processes.</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(CommandLineText))]
+    private string? commandLine;
+
     public string UserNameText => UserName ?? "—";
 
     public string ArchitectureText => Architecture ?? "—";
+
+    public string CommandLineText => CommandLine ?? "";
 
     public void Update(ProcessDelta delta)
     {
@@ -91,5 +99,6 @@ public sealed partial class ProcessRowViewModel : ObservableObject
         WindowTitle = delta.Sample.WindowTitle;
         UserName = delta.Sample.UserName;
         Architecture = delta.Sample.Architecture;
+        CommandLine = delta.Sample.CommandLine;
     }
 }

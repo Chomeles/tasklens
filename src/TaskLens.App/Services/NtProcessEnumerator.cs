@@ -114,8 +114,8 @@ internal sealed class NtProcessEnumerator : IProcessEnumerator
         foreach (var sample in samples)
         {
             livePids.Add(sample.Pid);
-            var (user, architecture) = ProcessIdentity.Lookup(sample.Pid);
-            var enriched = sample with { UserName = user, Architecture = architecture };
+            var (user, architecture, commandLine) = ProcessIdentity.Lookup(sample.Pid);
+            var enriched = sample with { UserName = user, Architecture = architecture, CommandLine = commandLine };
             result.Add(windowTitles.TryGetValue(sample.Pid, out var title)
                 ? enriched with { HasVisibleWindow = true, WindowTitle = title }
                 : enriched);

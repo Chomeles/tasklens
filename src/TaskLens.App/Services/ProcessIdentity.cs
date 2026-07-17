@@ -4,26 +4,27 @@ using System.Runtime.InteropServices;
 namespace TaskLens.App.Services;
 
 /// <summary>
-/// Per-process owner ("DESKTOP\Orkan", token user SID → account name) and architecture ("x64",
-/// "x86", "ARM64") for the Details page — the real Task Manager's Benutzername/Architektur
-/// columns. Both are immutable for a process lifetime, so lookups are cached by PID; processes we
-/// cannot open (system-protected) yield nulls and the cells render as em-dashes, never invented.
+/// Per-process owner ("DESKTOP\Orkan", token user SID → account name), architecture ("x64",
+/// "x86", "ARM64") and command line for the Details page — the real Task Manager's
+/// Benutzername/Architektur/Befehlszeile columns. All are immutable for a process lifetime, so
+/// lookups are cached by PID; processes we cannot open (system-protected) yield nulls and the
+/// cells render as em-dashes (command line: empty), never invented.
 /// </summary>
 internal static class ProcessIdentity
 {
-    private static readonly ConcurrentDictionary<int, (string? User, string? Architecture)> Cache = new();
+    private static readonly ConcurrentDictionary<int, (string? User, string? Architecture, string? CommandLine)> Cache = new();
 
-    internal static (string? User, string? Architecture) Lookup(int pid) => Cache.GetOrAdd(pid, static p =>
+    internal static (string? User, string? Architecture, string? CommandLine) Lookup(int pid) => Cache.GetOrAdd(pid, static p =>
     {
         var handle = OpenProcess(ProcessQueryLimitedInformation, false, p);
         if (handle == IntPtr.Zero)
         {
-            return (null, null);
+            return (null, null, null);
         }
 
         try
         {
-            return (TryGetUser(handle), TryGetArchitecture(handle));
+            return (TryGetUser(handle), TryGetArchitecture(handle), TryGetCommandLine(handle));
         }
         finally
         {
@@ -100,7 +101,37 @@ internal static class ProcessIdentity
         };
     }
 
+    private static string? TryGetCommandLine(IntPtr process)
+    {
+        // Two-stage: size probe answers STATUS_INFO_LENGTH_MISMATCH with the required length, then
+        // the fetch fills a UNICODE_STRING header whose Buffer points at the chars right after it.
+        // PROCESS_QUERY_LIMITED_INFORMATION suffices for class 60 (Win 8.1+).
+        var status = NtQueryInformationProcess(process, ProcessCommandLineInformation, IntPtr.Zero, 0, out var size);
+        if (status != Interop.NtDll.StatusInfoLengthMismatch || size == 0)
+        {
+            return null;
+        }
+
+        var buffer = Marshal.AllocHGlobal((int)size);
+        try
+        {
+            if (NtQueryInformationProcess(process, ProcessCommandLineInformation, buffer, size, out _) != 0)
+            {
+                return null;
+            }
+
+            var lengthBytes = (ushort)Marshal.ReadInt16(buffer);  // UNICODE_STRING.Length
+            var chars = Marshal.ReadIntPtr(buffer, IntPtr.Size);  // UNICODE_STRING.Buffer
+            return chars == IntPtr.Zero ? null : Marshal.PtrToStringUni(chars, lengthBytes / 2);
+        }
+        finally
+        {
+            Marshal.FreeHGlobal(buffer);
+        }
+    }
+
     private const int ProcessQueryLimitedInformation = 0x1000;
+    private const int ProcessCommandLineInformation = 60;
     private const uint TokenQuery = 0x0008;
     private const int TokenUserClass = 1;
 
@@ -121,4 +152,7 @@ internal static class ProcessIdentity
 
     [DllImport("advapi32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
     private static extern bool LookupAccountSid(string? system, IntPtr sid, char[] name, ref int nameLength, char[] domain, ref int domainLength, out int use);
+
+    [DllImport("ntdll.dll")]
+    private static extern int NtQueryInformationProcess(IntPtr process, int infoClass, IntPtr info, uint length, out uint returnLength);
 }
