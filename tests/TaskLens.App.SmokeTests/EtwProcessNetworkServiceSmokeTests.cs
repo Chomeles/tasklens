@@ -38,7 +38,11 @@ public class EtwProcessNetworkServiceSmokeTests
                 {
                     client.Connect(IPAddress.Loopback, port);
                     using var server = listener.AcceptTcpClient();
-                    client.GetStream().Write(payload, 0, payload.Length);
+                    // Write on a background task: 1 MB exceeds the loopback in-flight capacity
+                    // (~128 KB of default socket buffers), so a synchronous Write before the
+                    // read loop below would deadlock this thread forever.
+                    var clientStream = client.GetStream();
+                    var send = Task.Run(() => clientStream.Write(payload, 0, payload.Length));
 
                     var stream = server.GetStream();
                     var buffer = new byte[64 * 1024];
@@ -49,6 +53,8 @@ public class EtwProcessNetworkServiceSmokeTests
                         Assert.True(read > 0, "loopback connection closed before the payload arrived");
                         remaining -= read;
                     }
+
+                    send.GetAwaiter().GetResult();
                 }
 
                 Thread.Sleep(500); // give the session's flush timer a chance to deliver buffers
