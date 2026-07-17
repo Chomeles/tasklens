@@ -210,21 +210,26 @@
                       </StackPanel>
                       <!-- ponytail: Status-Zelle leer — Core hat keine Suspend-Detection; der echte
                            TM zeigt hier für die meisten Prozesse ebenfalls nichts. -->
-                      <TextBlock Grid.Column="2" Padding="8,3" VerticalAlignment="Center" FontSize="12" TextAlignment="Right"
-                                 Text="{x:Bind vm:ProcessFormat.CellPercent(CpuPercent), Mode=OneWay}"
-                                 Background="{x:Bind svc:CellHeat.Brush(CpuPercent), Mode=OneWay}" />
-                      <TextBlock Grid.Column="3" Padding="8,3" VerticalAlignment="Center" FontSize="12" TextAlignment="Right"
-                                 Text="{x:Bind vm:ProcessFormat.MemoryMb(WorkingSetBytes), Mode=OneWay}"
-                                 Background="{x:Bind svc:CellHeat.Brush(MemoryPercent), Mode=OneWay}" />
-                      <TextBlock Grid.Column="4" Padding="8,3" VerticalAlignment="Center" FontSize="12" TextAlignment="Right"
-                                 Text="{x:Bind vm:ProcessFormat.DiskRate(IoReadBytesPerSecond, IoWriteBytesPerSecond), Mode=OneWay}"
-                                 Background="{x:Bind svc:CellHeat.Brush(vm:HeatMap.DiskPercent(IoReadBytesPerSecond, IoWriteBytesPerSecond)), Mode=OneWay}" />
-                      <TextBlock Grid.Column="5" Padding="8,3" VerticalAlignment="Center" FontSize="12" TextAlignment="Right"
-                                 Text="0 MBit/s"
-                                 Background="{x:Bind svc:CellHeat.Brush(0), Mode=OneWay}" />
-                      <TextBlock Grid.Column="6" Padding="8,3" VerticalAlignment="Center" FontSize="12" TextAlignment="Right"
-                                 Text="{x:Bind vm:ProcessFormat.CellPercent(GpuPercent), Mode=OneWay}"
-                                 Background="{x:Bind svc:CellHeat.Brush(GpuPercent), Mode=OneWay}" />
+                      <Border Grid.Column="2" Background="{x:Bind svc:CellHeat.Brush(CpuPercent), Mode=OneWay}">
+                        <TextBlock Padding="8,3" VerticalAlignment="Center" FontSize="12" TextAlignment="Right"
+                                 Text="{x:Bind vm:ProcessFormat.CellPercent(CpuPercent), Mode=OneWay}" />
+                      </Border>
+                      <Border Grid.Column="3" Background="{x:Bind svc:CellHeat.Brush(MemoryPercent), Mode=OneWay}">
+                        <TextBlock Padding="8,3" VerticalAlignment="Center" FontSize="12" TextAlignment="Right"
+                                 Text="{x:Bind vm:ProcessFormat.MemoryMb(WorkingSetBytes), Mode=OneWay}" />
+                      </Border>
+                      <Border Grid.Column="4" Background="{x:Bind svc:CellHeat.Brush(vm:HeatMap.DiskPercent(IoReadBytesPerSecond, IoWriteBytesPerSecond)), Mode=OneWay}">
+                        <TextBlock Padding="8,3" VerticalAlignment="Center" FontSize="12" TextAlignment="Right"
+                                 Text="{x:Bind vm:ProcessFormat.DiskRate(IoReadBytesPerSecond, IoWriteBytesPerSecond), Mode=OneWay}" />
+                      </Border>
+                      <Border Grid.Column="5" Background="{x:Bind svc:CellHeat.Brush(0), Mode=OneWay}">
+                        <TextBlock Padding="8,3" VerticalAlignment="Center" FontSize="12" TextAlignment="Right"
+                                 Text="0 MBit/s" />
+                      </Border>
+                      <Border Grid.Column="6" Background="{x:Bind svc:CellHeat.Brush(GpuPercent), Mode=OneWay}">
+                        <TextBlock Padding="8,3" VerticalAlignment="Center" FontSize="12" TextAlignment="Right"
+                                 Text="{x:Bind vm:ProcessFormat.CellPercent(GpuPercent), Mode=OneWay}" />
+                      </Border>
                       <TextBlock Grid.Column="7" Padding="8,3" VerticalAlignment="Center" FontSize="12" TextAlignment="Right"
                                  Text="{x:Bind vm:ProcessFormat.Temperature(CpuTempCelsius), Mode=OneWay}" />
                       <TextBlock Grid.Column="8" Padding="8,3" VerticalAlignment="Center" FontSize="12" TextAlignment="Right"
