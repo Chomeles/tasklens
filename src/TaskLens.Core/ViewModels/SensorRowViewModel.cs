@@ -75,20 +75,20 @@ public sealed class SensorRowViewModel : ObservableObject
         OnPropertyChanged(nameof(History));
     }
 
-    /// <summary>Formats a sensor value with the unit for its kind. Invariant culture, deterministic.</summary>
+    /// <summary>Formats a sensor value with the unit for its kind. German display culture (decimal comma), deterministic.</summary>
     public static string Format(SensorKind kind, float? value, TemperatureUnit unit = TemperatureUnit.Celsius) =>
         value is not { } v
             ? "—"
             : kind switch
             {
                 SensorKind.Temperature => unit == TemperatureUnit.Fahrenheit
-                    ? string.Create(CultureInfo.InvariantCulture, $"{v * 9 / 5 + 32:0.0} °F")
-                    : string.Create(CultureInfo.InvariantCulture, $"{v:0.0} °C"),
-                SensorKind.Load => string.Create(CultureInfo.InvariantCulture, $"{v:0.0} %"),
-                SensorKind.Clock => string.Create(CultureInfo.InvariantCulture, $"{v:0} MHz"),
-                SensorKind.Fan => string.Create(CultureInfo.InvariantCulture, $"{v:0} RPM"),
-                SensorKind.Power => string.Create(CultureInfo.InvariantCulture, $"{v:0.0} W"),
-                SensorKind.Voltage => string.Create(CultureInfo.InvariantCulture, $"{v:0.000} V"),
+                    ? string.Create(ProcessFormat.DisplayCulture, $"{v * 9 / 5 + 32:0.0} °F")
+                    : string.Create(ProcessFormat.DisplayCulture, $"{v:0.0} °C"),
+                SensorKind.Load => string.Create(ProcessFormat.DisplayCulture, $"{v:0.0} %"),
+                SensorKind.Clock => string.Create(ProcessFormat.DisplayCulture, $"{v:0} MHz"),
+                SensorKind.Fan => string.Create(ProcessFormat.DisplayCulture, $"{v:0} RPM"),
+                SensorKind.Power => string.Create(ProcessFormat.DisplayCulture, $"{v:0.0} W"),
+                SensorKind.Voltage => string.Create(ProcessFormat.DisplayCulture, $"{v:0.000} V"),
                 _ => throw new ArgumentOutOfRangeException(nameof(kind), kind, "Unknown sensor kind."),
             };
 }

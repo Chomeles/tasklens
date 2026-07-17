@@ -36,6 +36,16 @@ public sealed partial class ProcessListViewModel : ObservableObject
     /// <summary>Visible rows: filtered, sorted. Mutated minimally, never rebuilt.</summary>
     public ObservableCollection<ProcessRowViewModel> Rows { get; } = [];
 
+    // Real Task-Manager group order: Apps first, then background, then Windows processes.
+    private static readonly ProcessGroup[] GroupOrder =
+        [ProcessGroup.Apps, ProcessGroup.Background, ProcessGroup.System];
+
+    /// <summary>Same rows as <see cref="Rows"/>, bucketed into Apps / Hintergrundprozesse /
+    /// Windows-Prozesse sections for the Prozesse page's grouped list. Sections are persistent
+    /// (reconciled in place) so collapse state and bindings survive ticks.</summary>
+    public ObservableCollection<ProcessGroupSection> GroupedRows { get; } =
+        [.. GroupOrder.Select(g => new ProcessGroupSection(g))];
+
     /// <summary>Aggregate totals over the visible rows, updated in place.</summary>
     public ProcessRowViewModel Totals { get; } = new(0, default, "Total");
 
@@ -47,6 +57,23 @@ public sealed partial class ProcessListViewModel : ObservableObject
 
     [ObservableProperty]
     private bool sortDescending = true;
+
+    /// <summary>System-wide CPU load, as shown big-and-right-aligned above the CPU column header.</summary>
+    [ObservableProperty]
+    private double systemCpuPercent;
+
+    /// <summary>System-wide memory-used percent, above the Arbeitsspeicher column header.</summary>
+    [ObservableProperty]
+    private double systemMemoryPercent;
+
+    /// <summary>Busiest adapter's utilization %, above the Netzwerk column header (tm3-04).</summary>
+    [ObservableProperty]
+    private double systemNetworkPercent;
+
+    /// <summary>Disk active time % (PDH), above the Datenträger column header; IO-sum tint fallback
+    /// applies in the view when this stays 0 without counters.</summary>
+    [ObservableProperty]
+    private double systemDiskPercent;
 
     partial void OnFilterChanged(string value) => RefreshView();
 
@@ -74,6 +101,18 @@ public sealed partial class ProcessListViewModel : ObservableObject
     {
         ArgumentNullException.ThrowIfNull(snapshot);
 
+        SystemCpuPercent = snapshot.CpuTotalPercent;
+        SystemMemoryPercent = snapshot.MemoryTotalBytes > 0
+            ? snapshot.MemoryUsedBytes * 100.0 / snapshot.MemoryTotalBytes
+            : 0;
+        SystemNetworkPercent = snapshot.Network.Count > 0
+            ? snapshot.Network.Max(a => a.UtilizationPercent)
+            : 0;
+        SystemDiskPercent = snapshot.Disk?.ActiveTimePercent
+            ?? HeatMap.DiskPercent(
+                snapshot.Processes.Sum(d => d.IoReadBytesPerSecond),
+                snapshot.Processes.Sum(d => d.IoWriteBytesPerSecond));
+
         allRows.Clear();
         var seen = new HashSet<(int Pid, DateTime StartTimeUtc)>();
         foreach (var delta in snapshot.Processes)
@@ -86,6 +125,9 @@ public sealed partial class ProcessListViewModel : ObservableObject
             }
 
             row.Update(delta);
+            row.MemoryPercent = snapshot.MemoryTotalBytes > 0
+                ? delta.Sample.WorkingSetBytes * 100.0 / snapshot.MemoryTotalBytes
+                : 0;
             allRows.Add(row);
             seen.Add(key);
         }
@@ -103,6 +145,15 @@ public sealed partial class ProcessListViewModel : ObservableObject
         var target = Sort(allRows.Where(MatchesFilter)).ToList();
         CollectionReconciler.Reconcile(Rows, target);
         UpdateTotals(target);
+        RefreshGroups(target);
+    }
+
+    private void RefreshGroups(List<ProcessRowViewModel> visible)
+    {
+        foreach (var section in GroupedRows)
+        {
+            CollectionReconciler.Reconcile(section, visible.Where(r => r.Group == section.Group).ToList());
+        }
     }
 
     private bool MatchesFilter(ProcessRowViewModel row) =>

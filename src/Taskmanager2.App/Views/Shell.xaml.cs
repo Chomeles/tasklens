@@ -1,6 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using TaskLens.Core.Models;
 using TaskLens.Core.ViewModels;
 
 namespace Taskmanager2.App.Views;
@@ -11,14 +12,35 @@ public sealed partial class Shell : Window
 {
     public PawnIoBannerViewModel BannerViewModel { get; } = App.Services.GetRequiredService<PawnIoBannerViewModel>();
 
+    /// <summary>Global search target: the real TM's search box filters the process list from the header.</summary>
+    public ProcessListViewModel ProcessList { get; } = App.Services.GetRequiredService<ProcessListViewModel>();
+
     public Shell()
     {
         InitializeComponent();
-        Nav.SelectedItem = Nav.MenuItems[0]; // triggers OnSelectionChanged -> ProzessePage
+        // Real TM: the search box sits in the title bar itself. The left spacer is the drag
+        // surface, so the box stays clickable; system caption buttons overlay the right edge.
+        // ponytail: SetTitleBar nimmt genau ein Element — nur die linke Fläche zieht. Rechts vom
+        // Suchfeld zieht nichts; InputNonClientPointerSource-Passthrough-Regionen, falls das stört.
+        ExtendsContentIntoTitleBar = true;
+        SetTitleBar(DragRegionLeft);
+        // Standardstartseite: open the user's configured page (real TM), default Prozesse.
+        var startIndex = (int)App.Services.GetRequiredService<SettingsViewModel>().StartPage;
+        Nav.SelectedItem = Nav.MenuItems[startIndex]; // triggers OnSelectionChanged -> that page
     }
 
     private void OnSelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
     {
+        if (args.IsSettingsSelected)
+        {
+            if (ContentFrame.CurrentSourcePageType != typeof(EinstellungenPage))
+            {
+                ContentFrame.Navigate(typeof(EinstellungenPage));
+            }
+
+            return;
+        }
+
         var pageType = (args.SelectedItemContainer?.Tag as string) switch
         {
             "Leistung" => typeof(LeistungPage),

@@ -116,6 +116,11 @@ public sealed partial class Tm2PerformanceViewModel : ObservableObject
 {
     private const int SystemEntryCount = 4;
 
+    // Per-adapter network entries sit between the four system entries and the sensor-group tail.
+    private readonly Dictionary<string, Tm2PerformanceEntryViewModel> networkByName = [];
+
+    private int HeadCount => SystemEntryCount + networkByName.Count;
+
     private readonly Tm2PerformanceEntryViewModel cpu = new("CPU");
     private readonly Tm2PerformanceEntryViewModel memory = new("Arbeitsspeicher");
     private readonly Tm2PerformanceEntryViewModel disk = new("Datenträger");
@@ -148,14 +153,67 @@ public sealed partial class Tm2PerformanceViewModel : ObservableObject
     /// <summary>True while the Arbeitsspeicher rail entry is selected — shows the detail panel.</summary>
     public bool IsMemorySelected => ReferenceEquals(SelectedEntry, memory);
 
-    partial void OnSelectedEntryChanged(Tm2PerformanceEntryViewModel value) =>
+    /// <summary>True while the CPU rail entry is selected — shows Betriebszeit/Prozessoren facts.</summary>
+    public bool IsCpuSelected => ReferenceEquals(SelectedEntry, cpu);
+
+    /// <summary>True while the Datenträger rail entry is selected — shows the disk facts (tm3-05).</summary>
+    public bool IsDiskSelected => ReferenceEquals(SelectedEntry, disk);
+
+    /// <summary>"1,5 KB/s" — system read rate (sum of per-process IO, the honest value).</summary>
+    [ObservableProperty]
+    private string diskReadText = "—";
+
+    /// <summary>"0,3 KB/s" — system write rate.</summary>
+    [ObservableProperty]
+    private string diskWriteText = "—";
+
+    /// <summary>"12,3 %" — physical-disk active time; dash without PDH counters.</summary>
+    [ObservableProperty]
+    private string diskActiveText = "—";
+
+    /// <summary>"1,4 ms" — average transfer response; dash without PDH counters.</summary>
+    [ObservableProperty]
+    private string diskResponseText = "—";
+
+    /// <summary>Total capacity of all fixed drives — real DriveInfo data, computed once.</summary>
+    public string DiskCapacityText { get; } = ComputeDiskCapacity();
+
+    private static string ComputeDiskCapacity()
+    {
+        try
+        {
+            var total = DriveInfo.GetDrives()
+                .Where(d => d is { DriveType: DriveType.Fixed, IsReady: true })
+                .Sum(d => d.TotalSize);
+            return total > 0 ? ProcessFormat.Bytes(total) : "—";
+        }
+        catch (IOException)
+        {
+            return "—";
+        }
+    }
+
+    /// <summary>"0:05:37:12" — time since boot (d:hh:mm:ss), ticking like the real TM.</summary>
+    [ObservableProperty]
+    private string uptimeText = "—";
+
+    /// <summary>Logical processor count — constant, real data.</summary>
+    public string LogicalProcessorsText { get; } =
+        Environment.ProcessorCount.ToString(ProcessFormat.DisplayCulture);
+
+    partial void OnSelectedEntryChanged(Tm2PerformanceEntryViewModel value)
+    {
         OnPropertyChanged(nameof(IsMemorySelected));
+        OnPropertyChanged(nameof(IsCpuSelected));
+        OnPropertyChanged(nameof(IsDiskSelected));
+    }
 
     /// <summary>Applies one snapshot: delegates to <see cref="Sensors"/>, then composes the rail.</summary>
     public void ApplySnapshot(SystemSnapshot snapshot)
     {
         ArgumentNullException.ThrowIfNull(snapshot);
         Sensors.ApplySnapshot(snapshot);
+        UptimeText = ProcessFormat.Uptime(TimeSpan.FromMilliseconds(Environment.TickCount64));
         SyncGroupEntries();
 
         var cpuPercent = (float)snapshot.CpuTotalPercent;
@@ -181,13 +239,53 @@ public sealed partial class Tm2PerformanceViewModel : ObservableObject
 
         // SystemSnapshot has no system-wide disk counter — the sum of the per-process IO rates is
         // the honest system value (it only misses IO not attributed to any process).
-        disk.Append((float)(readRate + writeRate), ProcessFormat.DiskRate(readRate, writeRate));
+        // With PDH disk counters the graph shows Aktive Zeit % like the real TM; without them it
+        // falls back to the per-process IO-rate sum (honest, but a rate, not a percent).
+        if (snapshot.Disk is { } diskDetails)
+        {
+            disk.Append((float)diskDetails.ActiveTimePercent, SensorRowViewModel.Format(SensorKind.Load, (float)diskDetails.ActiveTimePercent));
+            DiskActiveText = SensorRowViewModel.Format(SensorKind.Load, (float)diskDetails.ActiveTimePercent);
+            DiskResponseText = ProcessFormat.Milliseconds(diskDetails.AverageResponseSeconds);
+        }
+        else
+        {
+            disk.Append((float)(readRate + writeRate), ProcessFormat.DiskRate(readRate, writeRate));
+            DiskActiveText = "—";
+            DiskResponseText = "—";
+        }
+
+        DiskReadText = ProcessFormat.Rate(readRate);
+        DiskWriteText = ProcessFormat.Rate(writeRate);
 
         // Honest system GPU value: prefer a real GPU load sensor when one exists; without one
         // (no admin, VM) fall back to the sum of per-process GPU% — that sum can exceed 100 when
         // processes peak on different engines, which is the price of not inventing data.
         var gpuPercent = FirstGpuLoad(snapshot.Sensors) ?? (float)gpuSum;
         gpu.Append(gpuPercent, SensorRowViewModel.Format(SensorKind.Load, gpuPercent));
+
+        SyncNetworkEntries(snapshot.Network);
+    }
+
+    /// <summary>One rail entry per up-adapter, like the real TM's Ethernet/WLAN entries (tm3-04).
+    /// Graph = utilization % of link speed; headline = send/receive bit rates.</summary>
+    private void SyncNetworkEntries(IReadOnlyList<NetworkAdapterRate> adapters)
+    {
+        foreach (var adapter in adapters)
+        {
+            if (!networkByName.TryGetValue(adapter.Name, out var entry))
+            {
+                entry = new Tm2PerformanceEntryViewModel(adapter.Name);
+                networkByName[adapter.Name] = entry;
+                Entries.Insert(SystemEntryCount + networkByName.Count - 1, entry);
+            }
+
+            entry.Append(
+                (float)adapter.UtilizationPercent,
+                $"S: {ProcessFormat.BitRate(adapter.SentBytesPerSecond)}  E: {ProcessFormat.BitRate(adapter.ReceivedBytesPerSecond)}");
+        }
+
+        // ponytail: vanished adapters keep their (frozen) rail entry — adapters disappear so
+        // rarely that removal handling is not worth the index bookkeeping; restart clears them.
     }
 
     /// <summary>
@@ -200,7 +298,7 @@ public sealed partial class Tm2PerformanceViewModel : ObservableObject
         var groups = Sensors.Groups;
         if (!TailMatches(groups))
         {
-            while (Entries.Count > SystemEntryCount)
+            while (Entries.Count > HeadCount)
             {
                 Entries.RemoveAt(Entries.Count - 1);
             }
@@ -216,7 +314,7 @@ public sealed partial class Tm2PerformanceViewModel : ObservableObject
             }
         }
 
-        for (var i = SystemEntryCount; i < Entries.Count; i++)
+        for (var i = HeadCount; i < Entries.Count; i++)
         {
             var headline = Headline(Entries[i].Group!);
             Entries[i].Append(headline.Value, headline.ValueText);
@@ -225,14 +323,14 @@ public sealed partial class Tm2PerformanceViewModel : ObservableObject
 
     private bool TailMatches(ObservableCollection<HardwareGroupViewModel> groups)
     {
-        if (Entries.Count != SystemEntryCount + groups.Count)
+        if (Entries.Count != HeadCount + groups.Count)
         {
             return false;
         }
 
         for (var i = 0; i < groups.Count; i++)
         {
-            if (!ReferenceEquals(Entries[SystemEntryCount + i].Group, groups[i]))
+            if (!ReferenceEquals(Entries[HeadCount + i].Group, groups[i]))
             {
                 return false;
             }

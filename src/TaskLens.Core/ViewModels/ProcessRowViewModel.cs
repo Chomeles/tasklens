@@ -39,6 +39,40 @@ public sealed partial class ProcessRowViewModel : ObservableObject
     [ObservableProperty]
     private double ioWriteBytesPerSecond;
 
+    [ObservableProperty]
+    private ProcessGroup group;
+
+    /// <summary>Working set as percent of total RAM — drives the Arbeitsspeicher cell tint, like
+    /// the real Task Manager. Set by the list VM, which knows the snapshot's memory total.</summary>
+    [ObservableProperty]
+    private double memoryPercent;
+
+    /// <summary>Title of the first visible top-level window; null for windowless processes.
+    /// Feeds the real TM's expandable app rows (app → indented window-title child).</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasWindow))]
+    private string? windowTitle;
+
+    public bool HasWindow => WindowTitle is not null;
+
+    /// <summary>App-row chevron state; persists across ticks because the row object does.</summary>
+    [ObservableProperty]
+    private bool isExpanded;
+
+    /// <summary>Token owner ("Orkan"); null when the process can't be opened → "—" cell.</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(UserNameText))]
+    private string? userName;
+
+    /// <summary>"x64"/"x86"/"ARM64"; null when unknown → "—" cell.</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ArchitectureText))]
+    private string? architecture;
+
+    public string UserNameText => UserName ?? "—";
+
+    public string ArchitectureText => Architecture ?? "—";
+
     public void Update(ProcessDelta delta)
     {
         ArgumentNullException.ThrowIfNull(delta);
@@ -48,5 +82,9 @@ public sealed partial class ProcessRowViewModel : ObservableObject
         WorkingSetBytes = delta.Sample.WorkingSetBytes;
         IoReadBytesPerSecond = delta.IoReadBytesPerSecond;
         IoWriteBytesPerSecond = delta.IoWriteBytesPerSecond;
+        Group = ProcessClassification.Classify(delta.Sample);
+        WindowTitle = delta.Sample.WindowTitle;
+        UserName = delta.Sample.UserName;
+        Architecture = delta.Sample.Architecture;
     }
 }

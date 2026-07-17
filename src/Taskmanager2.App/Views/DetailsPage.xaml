@@ -2,8 +2,8 @@
   x:Class="Taskmanager2.App.Views.DetailsPage"
   xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-  xmlns:views="using:TaskLens.App.Views"
-  xmlns:vm="using:TaskLens.Core.ViewModels">
+  xmlns:vm="using:TaskLens.Core.ViewModels"
+  xmlns:svc="using:Taskmanager2.App.Services">
 
   <Grid Margin="24,12" RowSpacing="8">
     <Grid.RowDefinitions>
@@ -12,180 +12,94 @@
       <RowDefinition Height="*" />
     </Grid.RowDefinitions>
 
-    <!-- DetailsViewModel histories as big graphs above the full table — the density peak.
-         Plain Polyline via SparklineRender (LeistungPage pattern), no chart library. -->
-    <Grid Grid.Row="0" ColumnSpacing="16">
+    <!-- Real TM page header: big title left, „Neuen Task ausführen" right (tm3-10). -->
+    <Grid Grid.Row="0" ColumnSpacing="8">
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="*" />
-        <ColumnDefinition Width="*" />
-        <ColumnDefinition Width="*" />
+        <ColumnDefinition Width="Auto" />
       </Grid.ColumnDefinitions>
-
-      <StackPanel Grid.Column="0" Spacing="4">
-        <StackPanel Orientation="Horizontal" Spacing="8">
-          <TextBlock FontWeight="SemiBold" Text="CPU (System)" />
-          <TextBlock
-            VerticalAlignment="Center"
-            Style="{StaticResource CaptionTextBlockStyle}"
-            Text="{x:Bind vm:ProcessFormat.Load(Details.SystemCpuPercent), Mode=OneWay}" />
-        </StackPanel>
-        <Border
-          Height="128"
-          BorderBrush="{ThemeResource AccentFillColorDefaultBrush}"
-          BorderThickness="1">
-          <Polyline
-            Width="360"
-            Height="120"
-            VerticalAlignment="Center"
-            Points="{x:Bind views:SparklineRender.Points(Details.SystemCpuHistory, 360, 120), Mode=OneWay}"
-            Stroke="{ThemeResource AccentFillColorDefaultBrush}"
-            StrokeThickness="1.5" />
-        </Border>
-      </StackPanel>
-
-      <StackPanel Grid.Column="1" Spacing="4">
-        <StackPanel Orientation="Horizontal" Spacing="8">
-          <TextBlock FontWeight="SemiBold" Text="Arbeitsspeicher (System)" />
-          <TextBlock
-            VerticalAlignment="Center"
-            Style="{StaticResource CaptionTextBlockStyle}"
-            Text="{x:Bind vm:ProcessFormat.Load(Details.SystemMemoryPercent), Mode=OneWay}" />
-        </StackPanel>
-        <Border
-          Height="128"
-          BorderBrush="{ThemeResource AccentFillColorDefaultBrush}"
-          BorderThickness="1">
-          <Polyline
-            Width="360"
-            Height="120"
-            VerticalAlignment="Center"
-            Points="{x:Bind views:SparklineRender.Points(Details.SystemMemoryHistory, 360, 120), Mode=OneWay}"
-            Stroke="{ThemeResource AccentFillColorDefaultBrush}"
-            StrokeThickness="1.5" />
-        </Border>
-      </StackPanel>
-
-      <!-- Row click in the table below feeds this graph via DetailsViewModel.SelectProcess. -->
-      <StackPanel Grid.Column="2" Spacing="4">
-        <StackPanel Orientation="Horizontal" Spacing="8">
-          <TextBlock
-            FontWeight="SemiBold"
-            Text="{x:Bind Details.ProcessName, Mode=OneWay}"
-            TextTrimming="CharacterEllipsis" />
-          <TextBlock
-            VerticalAlignment="Center"
-            Style="{StaticResource CaptionTextBlockStyle}"
-            Text="{x:Bind vm:ProcessFormat.Load(Details.ProcessCpuPercent), Mode=OneWay}" />
-        </StackPanel>
-        <Border
-          Height="128"
-          BorderBrush="{ThemeResource AccentFillColorDefaultBrush}"
-          BorderThickness="1">
-          <Polyline
-            Width="360"
-            Height="120"
-            VerticalAlignment="Center"
-            Points="{x:Bind views:SparklineRender.Points(Details.ProcessCpuHistory, 360, 120), Mode=OneWay}"
-            Stroke="{ThemeResource AccentFillColorDefaultBrush}"
-            StrokeThickness="1.5" />
-        </Border>
-      </StackPanel>
+      <TextBlock Grid.Column="0" VerticalAlignment="Center" FontSize="20" FontWeight="SemiBold" Text="Details" />
+      <Button Grid.Column="1" Click="OnRunTaskClick" Style="{StaticResource AccentButtonStyle}">
+          <StackPanel Orientation="Horizontal" Spacing="8">
+            <FontIcon FontSize="14" Glyph="&#xE710;" />
+            <TextBlock Text="Neuen Task ausführen" />
+          </StackPanel>
+        </Button>
     </Grid>
 
-    <!-- Header: sortable columns route to Inner.SortBy (Tag = ProcessColumn name), same pattern
-         as ProzessePage but with EVERY available column. Sensor columns carry the system-wide
-         value on every row and Status/CPU-Verlauf have nothing to order by — plain labels. -->
+    <!-- Dense table, real Win11 Details page column order: Name, PID, Status, Benutzername,
+         CPU, Arbeitsspeicher, Architektur — owner/architecture are real token/IsWow64Process2
+         reads, em-dash when the process can't be opened (never fabricated). -->
     <Grid Grid.Row="1" Padding="12,0" ColumnSpacing="8">
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="*" />
-        <ColumnDefinition Width="56" />
-        <ColumnDefinition Width="56" />
         <ColumnDefinition Width="64" />
+        <ColumnDefinition Width="90" />
+        <ColumnDefinition Width="130" />
         <ColumnDefinition Width="64" />
         <ColumnDefinition Width="110" />
-        <ColumnDefinition Width="104" />
-        <ColumnDefinition Width="120" />
         <ColumnDefinition Width="90" />
-        <ColumnDefinition Width="88" />
-        <ColumnDefinition Width="88" />
-        <ColumnDefinition Width="90" />
-        <ColumnDefinition Width="132" />
       </Grid.ColumnDefinitions>
       <Button Grid.Column="0" HorizontalAlignment="Stretch" Tag="Name" Click="OnSortHeaderClick"
-              Content="{x:Bind vm:ProcessFormat.Header('Name', 'Name', ViewModel.Inner.SortColumn, ViewModel.Inner.SortDescending), Mode=OneWay}" />
+              Content="{x:Bind vm:ProcessFormat.Header('Name', 'Name', ViewModel.SortColumn, ViewModel.SortDescending), Mode=OneWay}" />
       <Button Grid.Column="1" HorizontalAlignment="Stretch" Tag="Pid" Click="OnSortHeaderClick"
-              Content="{x:Bind vm:ProcessFormat.Header('PID', 'Pid', ViewModel.Inner.SortColumn, ViewModel.Inner.SortDescending), Mode=OneWay}" />
+              Content="{x:Bind vm:ProcessFormat.Header('PID', 'Pid', ViewModel.SortColumn, ViewModel.SortDescending), Mode=OneWay}" />
       <TextBlock Grid.Column="2" HorizontalAlignment="Center" VerticalAlignment="Center" Text="Status" />
-      <Button Grid.Column="3" HorizontalAlignment="Stretch" Tag="Cpu" Click="OnSortHeaderClick"
-              Content="{x:Bind vm:ProcessFormat.Header('CPU %', 'Cpu', ViewModel.Inner.SortColumn, ViewModel.Inner.SortDescending), Mode=OneWay}" />
-      <Button Grid.Column="4" HorizontalAlignment="Stretch" Tag="Gpu" Click="OnSortHeaderClick"
-              Content="{x:Bind vm:ProcessFormat.Header('GPU %', 'Gpu', ViewModel.Inner.SortColumn, ViewModel.Inner.SortDescending), Mode=OneWay}" />
+      <TextBlock Grid.Column="3" VerticalAlignment="Center" Text="Benutzername" />
+      <Button Grid.Column="4" HorizontalAlignment="Stretch" Tag="Cpu" Click="OnSortHeaderClick"
+              Content="{x:Bind vm:ProcessFormat.Header('CPU', 'Cpu', ViewModel.SortColumn, ViewModel.SortDescending), Mode=OneWay}" />
       <Button Grid.Column="5" HorizontalAlignment="Stretch" Tag="Memory" Click="OnSortHeaderClick"
-              Content="{x:Bind vm:ProcessFormat.Header('Arbeitsspeicher', 'Memory', ViewModel.Inner.SortColumn, ViewModel.Inner.SortDescending), Mode=OneWay}" />
-      <Button Grid.Column="6" HorizontalAlignment="Stretch" Tag="IoRead" Click="OnSortHeaderClick"
-              Content="{x:Bind vm:ProcessFormat.Header('E/A gelesen', 'IoRead', ViewModel.Inner.SortColumn, ViewModel.Inner.SortDescending), Mode=OneWay}" />
-      <Button Grid.Column="7" HorizontalAlignment="Stretch" Tag="IoWrite" Click="OnSortHeaderClick"
-              Content="{x:Bind vm:ProcessFormat.Header('E/A geschrieben', 'IoWrite', ViewModel.Inner.SortColumn, ViewModel.Inner.SortDescending), Mode=OneWay}" />
-      <Button Grid.Column="8" HorizontalAlignment="Stretch" Tag="Disk" Click="OnSortHeaderClick"
-              Content="{x:Bind vm:ProcessFormat.Header('Datenträger', 'Disk', ViewModel.Inner.SortColumn, ViewModel.Inner.SortDescending), Mode=OneWay}" />
-      <TextBlock Grid.Column="9" HorizontalAlignment="Center" VerticalAlignment="Center" Text="Temperatur" />
-      <TextBlock Grid.Column="10" HorizontalAlignment="Center" VerticalAlignment="Center" Text="Leistung (W)" />
-      <TextBlock Grid.Column="11" HorizontalAlignment="Center" VerticalAlignment="Center" Text="Lüfter (RPM)" />
-      <TextBlock Grid.Column="12" HorizontalAlignment="Center" VerticalAlignment="Center" Text="CPU-Verlauf" />
+              Content="{x:Bind vm:ProcessFormat.Header('Arbeitsspeicher', 'Memory', ViewModel.SortColumn, ViewModel.SortDescending), Mode=OneWay}"
+              ToolTipService.ToolTip="Aktiver privater Arbeitssatz" />
+      <TextBlock Grid.Column="6" VerticalAlignment="Center" Text="Architektur" />
     </Grid>
 
     <ListView
       Grid.Row="2"
-      IsItemClickEnabled="True"
-      ItemClick="OnProcessItemClick"
       ItemsSource="{x:Bind ViewModel.Rows}"
-      SelectionMode="None">
+      SelectionMode="Single">
       <ListView.ItemContainerStyle>
         <Style TargetType="ListViewItem">
           <Setter Property="HorizontalContentAlignment" Value="Stretch" />
-          <Setter Property="Padding" Value="12,2" />
+          <Setter Property="Padding" Value="12,1" />
           <Setter Property="MinHeight" Value="0" />
         </Style>
       </ListView.ItemContainerStyle>
       <ListView.ItemTemplate>
-        <DataTemplate x:DataType="vm:Tm2ProcessRowViewModel">
-          <Grid ColumnSpacing="8">
+        <DataTemplate x:DataType="vm:ProcessRowViewModel">
+          <Grid Background="Transparent" ColumnSpacing="8">
+            <Grid.ContextFlyout>
+              <!-- Real TM Details menu: Priorität festlegen (tm3-05-extended). Task beenden lives
+                   on the Prozesse page; here the priority submenu is the headline action. -->
+              <MenuFlyout>
+                <MenuFlyoutSubItem Text="Priorität festlegen">
+                  <MenuFlyoutItem Click="OnPriorityClick" Tag="Realtime" Text="Echtzeit" />
+                  <MenuFlyoutItem Click="OnPriorityClick" Tag="High" Text="Hoch" />
+                  <MenuFlyoutItem Click="OnPriorityClick" Tag="AboveNormal" Text="Höher als normal" />
+                  <MenuFlyoutItem Click="OnPriorityClick" Tag="Normal" Text="Normal" />
+                  <MenuFlyoutItem Click="OnPriorityClick" Tag="BelowNormal" Text="Niedriger als normal" />
+                  <MenuFlyoutItem Click="OnPriorityClick" Tag="Idle" Text="Niedrig" />
+                </MenuFlyoutSubItem>
+              </MenuFlyout>
+            </Grid.ContextFlyout>
             <Grid.ColumnDefinitions>
               <ColumnDefinition Width="*" />
-              <ColumnDefinition Width="56" />
-              <ColumnDefinition Width="56" />
               <ColumnDefinition Width="64" />
+              <ColumnDefinition Width="90" />
+              <ColumnDefinition Width="130" />
               <ColumnDefinition Width="64" />
               <ColumnDefinition Width="110" />
-              <ColumnDefinition Width="104" />
-              <ColumnDefinition Width="120" />
               <ColumnDefinition Width="90" />
-              <ColumnDefinition Width="88" />
-              <ColumnDefinition Width="88" />
-              <ColumnDefinition Width="90" />
-              <ColumnDefinition Width="132" />
             </Grid.ColumnDefinitions>
             <TextBlock Grid.Column="0" VerticalAlignment="Center" Text="{x:Bind Name, Mode=OneWay}" TextTrimming="CharacterEllipsis" />
             <TextBlock Grid.Column="1" VerticalAlignment="Center" Text="{x:Bind Pid}" TextAlignment="Right" />
-            <!-- ponytail: Status-Zellen bleiben leer — gleiche Begründung wie ProzessePage (keine
-                 Suspend-Detection in Core, der echte TM zeigt hier meist auch nichts). -->
-            <TextBlock Grid.Column="3" VerticalAlignment="Center" Text="{x:Bind vm:ProcessFormat.Percent(CpuPercent), Mode=OneWay}" TextAlignment="Right" />
-            <TextBlock Grid.Column="4" VerticalAlignment="Center" Text="{x:Bind vm:ProcessFormat.Percent(GpuPercent), Mode=OneWay}" TextAlignment="Right" />
+            <!-- ponytail: Status-Zelle bleibt leer — keine Suspend-Detection in Core. -->
+            <TextBlock Grid.Column="3" VerticalAlignment="Center" Text="{x:Bind UserNameText, Mode=OneWay}" TextTrimming="CharacterEllipsis" />
+            <Border Grid.Column="4" Background="{x:Bind svc:CellHeat.Brush(CpuPercent), Mode=OneWay}">
+              <TextBlock VerticalAlignment="Center" Text="{x:Bind vm:ProcessFormat.Percent(CpuPercent), Mode=OneWay}" TextAlignment="Right" />
+            </Border>
             <TextBlock Grid.Column="5" VerticalAlignment="Center" Text="{x:Bind vm:ProcessFormat.Bytes(WorkingSetBytes), Mode=OneWay}" TextAlignment="Right" />
-            <TextBlock Grid.Column="6" VerticalAlignment="Center" Text="{x:Bind vm:ProcessFormat.Rate(IoReadBytesPerSecond), Mode=OneWay}" TextAlignment="Right" />
-            <TextBlock Grid.Column="7" VerticalAlignment="Center" Text="{x:Bind vm:ProcessFormat.Rate(IoWriteBytesPerSecond), Mode=OneWay}" TextAlignment="Right" />
-            <TextBlock Grid.Column="8" VerticalAlignment="Center" Text="{x:Bind vm:ProcessFormat.DiskRate(IoReadBytesPerSecond, IoWriteBytesPerSecond), Mode=OneWay}" TextAlignment="Right" />
-            <TextBlock Grid.Column="9" VerticalAlignment="Center" Text="{x:Bind vm:ProcessFormat.Temperature(CpuTempCelsius), Mode=OneWay}" TextAlignment="Right" />
-            <TextBlock Grid.Column="10" VerticalAlignment="Center" Text="{x:Bind vm:ProcessFormat.Power(PackageWattage), Mode=OneWay}" TextAlignment="Right" />
-            <TextBlock Grid.Column="11" VerticalAlignment="Center" Text="{x:Bind vm:ProcessFormat.Fan(FanRpm), Mode=OneWay}" TextAlignment="Right" />
-            <Polyline
-              Grid.Column="12"
-              Width="120"
-              Height="20"
-              VerticalAlignment="Center"
-              Points="{x:Bind views:SparklineRender.Points(CpuHistory, 120, 20), Mode=OneWay}"
-              Stroke="{ThemeResource AccentFillColorDefaultBrush}"
-              StrokeThickness="1" />
+            <TextBlock Grid.Column="6" VerticalAlignment="Center" Text="{x:Bind ArchitectureText, Mode=OneWay}" TextAlignment="Right" />
           </Grid>
         </DataTemplate>
       </ListView.ItemTemplate>

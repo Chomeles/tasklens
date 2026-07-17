@@ -46,7 +46,8 @@ internal sealed class NtProcessEnumerator : IProcessEnumerator
                 {
                     // Parse while pinned: ImageName pointers inside the buffer are absolute addresses.
                     var used = returnLength > 0 && returnLength <= buffer.Length ? (int)returnLength : buffer.Length;
-                    return SystemProcessInformationParser.Parse(buffer.AsSpan(0, used), (ulong)pinned);
+                    var samples = SystemProcessInformationParser.Parse(buffer.AsSpan(0, used), (ulong)pinned);
+                    return WithVisibleWindowFlag(samples);
                 }
 
                 if (status != NtDll.StatusInfoLengthMismatch)
@@ -68,6 +69,7 @@ internal sealed class NtProcessEnumerator : IProcessEnumerator
     /// </summary>
     internal static IReadOnlyList<ProcessSample> EnumerateFallback()
     {
+        var windowTitles = Interop.User32.GetWindowTitlesByPid();
         var processes = Process.GetProcesses();
         var samples = new List<ProcessSample>(processes.Length);
         foreach (var process in processes)
@@ -83,7 +85,9 @@ internal sealed class NtProcessEnumerator : IProcessEnumerator
                         TotalCpuTime: process.TotalProcessorTime,
                         WorkingSetBytes: process.WorkingSet64,
                         IoReadBytes: 0,
-                        IoWriteBytes: 0));
+                        IoWriteBytes: 0,
+                        HasVisibleWindow: windowTitles.ContainsKey(process.Id),
+                        WindowTitle: windowTitles.GetValueOrDefault(process.Id)));
                 }
                 catch (Exception)
                 {
@@ -93,5 +97,31 @@ internal sealed class NtProcessEnumerator : IProcessEnumerator
         }
 
         return samples;
+    }
+
+    /// <summary>Stamps <see cref="ProcessSample.HasVisibleWindow"/> + <see cref="ProcessSample.WindowTitle"/>
+    /// from a fresh top-level-window walk (Apps-grouping + expandable app rows).</summary>
+    private static IReadOnlyList<ProcessSample> WithVisibleWindowFlag(IReadOnlyList<ProcessSample> samples)
+    {
+        var windowTitles = Interop.User32.GetWindowTitlesByPid();
+        if (windowTitles.Count == 0)
+        {
+            return samples;
+        }
+
+        var result = new List<ProcessSample>(samples.Count);
+        var livePids = new HashSet<int>(samples.Count);
+        foreach (var sample in samples)
+        {
+            livePids.Add(sample.Pid);
+            var (user, architecture) = ProcessIdentity.Lookup(sample.Pid);
+            var enriched = sample with { UserName = user, Architecture = architecture };
+            result.Add(windowTitles.TryGetValue(sample.Pid, out var title)
+                ? enriched with { HasVisibleWindow = true, WindowTitle = title }
+                : enriched);
+        }
+
+        ProcessIdentity.Prune(livePids);
+        return result;
     }
 }

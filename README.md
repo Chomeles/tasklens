@@ -33,31 +33,48 @@ maintained for submission to `microsoft/winget-pkgs`.
 Admin elevation + [PawnIO](https://pawnio.eu) unlock CPU temperature/power/fan sensors via
 LibreHardwareMonitor; without them TaskLens still shows the process list, GPU usage, RAM, and disk.
 
-## Taskmanager2 (satire)
+## Taskmanager2
 
-The repo also contains **Taskmanager2** (`src/Taskmanager2.App`) — a parody of the Windows 11
-Task Manager built on the same TaskLens.Core pipeline. It clones the layout (left navigation,
-Mica backdrop, German labels: Prozesse, Leistung, App-Verlauf, Autostart-Apps, Benutzer, Details,
-Dienste) and then overloads it with every value the pipeline provides: temperature/watt/fan
-columns in the process list, sparklines in cells, a Leistung page with every sensor group, and a
-Details page stacking all thirteen columns under three live history graphs.
+The repo also contains **Taskmanager2** (`src/Taskmanager2.App`) — a near-1:1 clone of the
+Windows 11 Task Manager (German locale) built on the same TaskLens.Core pipeline. It reproduces the
+real layout (collapsed left navigation with Segoe Fluent Icons glyphs, Mica backdrop, search box in
+the title bar, German labels: Prozesse, Leistung, App-Verlauf, Autostart-Apps, Benutzer, Details,
+Dienste, Einstellungen) and every displayed value is real — nothing is fabricated. Columns without
+a backing data source (per-process Netzwerk) stay honestly at the real app's zero-value text
+instead of inventing numbers.
 
-**The satire is density, not fake data** — every displayed value is real and comes from the same
-sampling pipeline as TaskLens. Taskmanager2 is strictly read-only: it never starts or stops
-services, toggles autostart entries, or touches user sessions.
+**Visual fidelity:** yellow→orange heat tint on every metric column (CPU, Arbeitsspeicher,
+Datenträger, Netzwerk) and the tinted two-line aggregate headers, collapsible Apps /
+Hintergrundprozesse / Windows-Prozesse groups, expandable app rows with their window title, real
+per-process icons (with a shell stock-icon fallback), decimal-comma formatting (`12,4 %`,
+`64,0 MB`), and the App-Theme / Standardstartseite / update-speed settings the real app has.
+
+**Functional parity:** real actions throughout — Task beenden / Prozessstruktur beenden,
+Effizienzmodus (EcoQoS throttling), Neuen Task ausführen (run dialog on every page), Priorität
+festlegen, Dateispeicherort öffnen, Onlinesuche, Autostart aktivieren/deaktivieren, Dienste
+Starten/Beenden/Neu starten, Benutzer Verbindung trennen/Abmelden. Leistung shows CPU uptime,
+memory composition, per-adapter network graphs, and disk active-time/response via PDH. Details
+carries the real Benutzername and Architektur columns from token/`IsWow64Process2` reads. The one
+deliberate gap: per-process network attribution stays at 0 MBit/s — real values would need an ETW
+trace pipeline (which the real Task Manager itself only approximates).
 
 No Microsoft assets are used — no logos, product icons, or artwork; the name and app icon are its
 own. The resemblance is layout homage only (nav labels, column names, Mica). Taskmanager2 ships
-from source only (no releases, no packaging); it builds as part of the normal Windows build:
+from source only (no releases, no packaging).
+
+### Build & visually compare on Windows
+
+Taskmanager2 is WinUI 3 — it only builds and runs on Windows (the Linux solution filter builds
+Core + tests only). To check it against the real Task Manager:
 
 ```
+git checkout tm2-fidelity-prozesse
 dotnet build TaskLens.sln -c Release
+dotnet run --project src/Taskmanager2.App -c Release
 ```
 
-Screenshot placeholders, replaced once the UI stabilizes:
-
-- `docs/screenshots/tm2-prozesse.png` — Prozesse page with sensor columns and sparkline cells
-- `docs/screenshots/tm2-details.png` — Details page, maximum density
+Then open the real Windows Task Manager side by side and compare page by page — spacing, fonts,
+colour tints, and behaviour. Anything that differs is the next concrete fidelity round.
 
 ## Building
 

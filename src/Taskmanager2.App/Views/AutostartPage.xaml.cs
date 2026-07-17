@@ -29,4 +29,7 @@ public sealed partial class AutostartPage : Page
 
     private void OnErrorClosed(InfoBar sender, object args) =>
         ViewModel.LastActionError = null;
+    /// <summary>„Neuen Task ausführen": shared run dialog, on every page like the real TM (tm3-10).</summary>
+    private async void OnRunTaskClick(object sender, Microsoft.UI.Xaml.RoutedEventArgs e) =>
+        await Taskmanager2.App.Services.RunTaskDialog.ShowAsync(XamlRoot);
 }

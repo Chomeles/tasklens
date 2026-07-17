@@ -12,6 +12,9 @@ namespace TaskLens.App.Services;
 /// </summary>
 internal sealed class WinSystemMetricsService : ISystemMetricsService
 {
+    private readonly NetworkRateSampler network = new();
+    private readonly PdhDiskMetrics diskMetrics = new();
+
     private ulong lastIdle;
     private ulong lastKernel;
     private ulong lastUser;
@@ -44,7 +47,7 @@ internal sealed class WinSystemMetricsService : ISystemMetricsService
             (lastIdle, lastKernel, lastUser, primed) = (idle, kernel, user, true);
         }
 
-        return new SystemMetrics(cpu, used, total, SampleMemoryDetails());
+        return new SystemMetrics(cpu, used, total, SampleMemoryDetails(), network.Sample(), diskMetrics.Sample());
     }
 
     /// <summary>Commit/cache/pool values + object counts via GetPerformanceInfo; null on API failure.</summary>

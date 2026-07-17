@@ -62,6 +62,50 @@ internal sealed class FakeSystemMetricsService : ISystemMetricsService
     public SystemMetrics Sample() => Metrics;
 }
 
+internal sealed class FakeSessionActions : ISessionActions
+{
+    public ActionResult Result { get; set; } = ActionResult.Ok;
+
+    public List<(int SessionId, string Action)> Calls { get; } = [];
+
+    public ActionResult Disconnect(int sessionId)
+    {
+        Calls.Add((sessionId, "disconnect"));
+        return Result;
+    }
+
+    public ActionResult Logoff(int sessionId)
+    {
+        Calls.Add((sessionId, "logoff"));
+        return Result;
+    }
+}
+
+internal sealed class FakeServiceControl : IServiceControl
+{
+    public ActionResult Result { get; set; } = ActionResult.Ok;
+
+    public List<(string Name, string Action)> Calls { get; } = [];
+
+    public ActionResult Start(string serviceName)
+    {
+        Calls.Add((serviceName, "start"));
+        return Result;
+    }
+
+    public ActionResult Stop(string serviceName)
+    {
+        Calls.Add((serviceName, "stop"));
+        return Result;
+    }
+
+    public ActionResult Restart(string serviceName)
+    {
+        Calls.Add((serviceName, "restart"));
+        return Result;
+    }
+}
+
 internal sealed class FakeServiceCatalog : IServiceCatalog
 {
     public ServiceCatalogSnapshot Snapshot { get; set; } = new([], ServiceCatalogAvailability.Available);
@@ -110,6 +154,46 @@ internal sealed class FakeProcessActionService : IProcessActionService
     public ActionResult Terminate(int pid, bool entireTree)
     {
         Calls.Add((pid, entireTree));
+        return Result;
+    }
+
+    public List<int> EfficiencyCalls { get; } = [];
+
+    public List<(string Command, bool Elevated)> Launches { get; } = [];
+
+    public ActionResult SetEfficiencyMode(int pid)
+    {
+        EfficiencyCalls.Add(pid);
+        return Result;
+    }
+
+    public ActionResult Launch(string command, bool elevated)
+    {
+        Launches.Add((command, elevated));
+        return Result;
+    }
+
+    public List<(int Pid, ProcessPriority Priority)> PriorityCalls { get; } = [];
+
+    public ActionResult SetPriority(int pid, ProcessPriority priority)
+    {
+        PriorityCalls.Add((pid, priority));
+        return Result;
+    }
+
+    public List<int> OpenLocationCalls { get; } = [];
+
+    public List<string> SearchCalls { get; } = [];
+
+    public ActionResult OpenFileLocation(int pid)
+    {
+        OpenLocationCalls.Add(pid);
+        return Result;
+    }
+
+    public ActionResult SearchOnline(string processName)
+    {
+        SearchCalls.Add(processName);
         return Result;
     }
 }

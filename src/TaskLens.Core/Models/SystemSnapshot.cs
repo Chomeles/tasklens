@@ -13,8 +13,13 @@ public sealed record SystemSnapshot(
     double CpuTotalPercent,
     long MemoryUsedBytes,
     long MemoryTotalBytes,
-    MemoryDetails? Memory = null)
+    MemoryDetails? Memory = null,
+    IReadOnlyList<NetworkAdapterRate>? Network = null,
+    DiskDetails? Disk = null)
 {
+    /// <summary>Per-adapter throughput; empty when the platform provides none.</summary>
+    public IReadOnlyList<NetworkAdapterRate> Network { get; init; } = Network ?? [];
+
     public IReadOnlyList<ProcessDelta> Processes { get; init; } =
         Processes ?? throw new ArgumentNullException(nameof(Processes));
 

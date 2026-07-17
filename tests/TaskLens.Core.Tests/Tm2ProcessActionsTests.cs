@@ -63,6 +63,31 @@ public class Tm2ProcessActionsTests
     }
 
     [Fact]
+    public void Efficiency_ThrottlesSelectedPid()
+    {
+        vm.ApplySnapshot(Snap(Delta(7, "alpha")));
+        vm.SelectedRow = vm.Rows.Single();
+
+        Assert.True(vm.EfficiencyCommand.CanExecute(null));
+        vm.EfficiencyCommand.Execute(null);
+
+        Assert.Equal([7], actions.EfficiencyCalls);
+        Assert.Null(vm.LastActionError);
+    }
+
+    [Fact]
+    public void RunTask_LaunchesCommand_AndSurfacesFailure()
+    {
+        vm.RunTask("notepad", elevated: true);
+        Assert.Equal([("notepad", true)], actions.Launches);
+        Assert.Null(vm.LastActionError);
+
+        actions.Result = ActionResult.Fail("kaputt");
+        vm.RunTask("nope", elevated: false);
+        Assert.Equal("kaputt", vm.LastActionError);
+    }
+
+    [Fact]
     public void EndTree_PassesEntireTreeFlag()
     {
         vm.ApplySnapshot(Snap(Delta(7, "alpha")));

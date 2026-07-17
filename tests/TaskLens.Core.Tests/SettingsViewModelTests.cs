@@ -60,4 +60,29 @@ public class SettingsViewModelTests
 
         Assert.True(store.Current.RefreshInterval > TimeSpan.Zero);
     }
+    [Fact]
+    public void ThemeIndex_MapsAndPersists()
+    {
+        var store = new InMemorySettingsStore();
+        var vm = new SettingsViewModel(store);
+        Settings? applied = null;
+        vm.Applied += s => applied = s;
+
+        vm.ThemeIndex = 2; // Dunkel
+
+        Assert.Equal(AppTheme.Dark, vm.Theme);
+        Assert.Equal(AppTheme.Dark, store.Current.Theme);
+        Assert.Equal(AppTheme.Dark, applied?.Theme);
+    }
+    [Fact]
+    public void StartPageIndex_MapsAndPersists()
+    {
+        var store = new InMemorySettingsStore();
+        var vm = new SettingsViewModel(store);
+
+        vm.StartPageIndex = 5; // Details
+
+        Assert.Equal(StartPage.Details, vm.StartPage);
+        Assert.Equal(StartPage.Details, store.Current.StartPage);
+    }
 }

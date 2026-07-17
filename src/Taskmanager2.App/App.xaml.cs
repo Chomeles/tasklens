@@ -2,6 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using TaskLens.App.Services;
+using TaskLens.Core.Models;
 using TaskLens.Core.Services;
 using TaskLens.Core.ViewModels;
 using Taskmanager2.App.Services;
@@ -52,13 +53,29 @@ public partial class App : Application
             engine.Interval = settings.RefreshInterval;
             engine.Normalization = settings.CpuNormalization;
             sensorsViewModel.Unit = settings.TemperatureUnit;
+            ApplyTheme(settings.Theme);
         };
 
         _ = engine.RunAsync(CancellationToken.None); // ponytail: no CTS — the loop dies with the process
 
         window = new Shell();
         window.Closed += (_, _) => (Services as IDisposable)?.Dispose();
+        ApplyTheme(settingsViewModel.Theme);
         window.Activate();
+    }
+
+    /// <summary>App-Theme setting → the window root's RequestedTheme, like the real TM.</summary>
+    private void ApplyTheme(AppTheme theme)
+    {
+        if (window?.Content is FrameworkElement root)
+        {
+            root.RequestedTheme = theme switch
+            {
+                AppTheme.Light => ElementTheme.Light,
+                AppTheme.Dark => ElementTheme.Dark,
+                _ => ElementTheme.Default,
+            };
+        }
     }
 
     private static ServiceProvider ConfigureServices() => new ServiceCollection()
@@ -88,6 +105,8 @@ public partial class App : Application
 #endif
         // Real in DEBUG too — the process list is real there as well (NtProcessEnumerator above).
         .AddSingleton<IProcessActionService, WinProcessActionService>()
+        .AddSingleton<IServiceControl, ScmServiceControl>()
+        .AddSingleton<ISessionActions, WtsSessionActions>()
         .AddSingleton<ISettingsStore, JsonSettingsStore>()
         .AddSingleton<SamplingEngine>()
         // Factory, not open registration: constructor injection would pick the (ProcessListViewModel)

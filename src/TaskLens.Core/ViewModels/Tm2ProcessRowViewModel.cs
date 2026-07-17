@@ -48,6 +48,21 @@ public sealed partial class Tm2ProcessRowViewModel : ObservableObject
 
     public double IoWriteBytesPerSecond => Inner.IoWriteBytesPerSecond;
 
+    /// <summary>Working set as percent of total RAM — drives the Arbeitsspeicher cell tint.</summary>
+    public double MemoryPercent => Inner.MemoryPercent;
+
+    /// <summary>First visible window title (null = windowless) — the expandable app-row child.</summary>
+    public string? WindowTitle => Inner.WindowTitle;
+
+    public bool HasWindow => Inner.HasWindow;
+
+    /// <summary>App-row chevron state, shared with the inner row (single source of truth).</summary>
+    public bool IsExpanded
+    {
+        get => Inner.IsExpanded;
+        set => Inner.IsExpanded = value;
+    }
+
     [ObservableProperty]
     private float? cpuTempCelsius;
 

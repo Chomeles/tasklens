@@ -9,11 +9,12 @@ public class Tm2ServicesViewModelTests
     private static readonly DateTime Start = new(2026, 7, 13, 8, 0, 0, DateTimeKind.Utc);
 
     private readonly FakeServiceCatalog catalog = new();
+    private readonly FakeServiceControl control = new();
     private readonly Tm2ServicesViewModel vm;
 
     public Tm2ServicesViewModelTests()
     {
-        vm = new Tm2ServicesViewModel(catalog);
+        vm = new Tm2ServicesViewModel(catalog, control);
     }
 
     private static SystemSnapshot Snap() => new(
@@ -139,5 +140,46 @@ public class Tm2ServicesViewModelTests
         Refresh();
 
         Assert.Equal(["Themes"], vm.Rows.Select(r => r.Name));
+    }
+    [Fact]
+    public void ServiceActions_RunOnSelectedRow_AndForceRequery()
+    {
+        catalog.Snapshot = new([Svc("Spooler", running: false)], ServiceCatalogAvailability.Available);
+        Refresh();
+        vm.SelectedRow = vm.Rows.Single();
+
+        Assert.True(vm.StartSelectedCommand.CanExecute(null));
+        vm.StartSelectedCommand.Execute(null);
+        vm.StopSelectedCommand.Execute(null);
+        vm.RestartSelectedCommand.Execute(null);
+
+        Assert.Equal([("Spooler", "start"), ("Spooler", "stop"), ("Spooler", "restart")], control.Calls);
+        Assert.Null(vm.LastActionError);
+
+        var queriesBefore = catalog.QueryCount;
+        vm.ApplySnapshot(Snap()); // action reset the tick divider — next tick re-queries immediately
+        Assert.Equal(queriesBefore + 1, catalog.QueryCount);
+    }
+
+    [Fact]
+    public void FailedServiceAction_SurfacesError()
+    {
+        catalog.Snapshot = new([Svc("Spooler")], ServiceCatalogAvailability.Available);
+        Refresh();
+        vm.SelectedRow = vm.Rows.Single();
+        control.Result = ActionResult.Fail("Zugriff verweigert");
+
+        vm.StopSelectedCommand.Execute(null);
+
+        Assert.Equal("Zugriff verweigert", vm.LastActionError);
+        Assert.True(vm.HasActionError);
+    }
+
+    [Fact]
+    public void ServiceActions_WithoutSelection_CannotExecute()
+    {
+        Assert.False(vm.StartSelectedCommand.CanExecute(null));
+        Assert.False(vm.StopSelectedCommand.CanExecute(null));
+        Assert.False(vm.RestartSelectedCommand.CanExecute(null));
     }
 }

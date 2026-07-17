@@ -38,5 +38,10 @@ internal sealed class StubSystemMetricsService : ISystemMetricsService
             NonPagedPoolBytes: 1300L * 1024 * 1024,
             ProcessCount: 214,
             ThreadCount: 2801,
-            HandleCount: 94213));
+            HandleCount: 94213),
+        Network:
+        [
+            new NetworkAdapterRate("Ethernet", ReceivedBytesPerSecond: 262144, SentBytesPerSecond: 65536, LinkSpeedBitsPerSecond: 1_000_000_000),
+        ],
+        Disk: new DiskDetails(ActiveTimePercent: 7.5, AverageResponseSeconds: 0.0014));
 }

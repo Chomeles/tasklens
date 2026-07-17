@@ -34,12 +34,22 @@ public sealed partial class Tm2ProcessListViewModel : ObservableObject
         Inner = inner ?? throw new ArgumentNullException(nameof(inner));
         this.actions = actions;
         Inner.Rows.CollectionChanged += OnInnerRowsChanged;
+        foreach (var section in Inner.GroupedRows)
+        {
+            GroupedRows.Add(new Tm2ProcessGroupSection(section));
+            section.CollectionChanged += OnInnerRowsChanged;
+        }
     }
+
+    /// <summary>Joined rows bucketed into the real TM's Apps / Hintergrundprozesse /
+    /// Windows-Prozesse sections, mirroring <c>Inner.GroupedRows</c>.</summary>
+    public ObservableCollection<Tm2ProcessGroupSection> GroupedRows { get; } = [];
 
     /// <summary>The row the end-task commands act on; cleared when the row leaves the list.</summary>
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(EndTaskCommand))]
     [NotifyCanExecuteChangedFor(nameof(EndTreeCommand))]
+    [NotifyCanExecuteChangedFor(nameof(EfficiencyCommand))]
     private Tm2ProcessRowViewModel? selectedRow;
 
     /// <summary>Error text of the last failed action; null when the last action succeeded.</summary>
@@ -58,6 +68,27 @@ public sealed partial class Tm2ProcessListViewModel : ObservableObject
     /// <summary>Prozessstruktur beenden — terminates the selected process and its descendants.</summary>
     [RelayCommand(CanExecute = nameof(CanRunAction))]
     private void EndTree() => RunAction(entireTree: true);
+
+    /// <summary>Effizienzmodus — EcoQoS throttling for the selected process (tm3-02).</summary>
+    [RelayCommand(CanExecute = nameof(CanRunAction))]
+    private void Efficiency()
+    {
+        if (actions is not null && SelectedRow is not null)
+        {
+            var result = actions.SetEfficiencyMode(SelectedRow.Pid);
+            LastActionError = result.Success ? null : result.Error;
+        }
+    }
+
+    /// <summary>„Neuen Task ausführen" — shell launch from the run dialog (tm3-02).</summary>
+    public void RunTask(string command, bool elevated)
+    {
+        if (actions is not null)
+        {
+            var result = actions.Launch(command, elevated);
+            LastActionError = result.Success ? null : result.Error;
+        }
+    }
 
     private void RunAction(bool entireTree)
     {
@@ -147,6 +178,22 @@ public sealed partial class Tm2ProcessListViewModel : ObservableObject
         }
 
         CollectionReconciler.Reconcile(Rows, target);
+
+        foreach (var section in GroupedRows)
+        {
+            // joined is complete for every visible row at this point; TryGetValue is belt-and-braces
+            // against a mid-update event replaying before Inner finished its own group refresh.
+            var sectionTarget = new List<Tm2ProcessRowViewModel>(section.Inner.Count);
+            foreach (var row in section.Inner)
+            {
+                if (joined.TryGetValue(row, out var row2))
+                {
+                    sectionTarget.Add(row2);
+                }
+            }
+
+            CollectionReconciler.Reconcile(section, sectionTarget);
+        }
     }
 
     private static (float? Temp, float? Watt, float? Fan) ExtractSystemSensors(IReadOnlyList<SensorReading> sensors)

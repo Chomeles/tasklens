@@ -65,7 +65,7 @@ public class Tm2PerformanceViewModelTests
         vm.ApplySnapshot(Snap(cpuTotal: 20.5));
 
         Assert.Equal([10f, 20.5f], vm.Entries[0].History);
-        Assert.Equal("20.5 %", vm.Entries[0].ValueText);
+        Assert.Equal("20,5 %", vm.Entries[0].ValueText);
     }
 
     [Fact]
@@ -74,7 +74,7 @@ public class Tm2PerformanceViewModelTests
         vm.ApplySnapshot(Snap(memoryUsed: 512, memoryTotal: 1024));
 
         Assert.Equal([50f], vm.Entries[1].History);
-        Assert.Equal("512.0 B / 1.0 KB", vm.Entries[1].ValueText);
+        Assert.Equal("512,0 B / 1,0 KB", vm.Entries[1].ValueText);
     }
 
     [Fact]
@@ -91,7 +91,7 @@ public class Tm2PerformanceViewModelTests
         vm.ApplySnapshot(Snap([Delta(1, ioRead: 1024 * 1024, ioWrite: 512 * 1024), Delta(2, ioRead: 512 * 1024)]));
 
         Assert.Equal([2f * 1024 * 1024], vm.Entries[2].History);
-        Assert.Equal("2.0 MB/s", vm.Entries[2].ValueText);
+        Assert.Equal("2,0 MB/s", vm.Entries[2].ValueText);
     }
 
     [Fact]
@@ -105,7 +105,7 @@ public class Tm2PerformanceViewModelTests
             ]));
 
         Assert.Equal([20f], vm.Entries[3].History);
-        Assert.Equal("20.0 %", vm.Entries[3].ValueText);
+        Assert.Equal("20,0 %", vm.Entries[3].ValueText);
     }
 
     [Fact]
@@ -127,7 +127,7 @@ public class Tm2PerformanceViewModelTests
         vm.ApplySnapshot(Snap([Delta(1, gpu: 10), Delta(2, gpu: 15.5)]));
 
         Assert.Equal([25.5f], vm.Entries[3].History);
-        Assert.Equal("25.5 %", vm.Entries[3].ValueText);
+        Assert.Equal("25,5 %", vm.Entries[3].ValueText);
     }
 
     [Fact]
@@ -140,7 +140,7 @@ public class Tm2PerformanceViewModelTests
         ]));
 
         Assert.Equal([12f], vm.Entries[4].History);
-        Assert.Equal("12.0 %", vm.Entries[4].ValueText);
+        Assert.Equal("12,0 %", vm.Entries[4].ValueText);
     }
 
     [Fact]
@@ -242,5 +242,37 @@ public class Tm2PerformanceViewModelTests
 
         Assert.True(vm.IsMemorySelected);
         Assert.True(notified);
+    }
+    [Fact]
+    public void DiskDetails_DriveGraphAndPanel_FallbackToIoSums()
+    {
+        vm.ApplySnapshot(Snap() with { Disk = new DiskDetails(ActiveTimePercent: 12.3, AverageResponseSeconds: 0.0014) });
+        Assert.Equal([12.3f], vm.Entries[2].History);
+        Assert.Equal("12,3 %", vm.DiskActiveText);
+        Assert.Equal("1,4 ms", vm.DiskResponseText);
+
+        vm.ApplySnapshot(Snap([Delta(1, ioRead: 1024 * 1024)]));
+        Assert.Equal("—", vm.DiskActiveText);
+        Assert.Equal([12.3f, 1024f * 1024], vm.Entries[2].History);
+    }
+
+    [Fact]
+    public void NetworkAdapters_GetRailEntries_WithUtilizationHistory()
+    {
+        vm.ApplySnapshot(Snap() with
+        {
+            Network = [new NetworkAdapterRate("Ethernet", ReceivedBytesPerSecond: 1_250_000, SentBytesPerSecond: 0, LinkSpeedBitsPerSecond: 100_000_000)],
+        });
+
+        var entry = vm.Entries.Single(e => e.Name == "Ethernet");
+        Assert.Equal(4, vm.Entries.IndexOf(entry)); // after CPU/Arbeitsspeicher/Datenträger/GPU
+        Assert.Equal(10f, entry.History[^1]); // 10 MBit/s of 100 MBit/s
+        Assert.Contains("E: 10,0 MBit/s", entry.ValueText);
+
+        vm.ApplySnapshot(Snap() with
+        {
+            Network = [new NetworkAdapterRate("Ethernet", 0, 0, 100_000_000)],
+        });
+        Assert.Same(entry, vm.Entries.Single(e => e.Name == "Ethernet")); // persistent entry
     }
 }

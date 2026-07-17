@@ -8,6 +8,7 @@
   <Grid Margin="24,12" ColumnSpacing="16" RowSpacing="12">
     <Grid.RowDefinitions>
       <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
       <RowDefinition Height="*" />
     </Grid.RowDefinitions>
     <Grid.ColumnDefinitions>
@@ -15,9 +16,24 @@
       <ColumnDefinition Width="*" />
     </Grid.ColumnDefinitions>
 
+    <!-- Real TM page header: big title left, „Neuen Task ausführen" right (tm3-10). -->
+    <Grid Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" ColumnSpacing="8">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="*" />
+        <ColumnDefinition Width="Auto" />
+      </Grid.ColumnDefinitions>
+      <TextBlock Grid.Column="0" VerticalAlignment="Center" FontSize="20" FontWeight="SemiBold" Text="Leistung" />
+      <Button Grid.Column="1" Click="OnRunTaskClick" Style="{StaticResource AccentButtonStyle}">
+          <StackPanel Orientation="Horizontal" Spacing="8">
+            <FontIcon FontSize="14" Glyph="&#xE710;" />
+            <TextBlock Text="Neuen Task ausführen" />
+          </StackPanel>
+        </Button>
+    </Grid>
+
     <!-- Sensor degradation banner: no admin / no PawnIO / no sensors (VM). -->
     <InfoBar
-      Grid.Row="0"
+      Grid.Row="1"
       Grid.Column="0"
       Grid.ColumnSpan="2"
       IsClosable="False"
@@ -28,7 +44,7 @@
     <!-- Left rail: CPU, Arbeitsspeicher, Datenträger, GPU + one entry per sensor hardware group. -->
     <ListView
       x:Name="Rail"
-      Grid.Row="1"
+      Grid.Row="2"
       Grid.Column="0"
       ItemsSource="{x:Bind ViewModel.Entries}"
       SelectionChanged="OnRailSelectionChanged"
@@ -60,7 +76,7 @@
     </ListView>
 
     <!-- Main panel: big history graph + every sensor reading of the selected group. -->
-    <ScrollViewer Grid.Row="1" Grid.Column="1">
+    <ScrollViewer Grid.Row="2" Grid.Column="1">
       <StackPanel Spacing="12">
         <TextBlock
           Style="{StaticResource TitleTextBlockStyle}"
@@ -81,6 +97,54 @@
             Stroke="{ThemeResource AccentFillColorDefaultBrush}"
             StrokeThickness="1.5" />
         </Border>
+        <!-- CPU facts like the real TM: ticking Betriebszeit + logical processor count. -->
+        <Grid ColumnSpacing="32" Visibility="{x:Bind ViewModel.IsCpuSelected, Mode=OneWay}">
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="Auto" />
+          </Grid.ColumnDefinitions>
+          <StackPanel Grid.Column="0">
+            <TextBlock Style="{StaticResource CaptionTextBlockStyle}" Text="Betriebszeit" />
+            <TextBlock Style="{StaticResource SubtitleTextBlockStyle}" Text="{x:Bind ViewModel.UptimeText, Mode=OneWay}" />
+          </StackPanel>
+          <StackPanel Grid.Column="1">
+            <TextBlock Style="{StaticResource CaptionTextBlockStyle}" Text="Logische Prozessoren" />
+            <TextBlock Style="{StaticResource SubtitleTextBlockStyle}" Text="{x:Bind ViewModel.LogicalProcessorsText}" />
+          </StackPanel>
+        </Grid>
+
+        <!-- Disk facts (tm3-05, honest subset): read/write rates from per-process IO sums,
+             capacity from DriveInfo. Aktive Zeit/Antwortzeit bräuchten PDH-Disk-Counter — offen. -->
+        <Grid ColumnSpacing="32" Visibility="{x:Bind ViewModel.IsDiskSelected, Mode=OneWay}">
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="Auto" />
+          </Grid.ColumnDefinitions>
+          <StackPanel Grid.Column="0">
+            <TextBlock Style="{StaticResource CaptionTextBlockStyle}" Text="Aktive Zeit" />
+            <TextBlock Style="{StaticResource SubtitleTextBlockStyle}" Text="{x:Bind ViewModel.DiskActiveText, Mode=OneWay}" />
+          </StackPanel>
+          <StackPanel Grid.Column="1">
+            <TextBlock Style="{StaticResource CaptionTextBlockStyle}" Text="Durchschnittliche Antwortzeit" />
+            <TextBlock Style="{StaticResource SubtitleTextBlockStyle}" Text="{x:Bind ViewModel.DiskResponseText, Mode=OneWay}" />
+          </StackPanel>
+          <StackPanel Grid.Column="2">
+            <TextBlock Style="{StaticResource CaptionTextBlockStyle}" Text="Lesegeschwindigkeit" />
+            <TextBlock Style="{StaticResource SubtitleTextBlockStyle}" Text="{x:Bind ViewModel.DiskReadText, Mode=OneWay}" />
+          </StackPanel>
+          <StackPanel Grid.Column="3">
+            <TextBlock Style="{StaticResource CaptionTextBlockStyle}" Text="Schreibgeschwindigkeit" />
+            <TextBlock Style="{StaticResource SubtitleTextBlockStyle}" Text="{x:Bind ViewModel.DiskWriteText, Mode=OneWay}" />
+          </StackPanel>
+          <StackPanel Grid.Column="4">
+            <TextBlock Style="{StaticResource CaptionTextBlockStyle}" Text="Kapazität" />
+            <TextBlock Style="{StaticResource SubtitleTextBlockStyle}" Text="{x:Bind ViewModel.DiskCapacityText}" />
+          </StackPanel>
+        </Grid>
+
         <!-- Arbeitsspeicher detail panel (tm3-03): composition bar + the real TM value block. -->
         <StackPanel Spacing="12" Visibility="{x:Bind ViewModel.IsMemorySelected, Mode=OneWay}">
           <TextBlock Style="{StaticResource CaptionTextBlockStyle}" Text="Speicherzusammensetzung" />

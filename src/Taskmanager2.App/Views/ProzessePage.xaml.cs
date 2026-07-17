@@ -8,6 +8,8 @@ namespace Taskmanager2.App.Views;
 /// <summary>Prozesse page: the Tm2 process list. Code-behind is x:Bind wiring only (plan.md MVVM rules).</summary>
 public sealed partial class ProzessePage : Page
 {
+    private ListView? selectionOwner;
+
     public ProzessePage()
     {
         ViewModel = App.Services.GetRequiredService<Tm2ProcessListViewModel>();
@@ -20,9 +22,53 @@ public sealed partial class ProzessePage : Page
     private void OnSortHeaderClick(object sender, RoutedEventArgs e) =>
         ViewModel.Inner.SortByCommand.Execute(Enum.Parse<ProcessColumn>((string)((FrameworkElement)sender).Tag));
 
-    /// <summary>ListView.SelectedItem is object — TwoWay x:Bind can't cast, so mirror it manually.</summary>
-    private void OnSelectionChanged(object sender, SelectionChangedEventArgs e) =>
-        ViewModel.SelectedRow = ((ListView)sender).SelectedItem as Tm2ProcessRowViewModel;
+    /// <summary>„Neuen Task ausführen": show the shared run dialog (tm3-02/tm3-10).</summary>
+    private async void OnRunTaskClick(object sender, RoutedEventArgs e) =>
+        await Taskmanager2.App.Services.RunTaskDialog.ShowAsync(XamlRoot);
+
+    /// <summary>App-row chevron: flip the row's window-child visibility.</summary>
+    private void OnRowToggleClick(object sender, RoutedEventArgs e)
+    {
+        if (((FrameworkElement)sender).DataContext is Tm2ProcessRowViewModel row)
+        {
+            row.IsExpanded = !row.IsExpanded;
+        }
+    }
+
+    /// <summary>Group-header chevron: flip the section's collapse state.</summary>
+    private void OnGroupToggleClick(object sender, RoutedEventArgs e)
+    {
+        if (((FrameworkElement)sender).DataContext is Tm2ProcessGroupSection section)
+        {
+            section.IsExpanded = !section.IsExpanded;
+        }
+    }
+
+    /// <summary>
+    /// One ListView per group, one logical selection: mirror into the VM and clear the previous
+    /// group's selection when a different group takes over.
+    /// </summary>
+    private void OnSelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        var list = (ListView)sender;
+        if (list.SelectedItem is not Tm2ProcessRowViewModel row)
+        {
+            if (ReferenceEquals(selectionOwner, list))
+            {
+                ViewModel.SelectedRow = null;
+            }
+
+            return;
+        }
+
+        if (selectionOwner is not null && !ReferenceEquals(selectionOwner, list))
+        {
+            selectionOwner.SelectedItem = null;
+        }
+
+        selectionOwner = list;
+        ViewModel.SelectedRow = row;
+    }
 
     /// <summary>Context menu acts on the right-clicked row: select it, then run the command.</summary>
     private void OnEndTaskClick(object sender, RoutedEventArgs e) =>
@@ -30,6 +76,25 @@ public sealed partial class ProzessePage : Page
 
     private void OnEndTreeClick(object sender, RoutedEventArgs e) =>
         RunOnRow(sender, entireTree: true);
+
+    private void OnEfficiencyClick(object sender, RoutedEventArgs e)
+    {
+        ViewModel.SelectedRow = (Tm2ProcessRowViewModel)((FrameworkElement)sender).DataContext;
+        ViewModel.EfficiencyCommand.Execute(null);
+    }
+
+    /// <summary>Real TM „Dateispeicherort öffnen" / „Onlinesuche" — act on the right-clicked row.</summary>
+    private void OnOpenLocationClick(object sender, RoutedEventArgs e)
+    {
+        var row = (Tm2ProcessRowViewModel)((FrameworkElement)sender).DataContext;
+        App.Services.GetRequiredService<TaskLens.Core.Services.IProcessActionService>().OpenFileLocation(row.Pid);
+    }
+
+    private void OnSearchOnlineClick(object sender, RoutedEventArgs e)
+    {
+        var row = (Tm2ProcessRowViewModel)((FrameworkElement)sender).DataContext;
+        App.Services.GetRequiredService<TaskLens.Core.Services.IProcessActionService>().SearchOnline(row.Name);
+    }
 
     private void RunOnRow(object sender, bool entireTree)
     {
