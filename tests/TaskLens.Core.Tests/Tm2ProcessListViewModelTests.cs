@@ -41,6 +41,30 @@ public class Tm2ProcessListViewModelTests
     }
 
     [Fact]
+    public void GroupedRows_MirrorInnerSections_WithJoinedRows()
+    {
+        vm.ApplySnapshot(Snap([Delta(1, "svchost.exe", cpu: 1), Delta(2, "SomeTool.exe", cpu: 1)]));
+
+        Assert.Equal(3, vm.GroupedRows.Count);
+        var system = vm.GroupedRows.Single(g => g.Inner.Group == ProcessGroup.System);
+        Assert.Same(vm.Rows.Single(r => r.Pid == 1), system.Single());
+        Assert.Equal("Windows-Prozesse (1)", system.Header);
+    }
+
+    [Fact]
+    public void GroupedRows_CollapseStateSurvivesTicks()
+    {
+        vm.ApplySnapshot(Snap([Delta(1, "svchost.exe", cpu: 1)]));
+        var system = vm.GroupedRows.Single(g => g.Inner.Group == ProcessGroup.System);
+        system.IsExpanded = false;
+
+        vm.ApplySnapshot(Snap([Delta(1, "svchost.exe", cpu: 2)]));
+
+        Assert.False(vm.GroupedRows.Single(g => g.Inner.Group == ProcessGroup.System).IsExpanded);
+        Assert.False(vm.Inner.GroupedRows.Single(g => g.Group == ProcessGroup.System).IsExpanded);
+    }
+
+    [Fact]
     public void ApplySnapshot_SameRowObject_AcrossTicks()
     {
         vm.ApplySnapshot(Snap([Delta(1, "alpha", cpu: 10)]));
