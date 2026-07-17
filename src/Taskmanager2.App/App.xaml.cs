@@ -2,6 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using TaskLens.App.Services;
+using TaskLens.Core.Models;
 using TaskLens.Core.Services;
 using TaskLens.Core.ViewModels;
 using Taskmanager2.App.Services;
