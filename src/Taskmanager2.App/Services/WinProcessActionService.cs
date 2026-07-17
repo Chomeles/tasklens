@@ -110,6 +110,54 @@ public sealed class WinProcessActionService : IProcessActionService
         }
     }
 
+    /// <summary>Explorer at the exe, entry preselected — real TM's „Dateispeicherort öffnen".</summary>
+    public ActionResult OpenFileLocation(int pid)
+    {
+        var handle = OpenProcess(ProcessQueryLimitedInformation, false, pid);
+        if (handle == IntPtr.Zero)
+        {
+            return ActionResult.Fail("Zugriff verweigert oder Prozess beendet.");
+        }
+
+        try
+        {
+            var capacity = 1024;
+            var buffer = new char[capacity];
+            if (!QueryFullProcessImageName(handle, 0, buffer, ref capacity) || capacity == 0)
+            {
+                return ActionResult.Fail("Pfad nicht ermittelbar.");
+            }
+
+            var path = new string(buffer, 0, capacity);
+            using var _ = Process.Start(new ProcessStartInfo("explorer.exe", $"/select,\"{path}\"") { UseShellExecute = true });
+            return ActionResult.Ok;
+        }
+        catch (Exception ex) when (ex is Win32Exception or InvalidOperationException)
+        {
+            return ActionResult.Fail(ex.Message);
+        }
+        finally
+        {
+            CloseHandle(handle);
+        }
+    }
+
+    /// <summary>Default browser searching Bing for the process name — real TM's „Onlinesuche".</summary>
+    public ActionResult SearchOnline(string processName)
+    {
+        try
+        {
+            var query = Uri.EscapeDataString(processName);
+            using var _ = Process.Start(new ProcessStartInfo($"https://www.bing.com/search?q={query}") { UseShellExecute = true });
+            return ActionResult.Ok;
+        }
+        catch (Exception ex) when (ex is Win32Exception or InvalidOperationException)
+        {
+            return ActionResult.Fail(ex.Message);
+        }
+    }
+
+    private const int ProcessQueryLimitedInformation = 0x1000;
     private const int ProcessSetInformation = 0x0200;
     private const int ProcessPowerThrottlingClass = 4; // PROCESS_INFORMATION_CLASS.ProcessPowerThrottling
     private const uint PowerThrottlingExecutionSpeed = 0x1;
@@ -125,6 +173,9 @@ public sealed class WinProcessActionService : IProcessActionService
 
     [DllImport("kernel32.dll", SetLastError = true)]
     private static extern IntPtr OpenProcess(int desiredAccess, bool inheritHandle, int processId);
+
+    [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+    private static extern bool QueryFullProcessImageName(IntPtr process, int flags, char[] exeName, ref int size);
 
     [DllImport("kernel32.dll", SetLastError = true)]
     private static extern bool SetProcessInformation(IntPtr process, int infoClass, ref ProcessPowerThrottlingState info, uint size);

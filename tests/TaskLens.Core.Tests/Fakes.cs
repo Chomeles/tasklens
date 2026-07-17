@@ -180,6 +180,22 @@ internal sealed class FakeProcessActionService : IProcessActionService
         PriorityCalls.Add((pid, priority));
         return Result;
     }
+
+    public List<int> OpenLocationCalls { get; } = [];
+
+    public List<string> SearchCalls { get; } = [];
+
+    public ActionResult OpenFileLocation(int pid)
+    {
+        OpenLocationCalls.Add(pid);
+        return Result;
+    }
+
+    public ActionResult SearchOnline(string processName)
+    {
+        SearchCalls.Add(processName);
+        return Result;
+    }
 }
 
 internal sealed class FakeStartupManager : IStartupManager

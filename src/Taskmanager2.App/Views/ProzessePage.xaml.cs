@@ -83,6 +83,19 @@ public sealed partial class ProzessePage : Page
         ViewModel.EfficiencyCommand.Execute(null);
     }
 
+    /// <summary>Real TM „Dateispeicherort öffnen" / „Onlinesuche" — act on the right-clicked row.</summary>
+    private void OnOpenLocationClick(object sender, RoutedEventArgs e)
+    {
+        var row = (Tm2ProcessRowViewModel)((FrameworkElement)sender).DataContext;
+        App.Services.GetRequiredService<TaskLens.Core.Services.IProcessActionService>().OpenFileLocation(row.Pid);
+    }
+
+    private void OnSearchOnlineClick(object sender, RoutedEventArgs e)
+    {
+        var row = (Tm2ProcessRowViewModel)((FrameworkElement)sender).DataContext;
+        App.Services.GetRequiredService<TaskLens.Core.Services.IProcessActionService>().SearchOnline(row.Name);
+    }
+
     private void RunOnRow(object sender, bool entireTree)
     {
         ViewModel.SelectedRow = (Tm2ProcessRowViewModel)((FrameworkElement)sender).DataContext;

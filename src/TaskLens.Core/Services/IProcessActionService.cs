@@ -14,6 +14,12 @@ public interface IProcessActionService
 
     /// <summary>Sets the process priority class (Details context menu, tm3-05-extended).</summary>
     public ActionResult SetPriority(int pid, ProcessPriority priority);
+
+    /// <summary>„Dateispeicherort öffnen": opens Explorer at the process's executable (real TM menu).</summary>
+    public ActionResult OpenFileLocation(int pid);
+
+    /// <summary>„Onlinesuche": opens the default browser searching for the process name (real TM menu).</summary>
+    public ActionResult SearchOnline(string processName);
 }
 
 /// <summary>The real TM's six priority levels, ordered low→high.</summary>

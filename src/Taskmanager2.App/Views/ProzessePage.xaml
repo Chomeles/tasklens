@@ -191,6 +191,9 @@
                           <MenuFlyoutItem Click="OnEndTaskClick" Text="Task beenden" />
                           <MenuFlyoutItem Click="OnEndTreeClick" Text="Prozessstruktur beenden" />
                           <MenuFlyoutItem Click="OnEfficiencyClick" Text="Effizienzmodus" />
+                          <MenuFlyoutSeparator />
+                          <MenuFlyoutItem Click="OnOpenLocationClick" Text="Dateispeicherort öffnen" />
+                          <MenuFlyoutItem Click="OnSearchOnlineClick" Text="Onlinesuche" />
                         </MenuFlyout>
                       </Grid.ContextFlyout>
                       <Grid.ColumnDefinitions>
