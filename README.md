@@ -35,49 +35,46 @@ LibreHardwareMonitor; without them TaskLens still shows the process list, GPU us
 
 ## Taskmanager2
 
-The repo also contains **Taskmanager2** (`src/Taskmanager2.App`) — a faithful clone of the
-Windows 11 Task Manager (German locale) built on the same TaskLens.Core pipeline. It matches the
-real layout (collapsed-by-default left navigation with Segoe Fluent Icons glyphs, Mica backdrop,
-German labels: Prozesse, Leistung, App-Verlauf, Autostart-Apps, Benutzer, Details, Dienste, plus a
-stub Einstellungen item) and shows only the columns the real app shows — no extra sensor columns,
-sparklines, or history graphs. Every displayed value is real and comes from the same sampling
-pipeline as TaskLens; nothing is fabricated, and columns without a backing data source (e.g.
-Status, Netzwerk) stay honestly empty or show the real Task Manager's zero-value text rather than
-invented numbers.
+The repo also contains **Taskmanager2** (`src/Taskmanager2.App`) — a near-1:1 clone of the
+Windows 11 Task Manager (German locale) built on the same TaskLens.Core pipeline. It reproduces the
+real layout (collapsed left navigation with Segoe Fluent Icons glyphs, Mica backdrop, search box in
+the title bar, German labels: Prozesse, Leistung, App-Verlauf, Autostart-Apps, Benutzer, Details,
+Dienste, Einstellungen) and every displayed value is real — nothing is fabricated. Columns without
+a backing data source (per-process Netzwerk) stay honestly at the real app's zero-value text
+instead of inventing numbers.
 
-The Prozesse page groups rows into Apps / Hintergrundprozesse / Windows-Prozesse (real TM's
-grouping) via `TaskLens.Core.ViewModels.ProcessClassification` — well-known system process names
-go to Windows-Prozesse, processes with a visible top-level window (detected via a `user32.dll`
-window walk in the Windows-only sampler) go to Apps, everything else is Hintergrundprozesse; group
-headers show live counts. CPU cells are tinted with a yellow→orange heatmap
-(`TaskLens.Core.ViewModels.HeatMap`, a pure value→ARGB function, tested on Linux) on both the
-Prozesse and Details pages — Arbeitsspeicher/Datenträger cells are intentionally left untinted
-because Core only has bytes/bytes-per-second there, not a 0–100% figure, and inventing a scaling
-max would be fake data. Column headers show the real system-wide CPU%/memory% totals from
-`SystemSnapshot`. Per-process icons and interactive group-collapse chevrons are not implemented yet
-(icon extraction needs Windows GDI/shell APIs and collapse needs a hand-rolled grouped-list
-control — both unverifiable without a Windows dev box); a generic/no icon and non-collapsible
-group headers are the current, honest state.
+**Visual fidelity:** yellow→orange heat tint on every metric column (CPU, Arbeitsspeicher,
+Datenträger, Netzwerk) and the tinted two-line aggregate headers, collapsible Apps /
+Hintergrundprozesse / Windows-Prozesse groups, expandable app rows with their window title, real
+per-process icons (with a shell stock-icon fallback), decimal-comma formatting (`12,4 %`,
+`64,0 MB`), and the App-Theme / Standardstartseite / update-speed settings the real app has.
 
-Extra hardware sensor detail (temperature, power, fan) is intentionally not shown yet — that lands
-as a separate, later step, once it can be added without turning the clone back into the old
-sensor-dense satire.
-
-Taskmanager2 is strictly read-only: it never starts or stops services, toggles autostart entries,
-or touches user sessions.
+**Functional parity:** real actions throughout — Task beenden / Prozessstruktur beenden,
+Effizienzmodus (EcoQoS throttling), Neuen Task ausführen (run dialog on every page), Priorität
+festlegen, Dateispeicherort öffnen, Onlinesuche, Autostart aktivieren/deaktivieren, Dienste
+Starten/Beenden/Neu starten, Benutzer Verbindung trennen/Abmelden. Leistung shows CPU uptime,
+memory composition, per-adapter network graphs, and disk active-time/response via PDH. Details
+carries the real Benutzername and Architektur columns from token/`IsWow64Process2` reads. The one
+deliberate gap: per-process network attribution stays at 0 MBit/s — real values would need an ETW
+trace pipeline (which the real Task Manager itself only approximates).
 
 No Microsoft assets are used — no logos, product icons, or artwork; the name and app icon are its
 own. The resemblance is layout homage only (nav labels, column names, Mica). Taskmanager2 ships
-from source only (no releases, no packaging); it builds as part of the normal Windows build:
+from source only (no releases, no packaging).
+
+### Build & visually compare on Windows
+
+Taskmanager2 is WinUI 3 — it only builds and runs on Windows (the Linux solution filter builds
+Core + tests only). To check it against the real Task Manager:
 
 ```
+git checkout tm2-fidelity-prozesse
 dotnet build TaskLens.sln -c Release
+dotnet run --project src/Taskmanager2.App -c Release
 ```
 
-Screenshot placeholders, replaced once the UI stabilizes:
-
-- `docs/screenshots/tm2-prozesse.png` — Prozesse page, real Task-Manager column set
-- `docs/screenshots/tm2-details.png` — Details page, dense real-data table
+Then open the real Windows Task Manager side by side and compare page by page — spacing, fonts,
+colour tints, and behaviour. Anything that differs is the next concrete fidelity round.
 
 ## Building
 
