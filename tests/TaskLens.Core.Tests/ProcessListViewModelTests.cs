@@ -234,6 +234,22 @@ public class ProcessListViewModelTests
     }
 
     [Fact]
+    public void WindowTitle_FlowsFromSample_AndExpandStatePersists()
+    {
+        var withWindow = new ProcessDelta(
+            new ProcessSample(1, "app.exe", Start, TimeSpan.Zero, 1024, 0, 0, HasVisibleWindow: true, WindowTitle: "Mein Fenster"), 0, 0, 0, 0);
+        vm.ApplySnapshot(Snap(withWindow));
+        var row = vm.Rows.Single();
+        Assert.True(row.HasWindow);
+        Assert.Equal("Mein Fenster", row.WindowTitle);
+        row.IsExpanded = true;
+
+        vm.ApplySnapshot(Snap(withWindow));
+
+        Assert.True(vm.Rows.Single().IsExpanded);
+    }
+
+    [Fact]
     public void ResortAfterValueChange_MovesRowsWithoutRecreatingThem()
     {
         vm.SortColumn = ProcessColumn.Cpu;

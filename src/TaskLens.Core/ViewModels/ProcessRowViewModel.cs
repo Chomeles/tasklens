@@ -47,6 +47,18 @@ public sealed partial class ProcessRowViewModel : ObservableObject
     [ObservableProperty]
     private double memoryPercent;
 
+    /// <summary>Title of the first visible top-level window; null for windowless processes.
+    /// Feeds the real TM's expandable app rows (app → indented window-title child).</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasWindow))]
+    private string? windowTitle;
+
+    public bool HasWindow => WindowTitle is not null;
+
+    /// <summary>App-row chevron state; persists across ticks because the row object does.</summary>
+    [ObservableProperty]
+    private bool isExpanded;
+
     public void Update(ProcessDelta delta)
     {
         ArgumentNullException.ThrowIfNull(delta);
@@ -57,5 +69,6 @@ public sealed partial class ProcessRowViewModel : ObservableObject
         IoReadBytesPerSecond = delta.IoReadBytesPerSecond;
         IoWriteBytesPerSecond = delta.IoWriteBytesPerSecond;
         Group = ProcessClassification.Classify(delta.Sample);
+        WindowTitle = delta.Sample.WindowTitle;
     }
 }

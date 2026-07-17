@@ -69,7 +69,7 @@ internal sealed class NtProcessEnumerator : IProcessEnumerator
     /// </summary>
     internal static IReadOnlyList<ProcessSample> EnumerateFallback()
     {
-        var visibleWindowPids = Interop.User32.GetPidsWithVisibleWindows();
+        var windowTitles = Interop.User32.GetWindowTitlesByPid();
         var processes = Process.GetProcesses();
         var samples = new List<ProcessSample>(processes.Length);
         foreach (var process in processes)
@@ -86,7 +86,8 @@ internal sealed class NtProcessEnumerator : IProcessEnumerator
                         WorkingSetBytes: process.WorkingSet64,
                         IoReadBytes: 0,
                         IoWriteBytes: 0,
-                        HasVisibleWindow: visibleWindowPids.Contains(process.Id)));
+                        HasVisibleWindow: windowTitles.ContainsKey(process.Id),
+                        WindowTitle: windowTitles.GetValueOrDefault(process.Id)));
                 }
                 catch (Exception)
                 {
@@ -98,12 +99,12 @@ internal sealed class NtProcessEnumerator : IProcessEnumerator
         return samples;
     }
 
-    /// <summary>Stamps <see cref="ProcessSample.HasVisibleWindow"/> from a fresh top-level-window
-    /// walk (Taskmanager2 Apps/Hintergrundprozesse grouping, gap 1).</summary>
+    /// <summary>Stamps <see cref="ProcessSample.HasVisibleWindow"/> + <see cref="ProcessSample.WindowTitle"/>
+    /// from a fresh top-level-window walk (Apps-grouping + expandable app rows).</summary>
     private static IReadOnlyList<ProcessSample> WithVisibleWindowFlag(IReadOnlyList<ProcessSample> samples)
     {
-        var visibleWindowPids = Interop.User32.GetPidsWithVisibleWindows();
-        if (visibleWindowPids.Count == 0)
+        var windowTitles = Interop.User32.GetWindowTitlesByPid();
+        if (windowTitles.Count == 0)
         {
             return samples;
         }
@@ -111,7 +112,9 @@ internal sealed class NtProcessEnumerator : IProcessEnumerator
         var result = new List<ProcessSample>(samples.Count);
         foreach (var sample in samples)
         {
-            result.Add(visibleWindowPids.Contains(sample.Pid) ? sample with { HasVisibleWindow = true } : sample);
+            result.Add(windowTitles.TryGetValue(sample.Pid, out var title)
+                ? sample with { HasVisibleWindow = true, WindowTitle = title }
+                : sample);
         }
 
         return result;

@@ -19,6 +19,9 @@ internal static partial class User32
     [LibraryImport("user32.dll")]
     internal static partial int GetWindowTextLengthW(nint hWnd);
 
+    [LibraryImport("user32.dll", StringMarshalling = StringMarshalling.Utf16)]
+    internal static partial int GetWindowTextW(nint hWnd, [Out] char[] text, int maxCount);
+
     [LibraryImport("user32.dll")]
     internal static partial uint GetWindowThreadProcessId(nint hWnd, out uint processId);
 
@@ -42,5 +45,35 @@ internal static partial class User32
             return true;
         }, 0);
         return pids;
+    }
+
+    /// <summary>
+    /// PID → title of the first visible top-level window, for the real TM's expandable app rows
+    /// (app row → indented window-title child). One title per process — the common case; multi-
+    /// window apps show their first window, like the TM's collapsed state.
+    /// </summary>
+    internal static Dictionary<int, string> GetWindowTitlesByPid()
+    {
+        var titles = new Dictionary<int, string>();
+        EnumWindows((hWnd, _) =>
+        {
+            var length = IsWindowVisible(hWnd) ? GetWindowTextLengthW(hWnd) : 0;
+            if (length > 0)
+            {
+                GetWindowThreadProcessId(hWnd, out var pid);
+                if (!titles.ContainsKey((int)pid))
+                {
+                    var buffer = new char[length + 1];
+                    var copied = GetWindowTextW(hWnd, buffer, buffer.Length);
+                    if (copied > 0)
+                    {
+                        titles[(int)pid] = new string(buffer, 0, copied);
+                    }
+                }
+            }
+
+            return true;
+        }, 0);
+        return titles;
     }
 }

@@ -22,6 +22,15 @@ public sealed partial class ProzessePage : Page
     private void OnSortHeaderClick(object sender, RoutedEventArgs e) =>
         ViewModel.Inner.SortByCommand.Execute(Enum.Parse<ProcessColumn>((string)((FrameworkElement)sender).Tag));
 
+    /// <summary>App-row chevron: flip the row's window-child visibility.</summary>
+    private void OnRowToggleClick(object sender, RoutedEventArgs e)
+    {
+        if (((FrameworkElement)sender).DataContext is Tm2ProcessRowViewModel row)
+        {
+            row.IsExpanded = !row.IsExpanded;
+        }
+    }
+
     /// <summary>Group-header chevron: flip the section's collapse state.</summary>
     private void OnGroupToggleClick(object sender, RoutedEventArgs e)
     {

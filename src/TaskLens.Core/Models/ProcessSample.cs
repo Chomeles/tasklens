@@ -12,7 +12,8 @@ public sealed record ProcessSample(
     long WorkingSetBytes,
     long IoReadBytes,
     long IoWriteBytes,
-    bool HasVisibleWindow = false)
+    bool HasVisibleWindow = false,
+    string? WindowTitle = null)
 {
     // ponytail: constructor-path guards via initializers; `with` can bypass, engine only constructs.
     public int Pid { get; init; } =
