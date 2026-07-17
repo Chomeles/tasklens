@@ -16,4 +16,8 @@ public static class CellHeat
         var color = Color.FromArgb((byte)(argb >> 24), (byte)(argb >> 16), (byte)(argb >> 8), (byte)argb);
         return new SolidColorBrush(color);
     }
+
+    /// <summary>Disk-cell tint from raw IO rates — one call because x:Bind can't nest functions.</summary>
+    public static Brush DiskBrush(double readBytesPerSecond, double writeBytesPerSecond) =>
+        Brush(HeatMap.DiskPercent(readBytesPerSecond, writeBytesPerSecond));
 }

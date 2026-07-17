@@ -28,6 +28,10 @@ public static class ProcessFormat
     public static string HeaderPercent(double value) =>
         value.ToString("0", DisplayCulture) + "%";
 
+    /// <summary>Disk-header aggregate from raw IO rates — one call because x:Bind can't nest functions.</summary>
+    public static string DiskHeaderPercent(double readBytesPerSecond, double writeBytesPerSecond) =>
+        HeaderPercent(HeatMap.DiskPercent(readBytesPerSecond, writeBytesPerSecond));
+
     /// <summary>"123.4 MB" — the real TM's memory column is always MB, never rescaled.</summary>
     public static string MemoryMb(long bytes) =>
         string.Create(DisplayCulture, $"{bytes / (1024.0 * 1024.0):0.0} MB");

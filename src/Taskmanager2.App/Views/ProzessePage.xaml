@@ -115,10 +115,10 @@
         </StackPanel>
       </Button>
       <Button Grid.Column="4" Style="{StaticResource HeaderCellButton}" Tag="Disk" Click="OnSortHeaderClick"
-              Background="{x:Bind svc:CellHeat.Brush(vm:HeatMap.DiskPercent(ViewModel.Inner.Totals.IoReadBytesPerSecond, ViewModel.Inner.Totals.IoWriteBytesPerSecond)), Mode=OneWay}">
+              Background="{x:Bind svc:CellHeat.DiskBrush(ViewModel.Inner.Totals.IoReadBytesPerSecond, ViewModel.Inner.Totals.IoWriteBytesPerSecond), Mode=OneWay}">
         <StackPanel>
           <TextBlock HorizontalAlignment="Right" FontSize="14"
-                     Text="{x:Bind vm:ProcessFormat.HeaderPercent(vm:HeatMap.DiskPercent(ViewModel.Inner.Totals.IoReadBytesPerSecond, ViewModel.Inner.Totals.IoWriteBytesPerSecond)), Mode=OneWay}" />
+                     Text="{x:Bind vm:ProcessFormat.DiskHeaderPercent(ViewModel.Inner.Totals.IoReadBytesPerSecond, ViewModel.Inner.Totals.IoWriteBytesPerSecond), Mode=OneWay}" />
           <TextBlock HorizontalAlignment="Right" FontSize="12" Opacity="0.8"
                      Text="{x:Bind vm:ProcessFormat.Header('Datenträger', 'Disk', ViewModel.Inner.SortColumn, ViewModel.Inner.SortDescending), Mode=OneWay}" />
         </StackPanel>
@@ -244,7 +244,7 @@
                         <TextBlock Padding="8,3" VerticalAlignment="Center" FontSize="12" TextAlignment="Right"
                                  Text="{x:Bind vm:ProcessFormat.MemoryMb(WorkingSetBytes), Mode=OneWay}" />
                       </Border>
-                      <Border Grid.Column="4" Background="{x:Bind svc:CellHeat.Brush(vm:HeatMap.DiskPercent(IoReadBytesPerSecond, IoWriteBytesPerSecond)), Mode=OneWay}">
+                      <Border Grid.Column="4" Background="{x:Bind svc:CellHeat.DiskBrush(IoReadBytesPerSecond, IoWriteBytesPerSecond), Mode=OneWay}">
                         <TextBlock Padding="8,3" VerticalAlignment="Center" FontSize="12" TextAlignment="Right"
                                  Text="{x:Bind vm:ProcessFormat.DiskRate(IoReadBytesPerSecond, IoWriteBytesPerSecond), Mode=OneWay}" />
                       </Border>
