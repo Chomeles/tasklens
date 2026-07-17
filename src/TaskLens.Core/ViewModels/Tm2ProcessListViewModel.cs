@@ -34,7 +34,16 @@ public sealed partial class Tm2ProcessListViewModel : ObservableObject
         Inner = inner ?? throw new ArgumentNullException(nameof(inner));
         this.actions = actions;
         Inner.Rows.CollectionChanged += OnInnerRowsChanged;
+        foreach (var section in Inner.GroupedRows)
+        {
+            GroupedRows.Add(new Tm2ProcessGroupSection(section));
+            section.CollectionChanged += OnInnerRowsChanged;
+        }
     }
+
+    /// <summary>Joined rows bucketed into the real TM's Apps / Hintergrundprozesse /
+    /// Windows-Prozesse sections, mirroring <c>Inner.GroupedRows</c>.</summary>
+    public ObservableCollection<Tm2ProcessGroupSection> GroupedRows { get; } = [];
 
     /// <summary>The row the end-task commands act on; cleared when the row leaves the list.</summary>
     [ObservableProperty]
@@ -147,6 +156,22 @@ public sealed partial class Tm2ProcessListViewModel : ObservableObject
         }
 
         CollectionReconciler.Reconcile(Rows, target);
+
+        foreach (var section in GroupedRows)
+        {
+            // joined is complete for every visible row at this point; TryGetValue is belt-and-braces
+            // against a mid-update event replaying before Inner finished its own group refresh.
+            var sectionTarget = new List<Tm2ProcessRowViewModel>(section.Inner.Count);
+            foreach (var row in section.Inner)
+            {
+                if (joined.TryGetValue(row, out var row2))
+                {
+                    sectionTarget.Add(row2);
+                }
+            }
+
+            CollectionReconciler.Reconcile(section, sectionTarget);
+        }
     }
 
     private static (float? Temp, float? Watt, float? Fan) ExtractSystemSensors(IReadOnlyList<SensorReading> sensors)

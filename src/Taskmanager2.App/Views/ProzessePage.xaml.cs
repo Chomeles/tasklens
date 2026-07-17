@@ -8,6 +8,8 @@ namespace Taskmanager2.App.Views;
 /// <summary>Prozesse page: the Tm2 process list. Code-behind is x:Bind wiring only (plan.md MVVM rules).</summary>
 public sealed partial class ProzessePage : Page
 {
+    private ListView? selectionOwner;
+
     public ProzessePage()
     {
         ViewModel = App.Services.GetRequiredService<Tm2ProcessListViewModel>();
@@ -20,9 +22,40 @@ public sealed partial class ProzessePage : Page
     private void OnSortHeaderClick(object sender, RoutedEventArgs e) =>
         ViewModel.Inner.SortByCommand.Execute(Enum.Parse<ProcessColumn>((string)((FrameworkElement)sender).Tag));
 
-    /// <summary>ListView.SelectedItem is object — TwoWay x:Bind can't cast, so mirror it manually.</summary>
-    private void OnSelectionChanged(object sender, SelectionChangedEventArgs e) =>
-        ViewModel.SelectedRow = ((ListView)sender).SelectedItem as Tm2ProcessRowViewModel;
+    /// <summary>Group-header chevron: flip the section's collapse state.</summary>
+    private void OnGroupToggleClick(object sender, RoutedEventArgs e)
+    {
+        if (((FrameworkElement)sender).DataContext is Tm2ProcessGroupSection section)
+        {
+            section.IsExpanded = !section.IsExpanded;
+        }
+    }
+
+    /// <summary>
+    /// One ListView per group, one logical selection: mirror into the VM and clear the previous
+    /// group's selection when a different group takes over.
+    /// </summary>
+    private void OnSelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        var list = (ListView)sender;
+        if (list.SelectedItem is not Tm2ProcessRowViewModel row)
+        {
+            if (ReferenceEquals(selectionOwner, list))
+            {
+                ViewModel.SelectedRow = null;
+            }
+
+            return;
+        }
+
+        if (selectionOwner is not null && !ReferenceEquals(selectionOwner, list))
+        {
+            selectionOwner.SelectedItem = null;
+        }
+
+        selectionOwner = list;
+        ViewModel.SelectedRow = row;
+    }
 
     /// <summary>Context menu acts on the right-clicked row: select it, then run the command.</summary>
     private void OnEndTaskClick(object sender, RoutedEventArgs e) =>

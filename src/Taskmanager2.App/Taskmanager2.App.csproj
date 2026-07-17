@@ -35,6 +35,7 @@
     <Compile Include="..\TaskLens.App\Services\DispatcherQueueDispatcher.cs" LinkBase="Linked" />
     <Compile Include="..\TaskLens.App\Services\Interop\NtDll.cs" LinkBase="Linked" />
     <Compile Include="..\TaskLens.App\Services\Interop\Kernel32.cs" LinkBase="Linked" />
+    <Compile Include="..\TaskLens.App\Services\Interop\User32.cs" LinkBase="Linked" />
     <Compile Include="..\TaskLens.App\Services\Interop\Pdh.cs" LinkBase="Linked" />
     <Compile Include="..\TaskLens.App\Views\SparklineRender.cs" LinkBase="Linked" />
     <Compile Include="..\TaskLens.App\Services\StubServices.cs" LinkBase="Linked" />
@@ -43,6 +44,11 @@
 
   <ItemGroup>
     <ProjectReference Include="..\TaskLens.Core\TaskLens.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Process-icon extraction (ProcessIcons): Icon.ExtractAssociatedIcon → PNG → BitmapImage. -->
+    <PackageReference Include="System.Drawing.Common" Version="8.0.7" />
   </ItemGroup>
 
 </Project>

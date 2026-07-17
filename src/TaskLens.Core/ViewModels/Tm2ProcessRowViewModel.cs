@@ -48,6 +48,9 @@ public sealed partial class Tm2ProcessRowViewModel : ObservableObject
 
     public double IoWriteBytesPerSecond => Inner.IoWriteBytesPerSecond;
 
+    /// <summary>Working set as percent of total RAM — drives the Arbeitsspeicher cell tint.</summary>
+    public double MemoryPercent => Inner.MemoryPercent;
+
     [ObservableProperty]
     private float? cpuTempCelsius;
 

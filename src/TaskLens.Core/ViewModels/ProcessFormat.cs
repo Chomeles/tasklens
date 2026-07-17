@@ -17,6 +17,18 @@ public static class ProcessFormat
     /// <summary>"64.0 MB" — binary-scaled byte count.</summary>
     public static string Bytes(long value) => Scale(value);
 
+    /// <summary>"2.1%" — cell text with the % sign inline, like the real TM's metric cells.</summary>
+    public static string CellPercent(double value) =>
+        value.ToString("0.0", CultureInfo.InvariantCulture) + "%";
+
+    /// <summary>"4%" — integer percent for the big column-header aggregate.</summary>
+    public static string HeaderPercent(double value) =>
+        value.ToString("0", CultureInfo.InvariantCulture) + "%";
+
+    /// <summary>"123.4 MB" — the real TM's memory column is always MB, never rescaled.</summary>
+    public static string MemoryMb(long bytes) =>
+        string.Create(CultureInfo.InvariantCulture, $"{bytes / (1024.0 * 1024.0):0.0} MB");
+
     /// <summary>"1.5 KB/s" — binary-scaled byte rate.</summary>
     public static string Rate(double bytesPerSecond) => Scale(bytesPerSecond) + "/s";
 

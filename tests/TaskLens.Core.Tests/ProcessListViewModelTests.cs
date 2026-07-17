@@ -198,6 +198,42 @@ public class ProcessListViewModelTests
     }
 
     [Fact]
+    public void GroupedRows_BucketsByClassification_WithCounts()
+    {
+        vm.ApplySnapshot(Snap(
+            Delta(1, "svchost.exe", cpu: 1),
+            Delta(2, "svchost.exe", cpu: 1, start: Start.AddSeconds(1)),
+            Delta(3, "SomeBackgroundTool.exe", cpu: 1)));
+
+        // Sections are persistent: always 3, empty ones flagged via HasItems (UI hides them).
+        Assert.Equal(3, vm.GroupedRows.Count);
+        Assert.Contains(vm.GroupedRows, g => g.Group == ProcessGroup.Apps && !g.HasItems);
+        Assert.Contains(vm.GroupedRows, g => g.Group == ProcessGroup.System && g.Count == 2 && g.Header == "Windows-Prozesse (2)");
+        Assert.Contains(vm.GroupedRows, g => g.Group == ProcessGroup.Background && g.Count == 1 && g.Header == "Hintergrundprozesse (1)");
+    }
+
+    [Fact]
+    public void GroupedRows_SectionsPersistAcrossTicks_KeepingCollapseState()
+    {
+        vm.ApplySnapshot(Snap(Delta(1, "svchost.exe", cpu: 1)));
+        var section = vm.GroupedRows.Single(g => g.Group == ProcessGroup.System);
+        section.IsExpanded = false;
+
+        vm.ApplySnapshot(Snap(Delta(1, "svchost.exe", cpu: 2)));
+
+        Assert.Same(section, vm.GroupedRows.Single(g => g.Group == ProcessGroup.System));
+        Assert.False(section.IsExpanded);
+    }
+
+    [Fact]
+    public void ApplySnapshot_SetsRowMemoryPercentFromTotal()
+    {
+        vm.ApplySnapshot(Snap(Delta(1, "alpha", memory: 1024)) with { MemoryUsedBytes = 2048, MemoryTotalBytes = 4096 });
+
+        Assert.Equal(25, vm.Rows.Single().MemoryPercent);
+    }
+
+    [Fact]
     public void ResortAfterValueChange_MovesRowsWithoutRecreatingThem()
     {
         vm.SortColumn = ProcessColumn.Cpu;

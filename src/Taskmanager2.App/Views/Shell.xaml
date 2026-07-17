@@ -26,16 +26,46 @@
       Grid.Row="1"
       x:Name="Nav"
       IsBackButtonVisible="Collapsed"
-      IsSettingsVisible="False"
+      IsSettingsVisible="True"
+      PaneDisplayMode="LeftCompact"
+      IsPaneToggleButtonVisible="True"
       SelectionChanged="OnSelectionChanged">
       <NavigationView.MenuItems>
-        <NavigationViewItem Content="Prozesse" Tag="Prozesse" />
-        <NavigationViewItem Content="Leistung" Tag="Leistung" />
-        <NavigationViewItem Content="App-Verlauf" Tag="AppVerlauf" />
-        <NavigationViewItem Content="Autostart-Apps" Tag="Autostart" />
-        <NavigationViewItem Content="Benutzer" Tag="Benutzer" />
-        <NavigationViewItem Content="Details" Tag="Details" />
-        <NavigationViewItem Content="Dienste" Tag="Dienste" />
+        <NavigationViewItem Content="Prozesse" Tag="Prozesse">
+          <NavigationViewItem.Icon>
+            <FontIcon Glyph="&#xE9D9;" />
+          </NavigationViewItem.Icon>
+        </NavigationViewItem>
+        <NavigationViewItem Content="Leistung" Tag="Leistung">
+          <NavigationViewItem.Icon>
+            <FontIcon Glyph="&#xE9D2;" />
+          </NavigationViewItem.Icon>
+        </NavigationViewItem>
+        <NavigationViewItem Content="App-Verlauf" Tag="AppVerlauf">
+          <NavigationViewItem.Icon>
+            <FontIcon Glyph="&#xE81C;" />
+          </NavigationViewItem.Icon>
+        </NavigationViewItem>
+        <NavigationViewItem Content="Autostart-Apps" Tag="Autostart">
+          <NavigationViewItem.Icon>
+            <FontIcon Glyph="&#xE7E8;" />
+          </NavigationViewItem.Icon>
+        </NavigationViewItem>
+        <NavigationViewItem Content="Benutzer" Tag="Benutzer">
+          <NavigationViewItem.Icon>
+            <FontIcon Glyph="&#xE77B;" />
+          </NavigationViewItem.Icon>
+        </NavigationViewItem>
+        <NavigationViewItem Content="Details" Tag="Details">
+          <NavigationViewItem.Icon>
+            <FontIcon Glyph="&#xE946;" />
+          </NavigationViewItem.Icon>
+        </NavigationViewItem>
+        <NavigationViewItem Content="Dienste" Tag="Dienste">
+          <NavigationViewItem.Icon>
+            <FontIcon Glyph="&#xE90F;" />
+          </NavigationViewItem.Icon>
+        </NavigationViewItem>
       </NavigationView.MenuItems>
       <Frame x:Name="ContentFrame" />
     </NavigationView>

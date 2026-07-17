@@ -33,18 +33,38 @@ maintained for submission to `microsoft/winget-pkgs`.
 Admin elevation + [PawnIO](https://pawnio.eu) unlock CPU temperature/power/fan sensors via
 LibreHardwareMonitor; without them TaskLens still shows the process list, GPU usage, RAM, and disk.
 
-## Taskmanager2 (satire)
+## Taskmanager2
 
-The repo also contains **Taskmanager2** (`src/Taskmanager2.App`) — a parody of the Windows 11
-Task Manager built on the same TaskLens.Core pipeline. It clones the layout (left navigation,
-Mica backdrop, German labels: Prozesse, Leistung, App-Verlauf, Autostart-Apps, Benutzer, Details,
-Dienste) and then overloads it with every value the pipeline provides: temperature/watt/fan
-columns in the process list, sparklines in cells, a Leistung page with every sensor group, and a
-Details page stacking all thirteen columns under three live history graphs.
+The repo also contains **Taskmanager2** (`src/Taskmanager2.App`) — a faithful clone of the
+Windows 11 Task Manager (German locale) built on the same TaskLens.Core pipeline. It matches the
+real layout (collapsed-by-default left navigation with Segoe Fluent Icons glyphs, Mica backdrop,
+German labels: Prozesse, Leistung, App-Verlauf, Autostart-Apps, Benutzer, Details, Dienste, plus a
+stub Einstellungen item) and shows only the columns the real app shows — no extra sensor columns,
+sparklines, or history graphs. Every displayed value is real and comes from the same sampling
+pipeline as TaskLens; nothing is fabricated, and columns without a backing data source (e.g.
+Status, Netzwerk) stay honestly empty or show the real Task Manager's zero-value text rather than
+invented numbers.
 
-**The satire is density, not fake data** — every displayed value is real and comes from the same
-sampling pipeline as TaskLens. Taskmanager2 is strictly read-only: it never starts or stops
-services, toggles autostart entries, or touches user sessions.
+The Prozesse page groups rows into Apps / Hintergrundprozesse / Windows-Prozesse (real TM's
+grouping) via `TaskLens.Core.ViewModels.ProcessClassification` — well-known system process names
+go to Windows-Prozesse, processes with a visible top-level window (detected via a `user32.dll`
+window walk in the Windows-only sampler) go to Apps, everything else is Hintergrundprozesse; group
+headers show live counts. CPU cells are tinted with a yellow→orange heatmap
+(`TaskLens.Core.ViewModels.HeatMap`, a pure value→ARGB function, tested on Linux) on both the
+Prozesse and Details pages — Arbeitsspeicher/Datenträger cells are intentionally left untinted
+because Core only has bytes/bytes-per-second there, not a 0–100% figure, and inventing a scaling
+max would be fake data. Column headers show the real system-wide CPU%/memory% totals from
+`SystemSnapshot`. Per-process icons and interactive group-collapse chevrons are not implemented yet
+(icon extraction needs Windows GDI/shell APIs and collapse needs a hand-rolled grouped-list
+control — both unverifiable without a Windows dev box); a generic/no icon and non-collapsible
+group headers are the current, honest state.
+
+Extra hardware sensor detail (temperature, power, fan) is intentionally not shown yet — that lands
+as a separate, later step, once it can be added without turning the clone back into the old
+sensor-dense satire.
+
+Taskmanager2 is strictly read-only: it never starts or stops services, toggles autostart entries,
+or touches user sessions.
 
 No Microsoft assets are used — no logos, product icons, or artwork; the name and app icon are its
 own. The resemblance is layout homage only (nav labels, column names, Mica). Taskmanager2 ships
@@ -56,8 +76,8 @@ dotnet build TaskLens.sln -c Release
 
 Screenshot placeholders, replaced once the UI stabilizes:
 
-- `docs/screenshots/tm2-prozesse.png` — Prozesse page with sensor columns and sparkline cells
-- `docs/screenshots/tm2-details.png` — Details page, maximum density
+- `docs/screenshots/tm2-prozesse.png` — Prozesse page, real Task-Manager column set
+- `docs/screenshots/tm2-details.png` — Details page, dense real-data table
 
 ## Building
 

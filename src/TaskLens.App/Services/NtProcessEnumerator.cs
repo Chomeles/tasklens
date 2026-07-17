@@ -46,7 +46,8 @@ internal sealed class NtProcessEnumerator : IProcessEnumerator
                 {
                     // Parse while pinned: ImageName pointers inside the buffer are absolute addresses.
                     var used = returnLength > 0 && returnLength <= buffer.Length ? (int)returnLength : buffer.Length;
-                    return SystemProcessInformationParser.Parse(buffer.AsSpan(0, used), (ulong)pinned);
+                    var samples = SystemProcessInformationParser.Parse(buffer.AsSpan(0, used), (ulong)pinned);
+                    return WithVisibleWindowFlag(samples);
                 }
 
                 if (status != NtDll.StatusInfoLengthMismatch)
@@ -68,6 +69,7 @@ internal sealed class NtProcessEnumerator : IProcessEnumerator
     /// </summary>
     internal static IReadOnlyList<ProcessSample> EnumerateFallback()
     {
+        var visibleWindowPids = Interop.User32.GetPidsWithVisibleWindows();
         var processes = Process.GetProcesses();
         var samples = new List<ProcessSample>(processes.Length);
         foreach (var process in processes)
@@ -83,7 +85,8 @@ internal sealed class NtProcessEnumerator : IProcessEnumerator
                         TotalCpuTime: process.TotalProcessorTime,
                         WorkingSetBytes: process.WorkingSet64,
                         IoReadBytes: 0,
-                        IoWriteBytes: 0));
+                        IoWriteBytes: 0,
+                        HasVisibleWindow: visibleWindowPids.Contains(process.Id)));
                 }
                 catch (Exception)
                 {
@@ -93,5 +96,24 @@ internal sealed class NtProcessEnumerator : IProcessEnumerator
         }
 
         return samples;
+    }
+
+    /// <summary>Stamps <see cref="ProcessSample.HasVisibleWindow"/> from a fresh top-level-window
+    /// walk (Taskmanager2 Apps/Hintergrundprozesse grouping, gap 1).</summary>
+    private static IReadOnlyList<ProcessSample> WithVisibleWindowFlag(IReadOnlyList<ProcessSample> samples)
+    {
+        var visibleWindowPids = Interop.User32.GetPidsWithVisibleWindows();
+        if (visibleWindowPids.Count == 0)
+        {
+            return samples;
+        }
+
+        var result = new List<ProcessSample>(samples.Count);
+        foreach (var sample in samples)
+        {
+            result.Add(visibleWindowPids.Contains(sample.Pid) ? sample with { HasVisibleWindow = true } : sample);
+        }
+
+        return result;
     }
 }

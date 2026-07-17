@@ -39,6 +39,14 @@ public sealed partial class ProcessRowViewModel : ObservableObject
     [ObservableProperty]
     private double ioWriteBytesPerSecond;
 
+    [ObservableProperty]
+    private ProcessGroup group;
+
+    /// <summary>Working set as percent of total RAM — drives the Arbeitsspeicher cell tint, like
+    /// the real Task Manager. Set by the list VM, which knows the snapshot's memory total.</summary>
+    [ObservableProperty]
+    private double memoryPercent;
+
     public void Update(ProcessDelta delta)
     {
         ArgumentNullException.ThrowIfNull(delta);
@@ -48,5 +56,6 @@ public sealed partial class ProcessRowViewModel : ObservableObject
         WorkingSetBytes = delta.Sample.WorkingSetBytes;
         IoReadBytesPerSecond = delta.IoReadBytesPerSecond;
         IoWriteBytesPerSecond = delta.IoWriteBytesPerSecond;
+        Group = ProcessClassification.Classify(delta.Sample);
     }
 }

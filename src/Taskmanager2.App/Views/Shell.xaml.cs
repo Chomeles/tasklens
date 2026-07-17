@@ -19,6 +19,12 @@ public sealed partial class Shell : Window
 
     private void OnSelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
     {
+        // Einstellungen is a visual-only stub (task spec) — no page behind it, so no navigation.
+        if (args.IsSettingsSelected)
+        {
+            return;
+        }
+
         var pageType = (args.SelectedItemContainer?.Tag as string) switch
         {
             "Leistung" => typeof(LeistungPage),

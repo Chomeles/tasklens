@@ -11,7 +11,8 @@ public sealed record ProcessSample(
     TimeSpan TotalCpuTime,
     long WorkingSetBytes,
     long IoReadBytes,
-    long IoWriteBytes)
+    long IoWriteBytes,
+    bool HasVisibleWindow = false)
 {
     // ponytail: constructor-path guards via initializers; `with` can bypass, engine only constructs.
     public int Pid { get; init; } =
