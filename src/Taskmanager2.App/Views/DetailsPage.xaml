@@ -62,8 +62,9 @@
             <TextBlock Grid.Column="0" VerticalAlignment="Center" Text="{x:Bind Name, Mode=OneWay}" TextTrimming="CharacterEllipsis" />
             <TextBlock Grid.Column="1" VerticalAlignment="Center" Text="{x:Bind Pid}" TextAlignment="Right" />
             <!-- ponytail: Status-Zelle bleibt leer — keine Suspend-Detection in Core. -->
-            <TextBlock Grid.Column="3" VerticalAlignment="Center" Text="{x:Bind vm:ProcessFormat.Percent(CpuPercent), Mode=OneWay}"
-                       TextAlignment="Right" Background="{x:Bind svc:CellHeat.Brush(CpuPercent), Mode=OneWay}" />
+            <Border Grid.Column="3" Background="{x:Bind svc:CellHeat.Brush(CpuPercent), Mode=OneWay}">
+              <TextBlock VerticalAlignment="Center" Text="{x:Bind vm:ProcessFormat.Percent(CpuPercent), Mode=OneWay}" TextAlignment="Right" />
+            </Border>
             <TextBlock Grid.Column="4" VerticalAlignment="Center" Text="{x:Bind vm:ProcessFormat.Bytes(WorkingSetBytes), Mode=OneWay}" TextAlignment="Right" />
           </Grid>
         </DataTemplate>
