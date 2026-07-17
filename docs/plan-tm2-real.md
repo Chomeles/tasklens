@@ -13,7 +13,7 @@ verschachtelte Aufrufe; TextBlock ohne Background (Border).
 
 ## Tasks
 
-- [ ] **tm2r-01: Per-Prozess-Netzwerk via ETW** — die eine bewusste Lücke (README, Fidelity-Plan §6).
+- [x] **tm2r-01: Per-Prozess-Netzwerk via ETW** — die eine bewusste Lücke (README, Fidelity-Plan §6).
   ETW-Echtzeit-Session auf `Microsoft-Windows-Kernel-Network` ({7DD42A49-5329-4832-8DFD-43D979153A88}),
   TCP 10/11 (v4) + 26/27 (v6), UDP 42/43 (v4) + 58/59 (v6), Payload uint32 PID + uint32 Bytes.
   Core: `IProcessNetworkService` + reiner Raten-Aggregator (Muster: IGpuProcessService/

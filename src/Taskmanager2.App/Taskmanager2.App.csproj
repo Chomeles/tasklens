@@ -35,11 +35,13 @@
     <Compile Include="..\TaskLens.App\Services\PdhDiskMetrics.cs" LinkBase="Linked" />
     <Compile Include="..\TaskLens.App\Services\NetworkRateSampler.cs" LinkBase="Linked" />
     <Compile Include="..\TaskLens.App\Services\PdhGpuProcessService.cs" LinkBase="Linked" />
+    <Compile Include="..\TaskLens.App\Services\EtwProcessNetworkService.cs" LinkBase="Linked" />
     <Compile Include="..\TaskLens.App\Services\DispatcherQueueDispatcher.cs" LinkBase="Linked" />
     <Compile Include="..\TaskLens.App\Services\Interop\NtDll.cs" LinkBase="Linked" />
     <Compile Include="..\TaskLens.App\Services\Interop\Kernel32.cs" LinkBase="Linked" />
     <Compile Include="..\TaskLens.App\Services\Interop\User32.cs" LinkBase="Linked" />
     <Compile Include="..\TaskLens.App\Services\Interop\Pdh.cs" LinkBase="Linked" />
+    <Compile Include="..\TaskLens.App\Services\Interop\Advapi32.cs" LinkBase="Linked" />
     <Compile Include="..\TaskLens.App\Views\SparklineRender.cs" LinkBase="Linked" />
     <Compile Include="..\TaskLens.App\Services\StubServices.cs" LinkBase="Linked" />
     <Compile Include="..\TaskLens.App\Services\PawnIoInstallCheck.cs" LinkBase="Linked" />

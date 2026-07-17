@@ -35,6 +35,14 @@ public class HeatMapTests
     }
 
     [Fact]
+    public void NetworkPercent_ScalesAndClamps()
+    {
+        Assert.Equal(0, HeatMap.NetworkPercent(0));
+        Assert.Equal(50, HeatMap.NetworkPercent(50.0 * 1_000_000 / 8), 3); // 50 MBit/s of the 100 full scale
+        Assert.Equal(100, HeatMap.NetworkPercent(1e9));
+    }
+
+    [Fact]
     public void CellArgb_FullLoad_IsOrange()
     {
         var argb = HeatMap.CellArgb(100);

@@ -13,6 +13,7 @@ public sealed class SamplingEngine
     private readonly IProcessEnumerator processEnumerator;
     private readonly ISensorService sensorService;
     private readonly IGpuProcessService gpuProcessService;
+    private readonly IProcessNetworkService? processNetworkService;
     private readonly ISystemMetricsService systemMetricsService;
     private readonly IClock clock;
     private readonly IDispatcher dispatcher;
@@ -39,10 +40,12 @@ public sealed class SamplingEngine
         ISystemMetricsService systemMetricsService,
         IClock clock,
         IDispatcher dispatcher,
+        IProcessNetworkService? processNetworkService = null,
         TimeSpan? interval = null,
         int? processorCount = null,
         int historyCapacity = 60)
     {
+        this.processNetworkService = processNetworkService;
         this.processEnumerator = processEnumerator ?? throw new ArgumentNullException(nameof(processEnumerator));
         this.sensorService = sensorService ?? throw new ArgumentNullException(nameof(sensorService));
         this.gpuProcessService = gpuProcessService ?? throw new ArgumentNullException(nameof(gpuProcessService));
@@ -108,6 +111,8 @@ public sealed class SamplingEngine
         var now = clock.UtcNow;
         var samples = processEnumerator.Enumerate();
         var gpuByPid = gpuProcessService.SampleGpuPercentByPid();
+        // Null service (TaskLens.App, most tests) means no attribution source: honest 0 per row.
+        var networkByPid = processNetworkService?.SampleNetworkBytesPerSecondByPid();
         var sensors = sensorService.Sample();
         var metrics = systemMetricsService.Sample();
 
@@ -131,7 +136,14 @@ public sealed class SamplingEngine
             }
 
             gpuByPid.TryGetValue(sample.Pid, out var gpuPercent);
-            deltas.Add(new ProcessDelta(sample, cpuPercent, Math.Clamp(gpuPercent, 0, 100), ioRead, ioWrite));
+            double networkBytesPerSecond = 0;
+            if (networkByPid is not null && networkByPid.TryGetValue(sample.Pid, out var networkRate))
+            {
+                networkBytesPerSecond = Math.Max(0, networkRate);
+            }
+
+            deltas.Add(new ProcessDelta(
+                sample, cpuPercent, Math.Clamp(gpuPercent, 0, 100), ioRead, ioWrite, networkBytesPerSecond));
             current[key] = sample;
         }
 

@@ -41,4 +41,13 @@ public static class HeatMap
     /// <summary>Disk cell heat: combined IO rate mapped onto the 0–100 tint scale.</summary>
     public static double DiskPercent(double readBytesPerSecond, double writeBytesPerSecond) =>
         Math.Clamp((readBytesPerSecond + writeBytesPerSecond) / DiskFullScaleBytesPerSecond * 100.0, 0, 100);
+
+    // ponytail: fixed full-scale for the network-cell tint — a sustained 100 MBit/s reads as "hot",
+    // roughly one saturated fast-ethernet-class flow. Calibration knob, retune after a Windows
+    // visual pass next to the real TM.
+    private const double NetworkFullScaleBytesPerSecond = 100.0 * 1_000_000 / 8;
+
+    /// <summary>Network cell heat: per-process byte rate mapped onto the 0–100 tint scale (tm2r-01).</summary>
+    public static double NetworkPercent(double bytesPerSecond) =>
+        Math.Clamp(bytesPerSecond / NetworkFullScaleBytesPerSecond * 100.0, 0, 100);
 }

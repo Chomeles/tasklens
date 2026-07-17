@@ -198,6 +198,26 @@ public class SamplingEngineTests
     }
 
     [Fact]
+    public void NetworkRate_IsMappedByPid_MissingPidsAndMissingServiceAreZero()
+    {
+        processes.Samples = [Proc(pid: 1), Proc(pid: 2)];
+        var network = new FakeProcessNetworkService();
+        network.BytesPerSecondByPid[1] = 1_234.5;
+        var engine = new SamplingEngine(
+            processes, sensors, gpu, metrics, clock, new SyncDispatcher(), network);
+        engine.SnapshotReady += snapshots.Add;
+        engine.Tick();
+
+        var byPid = snapshots[0].Processes.ToDictionary(d => d.Sample.Pid);
+        Assert.Equal(1_234.5, byPid[1].NetworkBytesPerSecond);
+        Assert.Equal(0, byPid[2].NetworkBytesPerSecond);
+
+        // Without a network service (TaskLens.App) every row honestly reports 0.
+        CreateEngine().Tick();
+        Assert.All(snapshots[^1].Processes, d => Assert.Equal(0, d.NetworkBytesPerSecond));
+    }
+
+    [Fact]
     public void Snapshot_ComposesSensorsMetricsAndTimestamp()
     {
         var reading = new SensorReading("CPU", "Package", SensorKind.Power, 42f);

@@ -39,6 +39,10 @@ public sealed partial class ProcessRowViewModel : ObservableObject
     [ObservableProperty]
     private double ioWriteBytesPerSecond;
 
+    /// <summary>Send+receive bytes/sec attributed via ETW; 0 without a source (tm2r-01).</summary>
+    [ObservableProperty]
+    private double networkBytesPerSecond;
+
     [ObservableProperty]
     private ProcessGroup group;
 
@@ -82,6 +86,7 @@ public sealed partial class ProcessRowViewModel : ObservableObject
         WorkingSetBytes = delta.Sample.WorkingSetBytes;
         IoReadBytesPerSecond = delta.IoReadBytesPerSecond;
         IoWriteBytesPerSecond = delta.IoWriteBytesPerSecond;
+        NetworkBytesPerSecond = delta.NetworkBytesPerSecond;
         Group = ProcessClassification.Classify(delta.Sample);
         WindowTitle = delta.Sample.WindowTitle;
         UserName = delta.Sample.UserName;
