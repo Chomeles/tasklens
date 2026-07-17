@@ -12,20 +12,27 @@
       <RowDefinition Height="*" />
     </Grid.RowDefinitions>
 
+    <!-- Real TM page header: big title left, like every Win11 TM page. -->
+    <Grid Grid.Row="0" ColumnSpacing="8">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="*" />
+        <ColumnDefinition Width="Auto" />
+      </Grid.ColumnDefinitions>
+      <TextBlock Grid.Column="0" VerticalAlignment="Center" FontSize="20" FontWeight="SemiBold" Text="Dienste" />
+      <TextBox
+        Grid.Column="1"
+        Width="320"
+        PlaceholderText="Geben Sie zum Suchen einen Namen oder eine Beschreibung ein"
+        Text="{x:Bind ViewModel.Filter, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+    </Grid>
+
     <!-- Degradation as data: access denied shows a banner instead of throwing (plan-tm2.md §2). -->
     <InfoBar
-      Grid.Row="0"
+      Grid.Row="1"
       IsClosable="False"
       IsOpen="{x:Bind ViewModel.ShowBanner, Mode=OneWay}"
       Message="{x:Bind ViewModel.BannerText, Mode=OneWay}"
       Severity="Warning" />
-
-    <TextBox
-      Grid.Row="1"
-      MaxWidth="420"
-      HorizontalAlignment="Left"
-      PlaceholderText="Geben Sie zum Suchen einen Namen oder eine Beschreibung ein"
-      Text="{x:Bind ViewModel.Filter, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
 
     <!-- Fixed order: Wird ausgeführt vor Beendet, alphabetisch — keine Sortier-UI. Read-only:
          beobachten, nie starten/stoppen (plan-tm2.md §2). -->

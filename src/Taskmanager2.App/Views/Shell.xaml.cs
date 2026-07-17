@@ -11,6 +11,9 @@ public sealed partial class Shell : Window
 {
     public PawnIoBannerViewModel BannerViewModel { get; } = App.Services.GetRequiredService<PawnIoBannerViewModel>();
 
+    /// <summary>Global search target: the real TM's search box filters the process list from the header.</summary>
+    public ProcessListViewModel ProcessList { get; } = App.Services.GetRequiredService<ProcessListViewModel>();
+
     public Shell()
     {
         InitializeComponent();

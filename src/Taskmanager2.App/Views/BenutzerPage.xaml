@@ -8,12 +8,16 @@
     <Grid.RowDefinitions>
       <RowDefinition Height="Auto" />
       <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
       <RowDefinition Height="*" />
     </Grid.RowDefinitions>
 
+    <!-- Real TM page header: big title left, like every Win11 TM page. -->
+    <TextBlock Grid.Row="0" FontSize="20" FontWeight="SemiBold" Text="Benutzer" />
+
     <!-- Degradation as data: access denied shows a banner instead of throwing (plan-tm2.md §2). -->
     <InfoBar
-      Grid.Row="0"
+      Grid.Row="1"
       IsClosable="False"
       IsOpen="{x:Bind ViewModel.ShowBanner, Mode=OneWay}"
       Message="{x:Bind ViewModel.BannerText, Mode=OneWay}"
@@ -21,7 +25,7 @@
 
     <!-- Fixed order: nach Sitzungs-ID — keine Sortier-UI. Read-only: beobachten, nie trennen
          oder abmelden (plan-tm2.md §2). -->
-    <Grid Grid.Row="1" Padding="12,0" ColumnSpacing="8">
+    <Grid Grid.Row="2" Padding="12,0" ColumnSpacing="8">
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="260" />
         <ColumnDefinition Width="100" />
@@ -33,7 +37,7 @@
     </Grid>
 
     <ListView
-      Grid.Row="2"
+      Grid.Row="3"
       ItemsSource="{x:Bind ViewModel.Rows}"
       SelectionMode="None">
       <ListView.ItemContainerStyle>

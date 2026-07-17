@@ -4,30 +4,33 @@ using TaskLens.Core.Models;
 namespace TaskLens.Core.ViewModels;
 
 /// <summary>
-/// Invariant-culture display formatting for the process list. Static so XAML can call it
+/// DisplayCulture (de-DE) display formatting — the real DisplayCulture Task Manager shows decimal commas for the process list. Static so XAML can call it
 /// via x:Bind function bindings; lives in Core so it unit-tests on Linux.
 /// </summary>
 public static class ProcessFormat
 {
+    /// <summary>Display culture for every metric cell: de-DE, like the real DisplayCulture Task Manager.</summary>
+    public static readonly CultureInfo DisplayCulture = CultureInfo.GetCultureInfo("de-DE");
+
     private static readonly string[] ByteUnits = ["B", "KB", "MB", "GB", "TB"];
 
     /// <summary>"12.5" — bare number; the column header carries the % unit.</summary>
-    public static string Percent(double value) => value.ToString("0.0", CultureInfo.InvariantCulture);
+    public static string Percent(double value) => value.ToString("0.0", DisplayCulture);
 
     /// <summary>"64.0 MB" — binary-scaled byte count.</summary>
     public static string Bytes(long value) => Scale(value);
 
     /// <summary>"2.1%" — cell text with the % sign inline, like the real TM's metric cells.</summary>
     public static string CellPercent(double value) =>
-        value.ToString("0.0", CultureInfo.InvariantCulture) + "%";
+        value.ToString("0.0", DisplayCulture) + "%";
 
     /// <summary>"4%" — integer percent for the big column-header aggregate.</summary>
     public static string HeaderPercent(double value) =>
-        value.ToString("0", CultureInfo.InvariantCulture) + "%";
+        value.ToString("0", DisplayCulture) + "%";
 
     /// <summary>"123.4 MB" — the real TM's memory column is always MB, never rescaled.</summary>
     public static string MemoryMb(long bytes) =>
-        string.Create(CultureInfo.InvariantCulture, $"{bytes / (1024.0 * 1024.0):0.0} MB");
+        string.Create(DisplayCulture, $"{bytes / (1024.0 * 1024.0):0.0} MB");
 
     /// <summary>"1.5 KB/s" — binary-scaled byte rate.</summary>
     public static string Rate(double bytesPerSecond) => Scale(bytesPerSecond) + "/s";
@@ -35,12 +38,12 @@ public static class ProcessFormat
     /// <summary>"0.1 MB/s" — combined read+write rate in fixed MB/s, like the Windows Task Manager's disk column.</summary>
     public static string DiskRate(double readBytesPerSecond, double writeBytesPerSecond) =>
         string.Create(
-            CultureInfo.InvariantCulture,
+            DisplayCulture,
             $"{(readBytesPerSecond + writeBytesPerSecond) / (1024.0 * 1024.0):0.0} MB/s");
 
     /// <summary>"1:03:07" — h:mm:ss with unpadded total hours (26h stays 26, no day rollover), like the Task Manager's CPU-Zeit column.</summary>
     public static string CpuTime(TimeSpan value) =>
-        string.Create(CultureInfo.InvariantCulture, $"{(long)value.TotalHours}:{value.Minutes:00}:{value.Seconds:00}");
+        string.Create(DisplayCulture, $"{(long)value.TotalHours}:{value.Minutes:00}:{value.Seconds:00}");
 
     /// <summary>"54.0 °C"; "—" without a reading.</summary>
     // ponytail: fixed °C, ignores TemperatureUnit; thread the setting through the Tm2 rows if the
@@ -75,6 +78,6 @@ public static class ProcessFormat
             unit++;
         }
 
-        return string.Create(CultureInfo.InvariantCulture, $"{value:0.0} {ByteUnits[unit]}");
+        return string.Create(DisplayCulture, $"{value:0.0} {ByteUnits[unit]}");
     }
 }

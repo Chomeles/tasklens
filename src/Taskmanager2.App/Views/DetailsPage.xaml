@@ -8,13 +8,17 @@
   <Grid Margin="24,12" RowSpacing="8">
     <Grid.RowDefinitions>
       <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
       <RowDefinition Height="*" />
     </Grid.RowDefinitions>
+
+    <!-- Real TM page header: big title left, like every Win11 TM page. -->
+    <TextBlock Grid.Row="0" FontSize="20" FontWeight="SemiBold" Text="Details" />
 
     <!-- Dense table, real Win11 Details page columns — only what Core actually provides:
          Name, PID, Status, CPU, Arbeitsspeicher. Benutzername/Architektur/Beschreibung dropped:
          no per-process owner/architecture/description data exists in the pipeline (never fabricated). -->
-    <Grid Grid.Row="0" Padding="12,0" ColumnSpacing="8">
+    <Grid Grid.Row="1" Padding="12,0" ColumnSpacing="8">
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="*" />
         <ColumnDefinition Width="64" />
@@ -35,7 +39,7 @@
     </Grid>
 
     <ListView
-      Grid.Row="1"
+      Grid.Row="2"
       ItemsSource="{x:Bind ViewModel.Rows}"
       SelectionMode="Single">
       <ListView.ItemContainerStyle>

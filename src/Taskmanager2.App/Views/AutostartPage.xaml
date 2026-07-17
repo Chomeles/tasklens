@@ -21,13 +21,19 @@
       Message="{x:Bind ViewModel.BannerText, Mode=OneWay}"
       Severity="Warning" />
 
-    <!-- Like the real TM: one button offering the state change for the selected entry (tm3-06). -->
-    <Button
-      Grid.Row="1"
-      HorizontalAlignment="Right"
-      Command="{x:Bind ViewModel.ToggleSelectedCommand}"
-      Content="{x:Bind ViewModel.ToggleButtonText, Mode=OneWay}"
-      Style="{StaticResource AccentButtonStyle}" />
+    <!-- Real TM page header: big title left, action button right (tm3-06). -->
+    <Grid Grid.Row="1" ColumnSpacing="8">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="*" />
+        <ColumnDefinition Width="Auto" />
+      </Grid.ColumnDefinitions>
+      <TextBlock Grid.Column="0" VerticalAlignment="Center" FontSize="20" FontWeight="SemiBold" Text="Autostart-Apps" />
+      <Button
+        Grid.Column="1"
+        Command="{x:Bind ViewModel.ToggleSelectedCommand}"
+        Content="{x:Bind ViewModel.ToggleButtonText, Mode=OneWay}"
+        Style="{StaticResource AccentButtonStyle}" />
+    </Grid>
 
     <InfoBar
       Grid.Row="2"

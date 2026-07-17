@@ -8,6 +8,7 @@
   <Grid Margin="24,12" ColumnSpacing="16" RowSpacing="12">
     <Grid.RowDefinitions>
       <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
       <RowDefinition Height="*" />
     </Grid.RowDefinitions>
     <Grid.ColumnDefinitions>
@@ -15,9 +16,12 @@
       <ColumnDefinition Width="*" />
     </Grid.ColumnDefinitions>
 
+    <!-- Real TM page header: big title left, like every Win11 TM page. -->
+    <TextBlock Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" FontSize="20" FontWeight="SemiBold" Text="Leistung" />
+
     <!-- Sensor degradation banner: no admin / no PawnIO / no sensors (VM). -->
     <InfoBar
-      Grid.Row="0"
+      Grid.Row="1"
       Grid.Column="0"
       Grid.ColumnSpan="2"
       IsClosable="False"
@@ -28,7 +32,7 @@
     <!-- Left rail: CPU, Arbeitsspeicher, Datenträger, GPU + one entry per sensor hardware group. -->
     <ListView
       x:Name="Rail"
-      Grid.Row="1"
+      Grid.Row="2"
       Grid.Column="0"
       ItemsSource="{x:Bind ViewModel.Entries}"
       SelectionChanged="OnRailSelectionChanged"
@@ -60,7 +64,7 @@
     </ListView>
 
     <!-- Main panel: big history graph + every sensor reading of the selected group. -->
-    <ScrollViewer Grid.Row="1" Grid.Column="1">
+    <ScrollViewer Grid.Row="2" Grid.Column="1">
       <StackPanel Spacing="12">
         <TextBlock
           Style="{StaticResource TitleTextBlockStyle}"

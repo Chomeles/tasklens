@@ -87,19 +87,19 @@ public class SensorsViewModelTests
         vm.ApplySnapshot(Snap(SensorAvailability.NoPawnIo, Reading("GPU", "GPU Core", SensorKind.Temperature, 61)));
 
         Assert.True(vm.ShowBanner);
-        Assert.Equal("61.0 °C", vm.Groups.Single().Sensors.Single().ValueText);
+        Assert.Equal("61,0 °C", vm.Groups.Single().Sensors.Single().ValueText);
     }
 
     // --- unit formatting ---
 
     [Theory]
-    [InlineData(SensorKind.Temperature, 54.04f, "54.0 °C")]
-    [InlineData(SensorKind.Temperature, 99.95f, "100.0 °C")]
-    [InlineData(SensorKind.Load, 12.34f, "12.3 %")]
+    [InlineData(SensorKind.Temperature, 54.04f, "54,0 °C")]
+    [InlineData(SensorKind.Temperature, 99.95f, "100,0 °C")]
+    [InlineData(SensorKind.Load, 12.34f, "12,3 %")]
     [InlineData(SensorKind.Clock, 4200.4f, "4200 MHz")]
     [InlineData(SensorKind.Fan, 1200.49f, "1200 RPM")]
-    [InlineData(SensorKind.Power, 45.26f, "45.3 W")]
-    [InlineData(SensorKind.Voltage, 1.2504f, "1.250 V")]
+    [InlineData(SensorKind.Power, 45.26f, "45,3 W")]
+    [InlineData(SensorKind.Voltage, 1.2504f, "1,250 V")]
     public void Format_AppendsUnitPerKind(SensorKind kind, float value, string expected) =>
         Assert.Equal(expected, SensorRowViewModel.Format(kind, value));
 
@@ -122,7 +122,7 @@ public class SensorsViewModelTests
 
         row.Value = 62.5f;
 
-        Assert.Equal("62.5 °C", row.ValueText);
+        Assert.Equal("62,5 °C", row.ValueText);
         Assert.Contains(nameof(SensorRowViewModel.Value), changed);
         Assert.Contains(nameof(SensorRowViewModel.ValueText), changed);
     }
@@ -140,7 +140,7 @@ public class SensorsViewModelTests
 
         Assert.Equal(["CPU", "GPU", "Motherboard"], vm.Groups.Select(g => g.Name));
         Assert.Equal(["Package", "Core Max"], vm.Groups[0].Sensors.Select(s => s.Name));
-        Assert.Equal(["45.0 W", "71.0 °C"], vm.Groups[0].Sensors.Select(s => s.ValueText));
+        Assert.Equal(["45,0 W", "71,0 °C"], vm.Groups[0].Sensors.Select(s => s.ValueText));
     }
 
     [Fact]
@@ -173,7 +173,7 @@ public class SensorsViewModelTests
         Assert.Empty(events);
         Assert.Same(group, vm.Groups.Single());
         Assert.Equal(rows, vm.Groups.Single().Sensors);
-        Assert.Equal("55.5 °C", rows[0].ValueText);
+        Assert.Equal("55,5 °C", rows[0].ValueText);
         Assert.Equal("—", rows[1].ValueText);
     }
 
@@ -262,7 +262,7 @@ public class SensorsViewModelTests
         engine.Tick();
 
         Assert.Equal(SensorAvailability.Available, vm.Availability);
-        Assert.Equal("42.0 °C", vm.Groups.Single().Sensors.Single().ValueText);
+        Assert.Equal("42,0 °C", vm.Groups.Single().Sensors.Single().ValueText);
     }
 
     [Fact]
@@ -272,6 +272,6 @@ public class SensorsViewModelTests
 
         vm.Unit = TemperatureUnit.Fahrenheit;
 
-        Assert.Equal("32.0 °F", vm.Groups.Single().Sensors.Single().ValueText);
+        Assert.Equal("32,0 °F", vm.Groups.Single().Sensors.Single().ValueText);
     }
 }
