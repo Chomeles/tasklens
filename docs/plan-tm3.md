@@ -42,17 +42,17 @@ Windows CI (full-sln build + format) must stay green on `main` for every task.
 
 ## 3. Task list
 
-- [ ] tm3-01-process-actions — **Task beenden / Prozessstruktur beenden**: Core
+- [x] tm3-01-process-actions — **Task beenden / Prozessstruktur beenden**: Core
   `IProcessActionService` (`Terminate(pid, entireTree)` → `ProcessActionResult`), selection +
   `EndTask`/`EndTree` commands and error surface on `Tm2ProcessListViewModel`;
   `WinProcessActionService` on `Process.Kill(entireProcessTree)`; Prozesse page gets single
   selection, row context menu, the top-right „Task beenden" button and an error InfoBar; accept:
   command/selection/error logic fake-tested on Linux, Windows CI green.
-- [ ] tm3-02-run-and-process-extras — „Neuen Task ausführen" dialog (open, optional „Mit
+- [x] tm3-02-run-and-process-extras — „Neuen Task ausführen" dialog (open, optional „Mit
   Administratorrechten"), context-menu extras: Priorität setzen (`PriorityClass`), Effizienzmodus
   (EcoQoS via `SetProcessInformation`), Dateipfad öffnen (`QueryFullProcessImageName` +
   `explorer /select`); accept: VM logic Linux-tested, actions degrade to result data.
-- [ ] tm3-03-performance-details — grow `SystemMetrics` (committed/limit, cached, paged/non-paged
+- [x] tm3-03-performance-details — grow `SystemMetrics` (committed/limit, cached, paged/non-paged
   pool, compressed, hardware-reserved, process/thread/handle counts, uptime; static RAM facts:
   speed, slots, form factor) via `GetPerformanceInfo`/`GlobalMemoryStatusEx`/WMI once; Leistung
   page gets the real TM detail panels for CPU (Auslastung, Geschwindigkeit, Prozesse, Threads,
@@ -64,16 +64,16 @@ Windows CI (full-sln build + format) must stay green on `main` for every task.
 - [ ] tm3-05-disk-gpu-details — per-physical-disk metrics (active time %, read/write B/s, response
   time via PDH `PhysicalDisk`; capacity, kind SSD/HDD) with one rail entry per disk; GPU panel
   gains dedicated/shared memory (PDH GPU Adapter Memory); accept: VM logic Linux-tested.
-- [ ] tm3-06-startup-manage — enable/disable via `StartupApproved\Run` registry values, state
+- [x] tm3-06-startup-manage — enable/disable via `StartupApproved\Run` registry values, state
   column reflects it, Startauswirkung column (measured values are SRUM-gated — show TM-style
   „Nicht gemessen" where absent); context menu; accept: toggle state machine Linux-tested.
-- [ ] tm3-07-services-control — Starten/Beenden/Neu starten via `ServiceController` with manage
+- [x] tm3-07-services-control — Starten/Beenden/Neu starten via `ServiceController` with manage
   rights requested per-operation (query-only catalog stays for listing), result-data errors,
   context menu; accept: command/error logic Linux-tested.
 - [ ] tm3-08-users-actions — Verbindung trennen / Abmelden (`WTSDisconnectSession`/
   `WTSLogoffSession`), expandable per-user process grouping (join over the process list by
   session id); accept: grouping + command logic Linux-tested.
-- [ ] tm3-09-processes-parity — Apps/Hintergrundprozesse grouping (visible top-level window ⇒
+- [x] tm3-09-processes-parity — Apps/Hintergrundprozesse grouping (visible top-level window ⇒
   App), app icons (`SHGetFileInfo`), Status column (angehalten/Effizienzmodus), publisher column;
   accept: grouping rules Linux-tested, icon loading Windows-only code.
 - [ ] tm3-10-shell-polish — per-page command header („Neuen Task ausführen" on every page like the

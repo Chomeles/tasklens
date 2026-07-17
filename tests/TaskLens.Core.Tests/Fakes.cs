@@ -62,6 +62,31 @@ internal sealed class FakeSystemMetricsService : ISystemMetricsService
     public SystemMetrics Sample() => Metrics;
 }
 
+internal sealed class FakeServiceControl : IServiceControl
+{
+    public ActionResult Result { get; set; } = ActionResult.Ok;
+
+    public List<(string Name, string Action)> Calls { get; } = [];
+
+    public ActionResult Start(string serviceName)
+    {
+        Calls.Add((serviceName, "start"));
+        return Result;
+    }
+
+    public ActionResult Stop(string serviceName)
+    {
+        Calls.Add((serviceName, "stop"));
+        return Result;
+    }
+
+    public ActionResult Restart(string serviceName)
+    {
+        Calls.Add((serviceName, "restart"));
+        return Result;
+    }
+}
+
 internal sealed class FakeServiceCatalog : IServiceCatalog
 {
     public ServiceCatalogSnapshot Snapshot { get; set; } = new([], ServiceCatalogAvailability.Available);

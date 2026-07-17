@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using TaskLens.Core.Models;
 using TaskLens.Core.Services;
 
@@ -68,9 +69,49 @@ public sealed partial class Tm2ServicesViewModel : ObservableObject
     private readonly Dictionary<string, Tm2ServiceRowViewModel> rowsByName = new(StringComparer.OrdinalIgnoreCase);
     private int tick;
 
-    public Tm2ServicesViewModel(IServiceCatalog catalog)
+    private readonly IServiceControl? control;
+
+    public Tm2ServicesViewModel(IServiceCatalog catalog, IServiceControl? control = null)
     {
         this.catalog = catalog ?? throw new ArgumentNullException(nameof(catalog));
+        this.control = control;
+    }
+
+    /// <summary>The row the service commands act on (tm3-07).</summary>
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(StartSelectedCommand))]
+    [NotifyCanExecuteChangedFor(nameof(StopSelectedCommand))]
+    [NotifyCanExecuteChangedFor(nameof(RestartSelectedCommand))]
+    private Tm2ServiceRowViewModel? selectedRow;
+
+    /// <summary>Error text of the last failed service action; null when it succeeded.</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasActionError))]
+    private string? lastActionError;
+
+    public bool HasActionError => LastActionError is not null;
+
+    private bool CanControl() => control is not null && SelectedRow is not null;
+
+    [RelayCommand(CanExecute = nameof(CanControl))]
+    private void StartSelected() => RunControl(static (c, name) => c.Start(name));
+
+    [RelayCommand(CanExecute = nameof(CanControl))]
+    private void StopSelected() => RunControl(static (c, name) => c.Stop(name));
+
+    [RelayCommand(CanExecute = nameof(CanControl))]
+    private void RestartSelected() => RunControl(static (c, name) => c.Restart(name));
+
+    private void RunControl(Func<IServiceControl, string, ActionResult> action)
+    {
+        if (control is null || SelectedRow is null)
+        {
+            return;
+        }
+
+        var result = action(control, SelectedRow.Name);
+        LastActionError = result.Success ? null : result.Error;
+        tick = 0; // force a fresh SCM query on the next engine tick so the status column updates
     }
 
     /// <summary>Visible rows: filtered, running first, alphabetical within each status group.</summary>
