@@ -34,7 +34,7 @@ verschachtelte Aufrufe; TextBlock ohne Background (Border).
   IShellLinkW-Aufrufe hüpfen bei Bedarf auf einen dedizierten STA-Thread. Smoke-Tests: eigene .lnk
   via IPersistFile::Save erzeugt → Ziel aufgelöst; .lnk im echten User-Startup-Ordner taucht in
   `Query()` auf.
-- [ ] **tm2r-05: README/Positionierung** — Taskmanager2 als das eigentliche Produkt: „der Taskmanager,
+- [x] **tm2r-05: README/Positionierung** — Taskmanager2 als das eigentliche Produkt: „der Taskmanager,
   den du kennst — plus alles, wofür du sonst drei Tools installierst".
 
 ## Bewusst offen
