@@ -26,6 +26,23 @@
           <ColumnDefinition Width="Auto" />
         </Grid.ColumnDefinitions>
         <StackPanel Grid.Column="0" Spacing="2">
+          <TextBlock Text="App-Theme" />
+          <TextBlock FontSize="12" Opacity="0.7" Text="Wählen Sie das anzuzeigende App-Theme aus" />
+        </StackPanel>
+        <ComboBox Grid.Column="1" MinWidth="160" VerticalAlignment="Center"
+                  SelectedIndex="{x:Bind ViewModel.ThemeIndex, Mode=TwoWay}">
+          <ComboBoxItem Content="Systemeinstellung verwenden" />
+          <ComboBoxItem Content="Hell" />
+          <ComboBoxItem Content="Dunkel" />
+        </ComboBox>
+      </Grid>
+
+      <Grid Style="{StaticResource SettingCard}">
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="*" />
+          <ColumnDefinition Width="Auto" />
+        </Grid.ColumnDefinitions>
+        <StackPanel Grid.Column="0" Spacing="2">
           <TextBlock Text="Echtzeitaktualisierungsgeschwindigkeit" />
           <TextBlock FontSize="12" Opacity="0.7" Text="Wie oft die Prozess- und Sensorwerte neu abgetastet werden" />
         </StackPanel>

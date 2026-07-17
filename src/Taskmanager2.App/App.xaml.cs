@@ -52,13 +52,29 @@ public partial class App : Application
             engine.Interval = settings.RefreshInterval;
             engine.Normalization = settings.CpuNormalization;
             sensorsViewModel.Unit = settings.TemperatureUnit;
+            ApplyTheme(settings.Theme);
         };
 
         _ = engine.RunAsync(CancellationToken.None); // ponytail: no CTS — the loop dies with the process
 
         window = new Shell();
         window.Closed += (_, _) => (Services as IDisposable)?.Dispose();
+        ApplyTheme(settingsViewModel.Theme);
         window.Activate();
+    }
+
+    /// <summary>App-Theme setting → the window root's RequestedTheme, like the real TM.</summary>
+    private void ApplyTheme(AppTheme theme)
+    {
+        if (window?.Content is FrameworkElement root)
+        {
+            root.RequestedTheme = theme switch
+            {
+                AppTheme.Light => ElementTheme.Light,
+                AppTheme.Dark => ElementTheme.Dark,
+                _ => ElementTheme.Default,
+            };
+        }
     }
 
     private static ServiceProvider ConfigureServices() => new ServiceCollection()

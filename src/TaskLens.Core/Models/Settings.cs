@@ -17,6 +17,15 @@ public enum CpuPercentNormalization
     SingleCore,
 }
 
+/// <summary>App theme like the real Win11 Task Manager's „App-Theme" setting.</summary>
+public enum AppTheme
+{
+    /// <summary>Follow the Windows system theme.</summary>
+    System,
+    Light,
+    Dark,
+}
+
 /// <summary>User settings. Persisted by <c>ISettingsStore</c> (task 14); live-applied.</summary>
 public sealed record Settings
 {
@@ -35,4 +44,7 @@ public sealed record Settings
     public TemperatureUnit TemperatureUnit { get; init; } = TemperatureUnit.Celsius;
 
     public CpuPercentNormalization CpuNormalization { get; init; } = CpuPercentNormalization.AllCores;
+
+    /// <summary>App-Theme like the real TM: System (default), Hell or Dunkel.</summary>
+    public AppTheme Theme { get; init; } = AppTheme.System;
 }
