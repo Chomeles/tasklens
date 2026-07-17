@@ -96,6 +96,17 @@ public sealed partial class ProzessePage : Page
         App.Services.GetRequiredService<TaskLens.Core.Services.IProcessActionService>().SearchOnline(row.Name);
     }
 
+    /// <summary>„Netzwerkverbindungen" (tm2r-03): TCPView dialog for the right-clicked row.</summary>
+    private async void OnNetConnectionsClick(object sender, RoutedEventArgs e)
+    {
+        var row = (Tm2ProcessRowViewModel)((FrameworkElement)sender).DataContext;
+        // App-Zeile = Prozessgruppe: alle sichtbaren Prozesse gleichen Namens gehören dazu.
+        var pids = row.Inner.Group == ProcessGroup.Apps
+            ? ViewModel.Rows.Where(r => r.Name == row.Name).Select(r => r.Pid).ToArray()
+            : new[] { row.Pid };
+        await Taskmanager2.App.Services.NetworkConnectionsDialog.ShowAsync(XamlRoot, row.Name, pids);
+    }
+
     private void RunOnRow(object sender, bool entireTree)
     {
         ViewModel.SelectedRow = (Tm2ProcessRowViewModel)((FrameworkElement)sender).DataContext;

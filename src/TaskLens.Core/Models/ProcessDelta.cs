@@ -2,14 +2,16 @@ namespace TaskLens.Core.Models;
 
 /// <summary>
 /// One process row with per-tick computed rates: CPU% (all-cores normalized, 0–100),
-/// GPU% and IO bytes/sec. Rates are 0 on a process's first sighting (no previous sample).
+/// GPU%, IO bytes/sec and network bytes/sec. Rates are 0 on a process's first sighting
+/// (no previous sample); network is 0 without an attribution source (tm2r-01).
 /// </summary>
 public sealed record ProcessDelta(
     ProcessSample Sample,
     double CpuPercent,
     double GpuPercent,
     double IoReadBytesPerSecond,
-    double IoWriteBytesPerSecond)
+    double IoWriteBytesPerSecond,
+    double NetworkBytesPerSecond = 0)
 {
     public ProcessSample Sample { get; init; } =
         Sample ?? throw new ArgumentNullException(nameof(Sample));
@@ -33,4 +35,9 @@ public sealed record ProcessDelta(
         IoWriteBytesPerSecond >= 0
             ? IoWriteBytesPerSecond
             : throw new ArgumentOutOfRangeException(nameof(IoWriteBytesPerSecond), IoWriteBytesPerSecond, "IoWriteBytesPerSecond must be >= 0.");
+
+    public double NetworkBytesPerSecond { get; init; } =
+        NetworkBytesPerSecond >= 0
+            ? NetworkBytesPerSecond
+            : throw new ArgumentOutOfRangeException(nameof(NetworkBytesPerSecond), NetworkBytesPerSecond, "NetworkBytesPerSecond must be >= 0.");
 }

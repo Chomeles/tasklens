@@ -15,7 +15,8 @@ public sealed record ProcessSample(
     bool HasVisibleWindow = false,
     string? WindowTitle = null,
     string? UserName = null,
-    string? Architecture = null)
+    string? Architecture = null,
+    string? CommandLine = null)
 {
     // ponytail: constructor-path guards via initializers; `with` can bypass, engine only constructs.
     public int Pid { get; init; } =

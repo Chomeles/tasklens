@@ -48,6 +48,9 @@ public sealed partial class Tm2ProcessRowViewModel : ObservableObject
 
     public double IoWriteBytesPerSecond => Inner.IoWriteBytesPerSecond;
 
+    /// <summary>Send+receive bytes/sec via ETW — drives the Netzwerk cell (tm2r-01).</summary>
+    public double NetworkBytesPerSecond => Inner.NetworkBytesPerSecond;
+
     /// <summary>Working set as percent of total RAM — drives the Arbeitsspeicher cell tint.</summary>
     public double MemoryPercent => Inner.MemoryPercent;
 

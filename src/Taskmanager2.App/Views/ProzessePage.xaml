@@ -128,8 +128,8 @@
                      Text="{x:Bind vm:ProcessFormat.Header('Datenträger', 'Disk', ViewModel.Inner.SortColumn, ViewModel.Inner.SortDescending), Mode=OneWay}" />
         </StackPanel>
       </Button>
-      <!-- Header: echte Adapter-Auslastung (tm3-04). Zellen bleiben 0 MBit/s — Per-Prozess-
-           Attribution bräuchte ETW, keine erfundenen Werte. -->
+      <!-- Header: echte Adapter-Auslastung (tm3-04). Zellen: echte Per-Prozess-Raten via ETW
+           (tm2r-01); ohne Adminrechte liefert der Dienst nichts und alles bleibt ehrlich 0. -->
       <StackPanel Grid.Column="5" Margin="8,4" VerticalAlignment="Bottom"
                   Background="{x:Bind svc:CellHeat.Brush(ViewModel.Inner.SystemNetworkPercent), Mode=OneWay}">
         <TextBlock HorizontalAlignment="Right" FontSize="14"
@@ -199,6 +199,7 @@
                           <MenuFlyoutSeparator />
                           <MenuFlyoutItem Click="OnOpenLocationClick" Text="Dateispeicherort öffnen" />
                           <MenuFlyoutItem Click="OnSearchOnlineClick" Text="Onlinesuche" />
+                          <MenuFlyoutItem Click="OnNetConnectionsClick" Text="Netzwerkverbindungen" />
                         </MenuFlyout>
                       </Grid.ContextFlyout>
                       <Grid.ColumnDefinitions>
@@ -259,9 +260,9 @@
                         <TextBlock Padding="8,3" VerticalAlignment="Center" FontSize="12" TextAlignment="Right"
                                  Text="{x:Bind vm:ProcessFormat.DiskRate(IoReadBytesPerSecond, IoWriteBytesPerSecond), Mode=OneWay}" />
                       </Border>
-                      <Border Grid.Column="5" Background="{x:Bind svc:CellHeat.Brush(0), Mode=OneWay}">
+                      <Border Grid.Column="5" Background="{x:Bind svc:CellHeat.NetworkBrush(NetworkBytesPerSecond), Mode=OneWay}">
                         <TextBlock Padding="8,3" VerticalAlignment="Center" FontSize="12" TextAlignment="Right"
-                                 Text="0 MBit/s" />
+                                 Text="{x:Bind vm:ProcessFormat.NetworkRate(NetworkBytesPerSecond), Mode=OneWay}" />
                       </Border>
                       <Border Grid.Column="6" Background="{x:Bind svc:CellHeat.Brush(GpuPercent), Mode=OneWay}">
                         <TextBlock Padding="8,3" VerticalAlignment="Center" FontSize="12" TextAlignment="Right"

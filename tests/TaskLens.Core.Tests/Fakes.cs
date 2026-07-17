@@ -55,6 +55,15 @@ internal sealed class FakeGpuProcessService : IGpuProcessService
     public IReadOnlyDictionary<int, double> SampleGpuPercentByPid() => GpuPercentByPid;
 }
 
+internal sealed class FakeProcessNetworkService : IProcessNetworkService
+{
+    public NetworkAttributionAvailability Availability { get; set; } = NetworkAttributionAvailability.Ok;
+
+    public Dictionary<int, double> BytesPerSecondByPid { get; } = [];
+
+    public IReadOnlyDictionary<int, double> SampleNetworkBytesPerSecondByPid() => BytesPerSecondByPid;
+}
+
 internal sealed class FakeSystemMetricsService : ISystemMetricsService
 {
     public SystemMetrics Metrics { get; set; } = new(0, 0, 0);

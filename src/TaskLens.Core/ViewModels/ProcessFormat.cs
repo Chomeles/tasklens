@@ -37,6 +37,14 @@ public static class ProcessFormat
             : string.Create(DisplayCulture, $"{bits / 1_000:0.0} KBit/s");
     }
 
+    /// <summary>"0,1 MBit/s" — the real TM's Netzwerk cell: always MBit/s (decimal, *8/1e6),
+    /// idle rows show plain "0 MBit/s" without a decimal, exactly like the Win11 app.</summary>
+    public static string NetworkRate(double bytesPerSecond)
+    {
+        var mbit = bytesPerSecond * 8 / 1_000_000;
+        return mbit < 0.05 ? "0 MBit/s" : string.Create(DisplayCulture, $"{mbit:0.0} MBit/s");
+    }
+
     /// <summary>"1,4 ms" — average response time from seconds, the real TM's Antwortzeit format.</summary>
     public static string Milliseconds(double seconds) =>
         string.Create(DisplayCulture, $"{seconds * 1000:0.0} ms");

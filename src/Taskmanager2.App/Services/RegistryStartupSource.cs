@@ -1,5 +1,7 @@
+using System.Diagnostics;
 using System.Security;
 using Microsoft.Win32;
+using TaskLens.App.Services.Interop;
 using TaskLens.Core.Models;
 using TaskLens.Core.Services;
 
@@ -14,6 +16,8 @@ namespace Taskmanager2.App.Services;
 /// (best effort); only a fully unreadable set reports AccessDenied. Since tm3-06 it also
 /// implements <see cref="IStartupManager"/>: toggling writes the same 12-byte StartupApproved
 /// blob the real Task Manager writes (0x02 + zeros to enable, 0x03 + disable-FILETIME).
+/// Startup-folder entries resolve their .lnk target via <see cref="ShellLink"/> and read the
+/// Herausgeber from the target's version resource (tm2r-04).
 /// </summary>
 internal sealed class RegistryStartupSource : IStartupItemSource, IStartupManager
 {
@@ -93,17 +97,40 @@ internal sealed class RegistryStartupSource : IStartupItemSource, IStartupManage
         // StartupApproved\StartupFolder lives in the hive matching the folder: HKCU for the user
         // folder, HKLM for the all-users folder; value names are the file names incl. ".lnk".
         using var approved = hive.OpenSubKey(ApprovedBase + "StartupFolder");
-        foreach (var lnk in Directory.EnumerateFiles(path, "*.lnk"))
+        foreach (var file in Directory.EnumerateFiles(path))
         {
+            var fileName = Path.GetFileName(file);
+            if (fileName.Equals("desktop.ini", StringComparison.OrdinalIgnoreCase))
+            {
+                continue; // folder metadata, not an autostart entry — the real TM hides it too
+            }
+
             // A file literally named ".lnk" has an empty stem — fall back to the full file name
             // rather than tripping StartupItem's non-empty guard.
-            var stem = Path.GetFileNameWithoutExtension(lnk);
-            var name = stem.Length > 0 ? stem : Path.GetFileName(lnk);
+            var stem = Path.GetFileNameWithoutExtension(file);
+            var name = stem.Length > 0 ? stem : fileName;
 
-            // ponytail: Command is the .lnk path itself — resolving the shortcut target needs
-            // COM/IShellLink; add only if someone actually misses the target line.
+            // .lnk entries show their resolved target like the real TM (tm2r-04); unresolvable
+            // shortcuts and plain files (an .exe dropped into the folder) show the file itself.
+            var isLnk = fileName.EndsWith(".lnk", StringComparison.OrdinalIgnoreCase);
+            var command = (isLnk ? ShellLink.TryGetTarget(file) : null) ?? file;
+
             items.Add(new StartupItem(
-                name, lnk, source, IsEnabled(approved, Path.GetFileName(lnk)), MakeId(hive, "StartupFolder", Path.GetFileName(lnk))));
+                name, command, source, IsEnabled(approved, fileName), MakeId(hive, "StartupFolder", fileName),
+                TryGetPublisher(command)));
+        }
+    }
+
+    /// <summary>CompanyName from the target's version resource; honestly empty when unreadable.</summary>
+    private static string TryGetPublisher(string file)
+    {
+        try
+        {
+            return FileVersionInfo.GetVersionInfo(file).CompanyName ?? "";
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException or SecurityException or ArgumentException)
+        {
+            return "";
         }
     }
 

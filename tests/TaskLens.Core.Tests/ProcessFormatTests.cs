@@ -35,6 +35,14 @@ public class ProcessFormatTests
     public void BitRate_ScalesDecimalBits(double bytesPerSecond, string expected) =>
         Assert.Equal(expected, ProcessFormat.BitRate(bytesPerSecond));
 
+    [Theory]
+    [InlineData(0, "0 MBit/s")] // idle: bare 0 without a decimal, like the real TM
+    [InlineData(1_000, "0 MBit/s")] // 0,008 MBit/s rounds down to idle
+    [InlineData(12_500, "0,1 MBit/s")]
+    [InlineData(2_500_000, "20,0 MBit/s")]
+    public void NetworkRate_FormatsMbitWithBareZeroWhenIdle(double bytesPerSecond, string expected) =>
+        Assert.Equal(expected, ProcessFormat.NetworkRate(bytesPerSecond));
+
     [Fact]
     public void Rate_AppendsPerSecond() =>
         Assert.Equal("1,5 KB/s", ProcessFormat.Rate(1536));

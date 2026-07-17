@@ -57,6 +57,22 @@ public class Tm2StartupViewModelTests
     }
 
     [Fact]
+    public void Publisher_FlowsToRow_EmptyRendersAsDash()
+    {
+        source.Snapshot = new(
+            [
+                Item("Cloud-Sync") with { Publisher = "Contoso GmbH" },
+                Item("Updater"),
+            ],
+            CatalogAvailability.Available);
+
+        Refresh();
+
+        Assert.Equal(["Contoso GmbH", "—"], vm.Rows.Select(r => r.PublisherText));
+        Assert.Equal(["Contoso GmbH", ""], vm.Rows.Select(r => r.Publisher));
+    }
+
+    [Fact]
     public void AccessDenied_ShowsBanner_NoRows_AndRecovers()
     {
         source.Snapshot = new([], CatalogAvailability.AccessDenied);
@@ -125,6 +141,26 @@ public class Tm2StartupViewModelTests
         Refresh();
 
         Assert.Equal(["Cloud-Sync"], vm.Rows.Select(r => r.Name));
+    }
+
+    [Fact]
+    public void SameNameAndSource_DifferentToggleIds_AreDistinctRows_NoReconcileCrash()
+    {
+        // Foo.lnk + Foo.exe in the same startup folder: identical stem and source, distinct
+        // ToggleIds. With a (Source, Name)-only key both collapsed onto one row instance,
+        // which crashed CollectionReconciler.Reconcile (Move past the end) on the second pass.
+        source.Snapshot = new(
+            [
+                Item("Foo", source: "Autostart-Ordner (Benutzer)") with { ToggleId = "HKCU\nStartupFolder\nFoo.lnk" },
+                Item("Foo", source: "Autostart-Ordner (Benutzer)") with { ToggleId = "HKCU\nStartupFolder\nFoo.exe" },
+            ],
+            CatalogAvailability.Available);
+
+        Refresh();
+        Refresh();
+
+        Assert.Equal(2, vm.Rows.Count);
+        Assert.NotSame(vm.Rows[0], vm.Rows[1]);
     }
 
     [Fact]

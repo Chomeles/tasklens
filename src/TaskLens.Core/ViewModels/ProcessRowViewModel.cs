@@ -39,6 +39,10 @@ public sealed partial class ProcessRowViewModel : ObservableObject
     [ObservableProperty]
     private double ioWriteBytesPerSecond;
 
+    /// <summary>Send+receive bytes/sec attributed via ETW; 0 without a source (tm2r-01).</summary>
+    [ObservableProperty]
+    private double networkBytesPerSecond;
+
     [ObservableProperty]
     private ProcessGroup group;
 
@@ -69,9 +73,17 @@ public sealed partial class ProcessRowViewModel : ObservableObject
     [NotifyPropertyChangedFor(nameof(ArchitectureText))]
     private string? architecture;
 
+    /// <summary>Full command line; null when the process can't be queried → empty cell,
+    /// like the real TM's Befehlszeile column for protected processes.</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(CommandLineText))]
+    private string? commandLine;
+
     public string UserNameText => UserName ?? "—";
 
     public string ArchitectureText => Architecture ?? "—";
+
+    public string CommandLineText => CommandLine ?? "";
 
     public void Update(ProcessDelta delta)
     {
@@ -82,9 +94,11 @@ public sealed partial class ProcessRowViewModel : ObservableObject
         WorkingSetBytes = delta.Sample.WorkingSetBytes;
         IoReadBytesPerSecond = delta.IoReadBytesPerSecond;
         IoWriteBytesPerSecond = delta.IoWriteBytesPerSecond;
+        NetworkBytesPerSecond = delta.NetworkBytesPerSecond;
         Group = ProcessClassification.Classify(delta.Sample);
         WindowTitle = delta.Sample.WindowTitle;
         UserName = delta.Sample.UserName;
         Architecture = delta.Sample.Architecture;
+        CommandLine = delta.Sample.CommandLine;
     }
 }

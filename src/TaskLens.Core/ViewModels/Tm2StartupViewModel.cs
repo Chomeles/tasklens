@@ -7,8 +7,9 @@ using TaskLens.Core.Services;
 namespace TaskLens.Core.ViewModels;
 
 /// <summary>
-/// One Autostart row. Identity is (name, source) — the same entry name may exist in several
-/// Run keys; values update in place across refreshes.
+/// One Autostart row. Identity is (name, source, toggle id) — the same entry name may exist in
+/// several Run keys, and one startup folder may hold Foo.lnk and Foo.exe with the same stem;
+/// values update in place across refreshes.
 /// </summary>
 public sealed partial class Tm2StartupRowViewModel : ObservableObject
 {
@@ -29,16 +30,24 @@ public sealed partial class Tm2StartupRowViewModel : ObservableObject
     private string command = "";
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(PublisherText))]
+    private string publisher = "";
+
+    [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(StatusText))]
     private bool enabled = true;
 
     /// <summary>Status column text, Win11 Task Manager wording.</summary>
     public string StatusText => Enabled ? "Aktiviert" : "Deaktiviert";
 
+    /// <summary>Herausgeber column: version-info CompanyName, the real TM's honest „—" without.</summary>
+    public string PublisherText => Publisher.Length > 0 ? Publisher : "—";
+
     internal void Update(StartupItem item)
     {
         Item = item;
         Command = item.Command;
+        Publisher = item.Publisher;
         Enabled = item.Enabled;
     }
 }
@@ -143,8 +152,10 @@ public sealed partial class Tm2StartupViewModel : ObservableObject
         var target = new List<Tm2StartupRowViewModel>(result.Items.Count);
         foreach (var item in result.Items)
         {
-            // \n cannot occur in registry value names or file names — a collision-free key.
-            var key = item.Source + "\n" + item.Name;
+            // (Source, Name) alone can collide: Foo.lnk and Foo.exe in the same startup folder
+            // share the stem "Foo" (tm2r-04). The ToggleId carries the distinguishing value/file
+            // name, so it completes the key; \n cannot occur in the leading fields.
+            var key = item.Source + "\n" + item.Name + "\n" + (item.ToggleId ?? "");
             if (!rowsByKey.TryGetValue(key, out var row))
             {
                 row = new Tm2StartupRowViewModel(item.Name, item.Source);

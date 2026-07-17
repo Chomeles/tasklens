@@ -49,9 +49,10 @@
       Severity="Error"
       Title="Autostart-Eintrag konnte nicht geändert werden" />
 
-    <!-- Real Win11 Autostart columns: Name, Herausgeber, Status, Startauswirkungen. Publisher and
-         impact have no backing data (no version-info read, no boot trace) — the real TM's own
-         honest fallbacks („—", „Nicht gemessen") fill them; Befehl/Quelle live in the row tooltip. -->
+    <!-- Real Win11 Autostart columns: Name, Herausgeber, Status, Startauswirkungen. Herausgeber is
+         the version-info CompanyName where readable (tm2r-04); impact has no backing data (no boot
+         trace) — the real TM's honest fallbacks („—", „Nicht gemessen") fill the gaps;
+         Befehl/Quelle live in the row tooltip. -->
     <Grid Grid.Row="3" Padding="12,0" ColumnSpacing="8">
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="*" />
@@ -93,7 +94,8 @@
             </Grid.ColumnDefinitions>
             <TextBlock Grid.Column="0" VerticalAlignment="Center" Text="{x:Bind Name}" TextTrimming="CharacterEllipsis"
                        ToolTipService.ToolTip="{x:Bind Command, Mode=OneWay}" />
-            <TextBlock Grid.Column="1" VerticalAlignment="Center" Text="—" ToolTipService.ToolTip="{x:Bind Source}" />
+            <TextBlock Grid.Column="1" VerticalAlignment="Center" Text="{x:Bind PublisherText, Mode=OneWay}"
+                       TextTrimming="CharacterEllipsis" ToolTipService.ToolTip="{x:Bind Source}" />
             <TextBlock Grid.Column="2" VerticalAlignment="Center" Text="{x:Bind StatusText, Mode=OneWay}" />
             <TextBlock Grid.Column="3" VerticalAlignment="Center" Text="Nicht gemessen" />
           </Grid>

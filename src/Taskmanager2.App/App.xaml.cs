@@ -83,6 +83,8 @@ public partial class App : Application
         .AddSingleton<IDispatcher>(new DispatcherQueueDispatcher(DispatcherQueue.GetForCurrentThread()))
         .AddSingleton<IProcessEnumerator, NtProcessEnumerator>()
         .AddSingleton<IGpuProcessService, PdhGpuProcessService>()
+        // Real in DEBUG too — needs elevation; without it the service reports RequiresAdmin and 0.
+        .AddSingleton<IProcessNetworkService, EtwProcessNetworkService>()
 #if DEBUG
         // ponytail: debug-only stub data sources, same pattern as TaskLens.App.
         .AddSingleton<ISensorService, StubSensorService>()

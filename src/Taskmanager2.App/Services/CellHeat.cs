@@ -20,4 +20,8 @@ public static class CellHeat
     /// <summary>Disk-cell tint from raw IO rates — one call because x:Bind can't nest functions.</summary>
     public static Brush DiskBrush(double readBytesPerSecond, double writeBytesPerSecond) =>
         Brush(HeatMap.DiskPercent(readBytesPerSecond, writeBytesPerSecond));
+
+    /// <summary>Network-cell tint from the raw byte rate — one call because x:Bind can't nest functions.</summary>
+    public static Brush NetworkBrush(double bytesPerSecond) =>
+        Brush(HeatMap.NetworkPercent(bytesPerSecond));
 }
