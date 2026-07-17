@@ -64,20 +64,6 @@
       </StackPanel>
     </Grid>
 
-    <!-- „Neuen Task ausführen" — the real TM's run dialog: command box + admin checkbox. -->
-    <ContentDialog
-      x:Name="RunTaskDialog"
-      Title="Neuen Task erstellen"
-      CloseButtonText="Abbrechen"
-      DefaultButton="Primary"
-      PrimaryButtonText="OK">
-      <StackPanel Width="380" Spacing="12">
-        <TextBlock TextWrapping="Wrap"
-                   Text="Geben Sie den Namen eines Programms, Ordners, Dokuments oder einer Internetressource an." />
-        <TextBox x:Name="RunTaskCommand" PlaceholderText="Öffnen" />
-        <CheckBox x:Name="RunTaskElevated" Content="Diesen Task mit Administratorrechten erstellen" />
-      </StackPanel>
-    </ContentDialog>
 
     <InfoBar
       Grid.Row="1"

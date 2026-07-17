@@ -76,7 +76,7 @@ Windows CI (full-sln build + format) must stay green on `main` for every task.
 - [x] tm3-09-processes-parity — Apps/Hintergrundprozesse grouping (visible top-level window ⇒
   App), app icons (`SHGetFileInfo`), Status column (angehalten/Effizienzmodus), publisher column;
   accept: grouping rules Linux-tested, icon loading Windows-only code.
-- [ ] tm3-10-shell-polish — per-page command header („Neuen Task ausführen" on every page like the
+- [x] tm3-10-shell-polish — per-page command header („Neuen Task ausführen" on every page like the
   real TM), Einstellungen page wired to the existing `SettingsViewModel`, graph accent colors per
   category, window/taskbar icon pass; accept: gates green, README updated (satire disclaimer
   replaced by feature comparison table).

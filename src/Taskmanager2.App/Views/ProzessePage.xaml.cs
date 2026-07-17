@@ -22,17 +22,9 @@ public sealed partial class ProzessePage : Page
     private void OnSortHeaderClick(object sender, RoutedEventArgs e) =>
         ViewModel.Inner.SortByCommand.Execute(Enum.Parse<ProcessColumn>((string)((FrameworkElement)sender).Tag));
 
-    /// <summary>„Neuen Task ausführen": show the run dialog, launch on OK (tm3-02).</summary>
-    private async void OnRunTaskClick(object sender, RoutedEventArgs e)
-    {
-        RunTaskCommand.Text = string.Empty;
-        RunTaskElevated.IsChecked = false;
-        RunTaskDialog.XamlRoot = XamlRoot;
-        if (await RunTaskDialog.ShowAsync() == ContentDialogResult.Primary && RunTaskCommand.Text.Length > 0)
-        {
-            ViewModel.RunTask(RunTaskCommand.Text, RunTaskElevated.IsChecked == true);
-        }
-    }
+    /// <summary>„Neuen Task ausführen": show the shared run dialog (tm3-02/tm3-10).</summary>
+    private async void OnRunTaskClick(object sender, RoutedEventArgs e) =>
+        await Taskmanager2.App.Services.RunTaskDialog.ShowAsync(XamlRoot);
 
     /// <summary>App-row chevron: flip the row's window-child visibility.</summary>
     private void OnRowToggleClick(object sender, RoutedEventArgs e)

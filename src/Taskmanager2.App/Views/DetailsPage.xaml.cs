@@ -23,4 +23,7 @@ public sealed partial class DetailsPage : Page
     /// <summary>Header click → SortBy command; Tag carries the column name (enums can't be x:Bind args).</summary>
     private void OnSortHeaderClick(object sender, RoutedEventArgs e) =>
         ViewModel.SortByCommand.Execute(Enum.Parse<ProcessColumn>((string)((FrameworkElement)sender).Tag));
+    /// <summary>„Neuen Task ausführen": shared run dialog, on every page like the real TM (tm3-10).</summary>
+    private async void OnRunTaskClick(object sender, Microsoft.UI.Xaml.RoutedEventArgs e) =>
+        await Taskmanager2.App.Services.RunTaskDialog.ShowAsync(XamlRoot);
 }

@@ -12,8 +12,15 @@
       <RowDefinition Height="*" />
     </Grid.RowDefinitions>
 
-    <!-- Real TM page header: big title left, like every Win11 TM page. -->
-    <TextBlock Grid.Row="0" FontSize="20" FontWeight="SemiBold" Text="App-Verlauf" />
+    <!-- Real TM page header: big title left, „Neuen Task ausführen" right (tm3-10). -->
+    <Grid Grid.Row="0" ColumnSpacing="8">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="*" />
+        <ColumnDefinition Width="Auto" />
+      </Grid.ColumnDefinitions>
+      <TextBlock Grid.Column="0" VerticalAlignment="Center" FontSize="20" FontWeight="SemiBold" Text="App-Verlauf" />
+      <Button Grid.Column="1" Click="OnRunTaskClick" Content="Neuen Task ausführen" Style="{StaticResource AccentButtonStyle}" />
+    </Grid>
 
     <!-- Honest satire: no SRUM, so the window is Taskmanager2's own runtime. -->
     <InfoBar
